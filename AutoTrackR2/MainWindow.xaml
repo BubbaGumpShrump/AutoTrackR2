@@ -1,0 +1,39 @@
+﻿<Window x:Class="AutoTrackR2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AutoTrackR" Height="450" Width="800"
+        WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Style="{StaticResource CustomWindowStyle}">
+
+    <Grid>
+        <!-- Custom Title Bar -->
+        <DockPanel Height="30" VerticalAlignment="Top" MouseDown="TitleBar_MouseDown" Margin="5" Background="Transparent">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="_" Width="30" Height="25" Click="MinimizeWindow" Style="{StaticResource TitleButtonStyle}" FontFamily="{StaticResource Orbitron}"/>
+                <Button Content="X" Width="30" Height="25" Click="CloseWindow" Style="{StaticResource TitleButtonStyle}"  FontFamily="{StaticResource Orbitron}"/>
+            </StackPanel>
+        </DockPanel>
+        <!-- Main Content Area -->
+            <Grid Margin="0,30,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Tab Panel -->
+                <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="5,0,0,0">
+                <Image x:Name="Logo" Height="138" Source="/Assets/AutoTrackR.png" Stretch="Fill" Width="141" RenderOptions.BitmapScalingMode="Fant"/>
+                    <Button Content="Home" Name="HomeTab" Margin="10,40,10,10" Height="40" Style="{StaticResource TabButtonStyle}" Click="TabButton_Click"/>
+                    <Button Content="Stats" Name="StatsTab" Margin="10" Height="40" Style="{StaticResource TabButtonStyle}" Click="TabButton_Click"/>
+                    <Button Content="Update" Name="UpdateTab" Margin="10" Height="40" Style="{StaticResource TabButtonStyle}" Click="TabButton_Click"/>
+                    <Button Content="Config" Name="ConfigTab" Margin="10" Height="40" Style="{StaticResource TabButtonStyle}" Click="TabButton_Click"/>
+                </StackPanel>
+
+                <!-- Content Area -->
+                <ContentControl Grid.Column="1" Name="ContentControl" Margin="10">
+                    <!-- Default content can be set here -->
+                </ContentControl>
+            </Grid>
+    </Grid>
+</Window>
