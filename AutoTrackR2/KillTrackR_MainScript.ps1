@@ -483,13 +483,12 @@ function Read-LogEntry {
 	}
 }
 
-<#
 # Monitor the log file and process new lines as they are added
 Get-Content -Path $logFilePath -Wait -Tail 0 | ForEach-Object {
     Read-LogEntry $_
 }
-#>
 
+<#
 # Open the log file with shared access for reading and writing
 $fileStream = [System.IO.FileStream]::new($logFilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
 $reader = [System.IO.StreamReader]::new($fileStream, [System.Text.Encoding]::UTF8)  # Ensure we're reading as UTF-8
@@ -517,3 +516,4 @@ finally {
     $reader.Close()
     $fileStream.Close()
 }
+#>
