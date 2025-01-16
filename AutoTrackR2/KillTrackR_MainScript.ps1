@@ -1,4 +1,4 @@
-﻿$TrackRver = "2.0r"
+$TrackRver = "2.06"
 
 # Path to the config file
 $appName = "AutoTrackR2"
@@ -58,6 +58,14 @@ If (Test-Path $logFilePath) {
 	Write-Output "Logfile not found."
 }
 If ($null -ne $apiUrl){
+	if ($apiUrl -notlike "*/register-kill") {
+		if ($apiUrl -like "*/"){
+			$apiUrl = $apiUrl + "register-kill"
+		}
+		if ($apiUrl -notlike "*/"){
+			$apiUrl = $apiUrl + "/register-kill"
+		}
+	}
 Write-output "PlayerName=$apiURL"
 }
 
@@ -79,7 +87,8 @@ $prefixes = @(
     "ESPR",
     "KRIG",
     "GRIN",
-    "XNAA"
+    "XNAA",
+	"MRAI"
 )
 
 # Define the regex pattern to extract information
@@ -91,7 +100,13 @@ $shipManPattern = "^(" + ($prefixes -join "|") + ")"
 # $loginPattern = "\[Notice\] <AccountLoginCharacterStatus_Character> Character: createdAt [A-Za-z0-9]+ - updatedAt [A-Za-z0-9]+ - geid [A-Za-z0-9]+ - accountId [A-Za-z0-9]+ - name (?<Player>[A-Za-z0-9_-]+) - state STATE_CURRENT" # KEEP THIS INCASE LEGACY LOGIN IS REMOVED 
 $loginPattern = "\[Notice\] <Legacy login response> \[CIG-net\] User Login Success - Handle\[(?<Player>[A-Za-z0-9_-]+)\]"
 $cleanupPattern = '^(.+?)_\d+$'
-$versionPattern = "--system-trace-env-id='pub-sc-alpha-(?<gameversion>\d{4}-\d{7})'"
+$versionPattern = "--system-trace-env-id='pub-sc-alpha-(?<gameversion>\d{3,4}-\d{7})'"
+$vehiclePattern = "<(?<timestamp>[^>]+)> \[Notice\] <Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: " +
+    "Vehicle '(?<vehicle>[^']+)' \[\d+\] in zone '(?<vehicle_zone>[^']+)' " +
+    "\[pos x: (?<pos_x>[-\d\.]+), y: (?<pos_y>[-\d\.]+), z: (?<pos_z>[-\d\.]+) " +
+    "vel x: [^,]+, y: [^,]+, z: [^\]]+\] driven by '(?<driver>[^']+)' \[\d+\] " +
+    "advanced from destroy level (?<destroy_level_from>\d+) to (?<destroy_level_to>\d+) " +
+    "caused by '(?<caused_by>[^']+)' \[\d+\] with '(?<damage_type>[^']+)'"
 
 # Lookup Patterns
 $joinDatePattern = '<span class="label">Enlisted</span>\s*<strong class="value">([^<]+)</strong>'
@@ -100,15 +115,22 @@ $ueePattern = '<p class="entry citizen-record">\s*<span class="label">UEE Citize
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $process = Get-Process | Where-Object {$_.Name -like "AutoTrackR2"}
 $global:killTally = 0
-$global:GameMode = ""
-$global:GameVersion = ""
 
 # Load historic kills from csv
 if (Test-Path "$scriptFolder\Kill-Log.csv") {
 	$historicKills = Import-CSV "$scriptFolder\Kill-log.csv"
+	$currentDate = Get-Date
+	$dateFormat = "dd MMM yyyy HH:mm UTC"
 	foreach ($kill in $historicKills) {
-		Write-Output "NewKill=throwaway,$($kill.EnemyPilot),$($kill.EnemyShip),$($kill.OrgAffiliation),$($kill.Enlisted),$($kill.RecordNumber),$($kill.KillTime),$($kill.PFP)"
-		$global:killTally++
+		$killDate = [datetime]::ParseExact($kill.KillTime, $dateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+		If ($killdate.year -eq $currentDate.Year -and $killdate.month -eq $currentDate.Month) {
+			$global:killTally++
+		}
+		Try {
+			Write-Output "NewKill=throwaway,$($kill.EnemyPilot),$($kill.EnemyShip),$($kill.OrgAffiliation),$($kill.Enlisted),$($kill.RecordNumber),$($kill.KillTime), $($kill.PFP)"
+		} Catch {
+			Write-Output "Error Loading Kill: $($kill.EnemyPilot)"
+		}
 	}
 }
 Write-Output "KillTally=$global:killTally"
@@ -171,6 +193,14 @@ function Read-LogEntry {
     param (
         [string]$line
     )
+
+    # Look for vehicle events
+    if ($line -match $vehiclePattern) {
+        # Access the named capture groups from the regex match
+        $global:vehicle_id = $matches['vehicle']
+        $global:location = $matches['vehicle_zone']
+
+    }
     
     # Apply the regex pattern to the line
     if ($line -match $killPattern) {
@@ -181,6 +211,15 @@ function Read-LogEntry {
 		$weapon = $matches['Weapon']
 		$damageType = $matches['DamageType']
 		$ship = $global:loadOut
+
+        If ($enemyShip -ne "vehicle_id"){
+            
+            $global:got_location = $location
+        }
+        else
+        {
+            $global:got_location = "NONE"
+        }
 
 		Try {
 			$page1 = Invoke-WebRequest -uri "https://robertsspaceindustries.com/citizens/$enemyPilot"
@@ -193,11 +232,12 @@ function Read-LogEntry {
 			if ($null -eq (Get-Process -ID $parentApp -ErrorAction SilentlyContinue)) {
 				Stop-Process -Id $PID -Force
 			}
-			
-			If ($enemyShip -eq $global:lastKill){
-				$enemyShip = "Passenger"
-			} Else {
-				$global:lastKill = $enemyShip
+			If ($enemyShip -ne "Player"){
+				If ($enemyShip -eq $global:lastKill){
+					$enemyShip = "Passenger"
+				} Else {
+					$global:lastKill = $enemyShip
+				}
 			}
 
 			If ($player -eq $global:userName -and $enemyPilot -ne $global:userName){
@@ -211,8 +251,9 @@ function Read-LogEntry {
 					$global:loadOut = "AEGS_Idris"
 					$ship = "AEGS_Idris"
 				}
-				if ($damageType -like "*bullet*") {
+				if ($damageType -eq "Bullet" -or $weapon -like "apar_special_ballistic*") {
 					$ship = "Player"
+					$enemyShip = "Player"
 				}
 				If ($ship -match $cleanupPattern){
 					$ship = $matches[1]
@@ -238,7 +279,7 @@ function Read-LogEntry {
 					$ship = $ship -replace '-00(1|2|3|4|5|6|7|8|9|0)$', ''
 				}
 
-				$KillTime = (Get-Date).ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'")
+				$KillTime = (Get-Date).ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'", [System.Globalization.CultureInfo]::InvariantCulture)
 			
 				# Get Enlisted Date
 				if ($($page1.content) -match $joinDatePattern) {
@@ -249,7 +290,11 @@ function Read-LogEntry {
 				}
 
 				# Check if there are any matches
-				$enemyOrgs = $page1.links[3].innerHTML
+				If ($null -eq $page1.links[0].innerHTML) {
+					$enemyOrgs = $page1.links[4].innerHTML
+				} Else {
+					$enemyOrgs = $page1.links[3].innerHTML
+				}
 
 				if ($null -eq $enemyOrgs) {
 					$enemyOrgs = "-"
@@ -260,7 +305,7 @@ function Read-LogEntry {
 					# The matched UEE Citizen Record number is in $matches[1]
 					$citizenRecord = $matches[1]
 				} else {
-					$citizenRecord = "-"
+					$citizenRecord = "n/a"
 				}
 				If ($citizenRecord -eq "n/a") {
 					$citizenRecordAPI = "-1"
@@ -295,6 +340,7 @@ function Read-LogEntry {
 						game_version	= $global:GameVersion
 						gamemode		= $global:GameMode
 						trackr_version	= $TrackRver
+                        location        = $got_location
 					}
 
 					# Headers which may or may not be necessary
@@ -308,6 +354,7 @@ function Read-LogEntry {
 						# Send the POST request with JSON data
 						$null = Invoke-RestMethod -Uri $apiURL -Method Post -Body ($data | ConvertTo-Json -Depth 5) -Headers $headers
 						$logMode = "API"
+                        $global:got_location = "NONE"
 					} catch {
 						# Catch and display errors
 						$apiError = $_
@@ -338,6 +385,13 @@ function Read-LogEntry {
 					TrackRver		 = $TrackRver
 					Logged			 = $logMode
 					PFP				 = $victimPFP
+				}
+
+				# Remove commas from all properties
+				foreach ($property in $killData.PSObject.Properties) {
+					if ($property.Value -is [string]) {
+						$property.Value = $property.Value -replace ',', ''
+					}
 				}
 
 				# Export to CSV
@@ -429,8 +483,37 @@ function Read-LogEntry {
 	}
 }
 
+<#
 # Monitor the log file and process new lines as they are added
 Get-Content -Path $logFilePath -Wait -Tail 0 | ForEach-Object {
     Read-LogEntry $_
 }
 #>
+
+# Open the log file with shared access for reading and writing
+$fileStream = [System.IO.FileStream]::new($logFilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+$reader = [System.IO.StreamReader]::new($fileStream, [System.Text.Encoding]::UTF8)  # Ensure we're reading as UTF-8
+
+try {
+    # Move to the end of the file to start monitoring new entries
+    $reader.BaseStream.Seek(0, [System.IO.SeekOrigin]::End)
+
+    while ($true) {
+        # Read the next line from the file
+        $line = $reader.ReadLine()
+
+        # Ensure we have new content to process
+        if ($line) {
+            # Process the line (this is where your log entry handler would go)
+            Read-LogEntry $line
+        }
+
+        # Sleep for a brief moment to avoid high CPU usage
+        Start-Sleep -Milliseconds 100
+    }
+}
+finally {
+    # Ensure we close the reader and file stream properly when done
+    $reader.Close()
+    $fileStream.Close()
+}
