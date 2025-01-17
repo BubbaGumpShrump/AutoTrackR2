@@ -122,7 +122,7 @@ if (Test-Path "$scriptFolder\Kill-Log.csv") {
 	$currentDate = Get-Date
 	$dateFormat = "dd MMM yyyy HH:mm UTC"
 	foreach ($kill in $historicKills) {
-		$killDate = [datetime]::ParseExact($kill.KillTime, $dateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+		$killDate = [datetime]::ParseExact($kill.KillTime.Trim(), $dateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
 		If ($killdate.year -eq $currentDate.Year -and $killdate.month -eq $currentDate.Month) {
 			$global:killTally++
 		}
