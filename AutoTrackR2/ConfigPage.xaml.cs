@@ -32,9 +32,12 @@ namespace AutoTrackR2
             VisorWipeSlider.Value = ConfigManager.VisorWipe;
             VideoRecordSlider.Value = ConfigManager.VideoRecord;
             OfflineModeSlider.Value = ConfigManager.OfflineMode;
+            KillLogSlider.Value = ConfigManager.KillLog;
+            DeathLogSlider.Value = ConfigManager.DeathLog;
+            OtherLogSlider.Value = ConfigManager.OtherLog;
             ThemeSlider.Value = ConfigManager.Theme;
 
-            ApplyToggleModeStyle(OfflineModeSlider.Value, VisorWipeSlider.Value, VideoRecordSlider.Value);
+            ApplyToggleModeStyle(OfflineModeSlider.Value, VisorWipeSlider.Value, VideoRecordSlider.Value, KillLogSlider.Value, DeathLogSlider.Value, OtherLogSlider.Value);
         }
 
         // Method to change the logo image in MainWindow
@@ -65,7 +68,7 @@ namespace AutoTrackR2
 
         // This method will set the loaded config values to the UI controls
         public void SetConfigValues(string logFile, string apiUrl, string apiKey, string videoPath,
-                                     int visorWipe, int videoRecord, int offlineMode, int theme)
+                                     int visorWipe, int videoRecord, int offlineMode, int killLog, int deathLog, int otherLog, int theme)
         {
             // Set the textboxes with the loaded values
             LogFilePath.Text = logFile;
@@ -77,6 +80,9 @@ namespace AutoTrackR2
             VideoRecordSlider.Value = videoRecord;
             VisorWipeSlider.Value = visorWipe;
             OfflineModeSlider.Value = offlineMode;
+            KillLogSlider.Value = killLog;
+            DeathLogSlider.Value = deathLog;
+            OtherLogSlider.Value = otherLog;
 
             // Handle themes
             if (theme >= 0 && theme <= 3)
@@ -89,14 +95,17 @@ namespace AutoTrackR2
             }
         }
 
-        private void ApplyToggleModeStyle(double offlineModeValue, double visorWipeValue, double videoRecordValue)
+        private void ApplyToggleModeStyle(double offlineModeValue, double visorWipeValue, double videoRecordValue, double killLogValue, double deathLogvalue, double otherLogValue)
         {
             // Get the slider
             Slider offlineModeSlider = OfflineModeSlider;
             Slider visorWipeSlider = VisorWipeSlider;
             Slider videoRecordSlider = VideoRecordSlider;
+            Slider killLogSlider = KillLogSlider;
+            Slider deathLogSlider = DeathLogSlider;
+            Slider otherLogSlider = OtherLogSlider;
 
-            // Set the appropriate style based on the offlineMode value (0 or 1)
+            // Set the appropriate style based on value (0 or 1)
             if (offlineModeValue == 0)
             {
                 offlineModeSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
@@ -110,6 +119,21 @@ namespace AutoTrackR2
             if (videoRecordValue == 0)
             {
                 videoRecordSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+            }
+
+            if (killLogValue == 0)
+            {
+                killLogSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+            }
+
+            if (deathLogvalue == 0)
+            {
+                deathLogSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+            }
+
+            if (otherLogValue == 0)
+            {
+                otherLogSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
             }
         }
 
@@ -384,12 +408,14 @@ namespace AutoTrackR2
         // Video Path Browse Button Handler
         private void VideoPathBrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog();
-            dialog.CheckFileExists = false;
-            dialog.ValidateNames = false;
-            dialog.Filter = "All files|*.*";
+            // Prepare a dummy string, thos would appear in the dialog
+            string dummyFileName = "Path where the videos should be";
 
-            if (dialog.ShowDialog() == true)
+            SaveFileDialog dialog = new SaveFileDialog();
+            // Feed the dummy name to the save dialog
+            dialog.FileName = dummyFileName;
+
+            if(dialog.ShowDialog() == true)
             {
                 // Extract only the directory path from the file
                 string selectedFolder = Path.GetDirectoryName(dialog.FileName);
@@ -495,7 +521,6 @@ namespace AutoTrackR2
             }
         }
 
-
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             // Get the directory for the user's local application data
@@ -522,6 +547,9 @@ namespace AutoTrackR2
                 writer.WriteLine($"VisorWipe={(int)VisorWipeSlider.Value}");
                 writer.WriteLine($"VideoRecord={(int)VideoRecordSlider.Value}");
                 writer.WriteLine($"OfflineMode={(int)OfflineModeSlider.Value}");
+                writer.WriteLine($"KillLog={(int)KillLogSlider.Value}");
+                writer.WriteLine($"DeathLog={(int)DeathLogSlider.Value}");
+                writer.WriteLine($"OtherLog={(int)OtherLogSlider.Value}");
                 writer.WriteLine($"Theme={(int)ThemeSlider.Value}"); // Assumes you are saving the theme slider value (0, 1, or 2)
             }
 

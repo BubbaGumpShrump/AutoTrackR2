@@ -54,22 +54,28 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Visor Wipe Toggle Slider -->
+                <!-- Visor Wipe & KillLog Toggle Slider -->
                 <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
-                    <TextBlock Text="Visor Wipe:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
-                    <Slider Name="VisorWipeSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="27,-4,0,0" ValueChanged="VisorWipeSlider_ValueChanged"/>
+                    <TextBlock Text="Visorr Wipe:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
+                    <Slider Name="VisorWipeSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="21,-4,0,0" ValueChanged="VisorWipeSlider_ValueChanged"/>
+                    <TextBlock Text="KillLog:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
+                    <Slider Name="KillLogSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="44,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
                 </StackPanel>
 
-                <!-- Video Record Toggle Slider -->
+                <!-- Video Record & DeathLog Toggle Slider -->
                 <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
                     <TextBlock Text="Video Record:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
                     <Slider Name="VideoRecordSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="10,-4,0,0" ValueChanged="VideoRecordSlider_ValueChanged"/>
+                    <TextBlock Text="DeathLog:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
+                    <Slider Name="DeathLogSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="22,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
                 </StackPanel>
 
-                <!-- Offline Mode Toggle Slider -->
+                <!-- Offline Mode & OtherLog Toggle Slider -->
                 <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
                     <TextBlock Text="Offline Mode:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
                     <Slider Name="OfflineModeSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="12,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
+                    <TextBlock Text="OtherLog:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
+                    <Slider Name="OtherLogSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="10,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
                 </StackPanel>
 
                 <!-- 3-Position Toggle Slider -->
