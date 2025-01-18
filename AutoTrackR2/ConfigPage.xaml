@@ -75,7 +75,7 @@
                     <TextBlock Text="Offline Mode:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
                     <Slider Name="OfflineModeSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="12,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
                     <TextBlock Text="OtherLog:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
-                    <Slider Name="OtherLogSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="10,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
+                    <Slider Name="OtherLogSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="22,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
                 </StackPanel>
 
                 <!-- 3-Position Toggle Slider -->

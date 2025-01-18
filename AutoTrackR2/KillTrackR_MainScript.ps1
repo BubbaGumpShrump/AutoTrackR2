@@ -1,4 +1,4 @@
-﻿$TrackRver = "2.06-mod"
+﻿$TrackRver = "2.06-koda-mod"
 
 # Path to the config file
 $appName = "AutoTrackR2"
@@ -312,6 +312,7 @@ function Read-LogEntry {
         }
 
 		#Define the Type
+		#kill
 		IF ($agressorPilot -eq $global:userName -and $victimPilot -ne $global:userName){
 			$type = "Kill"
 			Try {
@@ -320,15 +321,23 @@ function Read-LogEntry {
 				$page1 = $null
 				$type = "none"
 			}
+		#death
 		}elseif ($agressorPilot -ne $global:userName -and $victimPilot -eq $global:userName) {
-			$type = "Death"
-			$victimShip = "unknown"
+			#acception for "unknown"
+			if ($agressorPilot -eq "unknown" -and $weapon -eq "unknown"){
+				#$damageType = "snusnu"
+				$type = "Other"
+			} else {
+				$type = "Death"
+			}
+			$agressorShip = "unknown"
 			Try {
 				$page1 = Invoke-WebRequest -uri "https://robertsspaceindustries.com/citizens/$agressorPilot"
 			} Catch {
 				$page1 = $null
 				$type = "none"
 			}
+		#other
 		}elseif($agressorPilot -eq $global:userName -or $victimPilot -eq $global:userName) {
 			$type = "Other"
 		}else {
@@ -364,6 +373,7 @@ function Read-LogEntry {
 			if ($damageType -eq "Bullet" -or $weapon -like "apar_special_ballistic*") {
 				$ship = "Person"
 				$victimShip = "Person"
+				$agressorShip = "Person"
 			}
 			If ($ship -match $cleanupPattern){
 				$ship = $matches[1]
@@ -509,13 +519,13 @@ function Read-LogEntry {
 					Type             = $type
 					KillTime         = $killTime
 					EnemyPilot       = $agressorPilot
-					EnemyShip        = $ship
+					EnemyShip        = $agressorShip
 					Enlisted         = $joinDate2
 					RecordNumber     = $citizenRecord
 					OrgAffiliation   = $enemyOrgs
 					Player           = $victimPilot
 					Weapon           = $weapon
-					Ship             = $victimShip
+					Ship             = $Ship
 					Method           = $damageType
 					Mode             = $global:GameMode
 					GameVersion      = $global:GameVersion
@@ -532,7 +542,7 @@ function Read-LogEntry {
 				#write Death
 				$global:deathTally++
 				Write-Output "DeathTally=$global:deathTally"
-				Write-Output "NewDeath=throwaway,$agressorPilot,$ship,$enemyOrgs,$joinDate2,$citizenRecord,$killTime,$enemyPFP"
+				Write-Output "NewDeath=throwaway,$agressorPilot,$agressorShip,$enemyOrgs,$joinDate2,$citizenRecord,$killTime,$enemyPFP"
 
 			#process Other data
 			} elseif ($type -eq "Other" -and $otherLog -eq $true) {
@@ -582,7 +592,7 @@ function Read-LogEntry {
 				$sleeptimer = 10
 
 				# VisorWipe
-				If ($visorWipe -eq $true -and $victimShip -ne "Passenger" -and $damageType -notlike "*Bullet*" -and $type -ne "Other"){
+				If ($visorWipe -eq $true -and $victimShip -ne "Passenger" -and $damageType -notlike "*Bullet*" -and $type -ne "Other"){ 
 					# send keybind for visorwipe
 					start-sleep 1
 					$sleeptimer = $sleeptimer -1
