@@ -27,16 +27,25 @@
             </Border>
 
             <!-- StackPanel for Start and Stop buttons -->
-            <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" Grid.Row="0" Grid.Column="1" BorderThickness="2" CornerRadius="5" Margin="0,0,0,82"/>
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="269" Width="152">
+            <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" Grid.Row="0" Grid.Column="1" BorderThickness="2" CornerRadius="5" Margin="0,0,0,62"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="264" Width="152">
                 <TextBlock Name="PilotNameTitle" Text="Pilot" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="14"/>
                 <TextBlock Name="PilotNameTextBox" Text="" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
                 <TextBlock Name="PlayerShipTitle" Text="Ship" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="14" />
                 <TextBlock Name="PlayerShipTextBox" Text="" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
                 <TextBlock Name="GameModeTitle" Text="Game Mode" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="14"/>
                 <TextBlock Name="GameModeTextBox" Text="" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
-                <TextBlock Name="KillTallyTitle" Text="Kill Tally" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="14"/>
-                <TextBlock Name="KillTallyTextBox" Text="" Width="152" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
+                <TextBlock Name="KillTallyTitle" Text="Tally" Width="152" Height="18" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="14"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Name="TallyKTitle" Text="K" Width="51" Height="18" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="12" TextAlignment="Center"/>
+                    <TextBlock Name="TallyDTitle" Text="D" Width="51" Height="18" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="12" TextAlignment="Center"/>
+                    <TextBlock Name="TallyOTitle" Text="O" Width="50" Height="18" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,5,0,0" Foreground="{DynamicResource AltTextBrush}" FontSize="12" TextAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Name="KillTallyTextBox" Text="K" Width="51" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
+                    <TextBlock Name="DeathTallyTextBox" Text="D" Width="51" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
+                    <TextBlock Name="OtherTallyTextBox" Text="O" Width="50" Height="20" Background="Transparent" FontFamily="{StaticResource Orbitron}" Margin="0,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="10" TextAlignment="Center"/>
+                </StackPanel>
                 <TextBox x:Name="DebugPanel" Text="" Width="152" Height="98" Background="Transparent" FontFamily="{StaticResource Orbitron}" Foreground="{DynamicResource TextBrush}" FontSize="8" BorderThickness="0" Margin="0,9,0,0"/>
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="120" Width="172" >

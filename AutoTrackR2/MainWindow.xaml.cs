@@ -187,6 +187,9 @@ namespace AutoTrackR2
                 ConfigManager.VisorWipe,
                 ConfigManager.VideoRecord,
                 ConfigManager.OfflineMode,
+                ConfigManager.KillLog,
+                ConfigManager.DeathLog,
+                ConfigManager.OtherLog,
                 ConfigManager.Theme
             );
         }
@@ -201,6 +204,9 @@ namespace AutoTrackR2
         public static int VisorWipe { get; set; }
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
+        public static int KillLog { get; set; }
+        public static int DeathLog { get; set; }
+        public static int OtherLog { get; set; }
         public static int Theme { get; set; }
 
         public static void LoadConfig()
@@ -230,6 +236,12 @@ namespace AutoTrackR2
                         VideoRecord = int.Parse(line.Substring("VideoRecord=".Length).Trim());
                     else if (line.StartsWith("OfflineMode="))
                         OfflineMode = int.Parse(line.Substring("OfflineMode=".Length).Trim());
+                    else if (line.StartsWith("KillLog="))
+                        KillLog = int.Parse(line.Substring("KillLog=".Length).Trim());
+                    else if (line.StartsWith("DeathLog="))
+                        DeathLog = int.Parse(line.Substring("DeathLog=".Length).Trim());
+                    else if (line.StartsWith("OtherLog="))
+                        OtherLog = int.Parse(line.Substring("OtherLog=".Length).Trim());
                     else if (line.StartsWith("Theme="))
                         Theme = int.Parse(line.Substring("Theme=".Length).Trim());
                 }
@@ -262,6 +274,9 @@ namespace AutoTrackR2
                 writer.WriteLine($"VisorWipe={VisorWipe}");
                 writer.WriteLine($"VideoRecord={VideoRecord}");
                 writer.WriteLine($"OfflineMode={OfflineMode}");
+                writer.WriteLine($"KillLog={KillLog}");
+                writer.WriteLine($"DeathLog={DeathLog}");
+                writer.WriteLine($"OtherLog={OtherLog}");
                 writer.WriteLine($"Theme={Theme}");
             }
         }
