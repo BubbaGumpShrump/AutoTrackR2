@@ -7,7 +7,7 @@ $script:TrackRver = "2.06-koda-mod-opt"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # ================================= Configuration =================================
-$script:DebugLvl=0
+$script:DebugLvl=0  # Can be set in config.ini with Debug=1
 
 $script:AppName = "AutoTrackR2"
 $script:ScriptFolder = Join-Path -Path $env:LOCALAPPDATA -ChildPath $AppName
@@ -26,17 +26,22 @@ $script:VideoRecordFileName = "videorecord.ahk"
 $script:VideoRecordFile = "$script:ScriptFolder\$script:VideoRecordFileName"
 
 # Definition of script variables
-$script:DateFormat = "dd MMM yyyy HH:mm UTC"
 $script:KillTally = 0
 $script:DeathTally = 0
 $script:OtherTally = 0
-$script:FpsLoadout = "Person"
 $script:LastKill = $null
+$script:LastKillUpdated = Get-Date 
 $script:PlayerCache = @{}
 $script:UserName = $null
 $script:Loadout = $script:FpsLoadout
 $script:GameMode = $null
 $script:GameVersion = $null
+
+# Configurable script variables
+$script:DateFormat = "dd MMM yyyy HH:mm UTC"
+$script:PassengerTimeOut = 60           # How long could be a Kill in the same ship a Passenger [sec]
+$script:FpsLoadout = "Person"           # Shipnames for FPS
+
 
 # Ship Manufacturers
 $prefixes = @(
@@ -76,6 +81,10 @@ $script:VehiclePattern = "<(?<timestamp>[^>]+)> \[Notice\] <Vehicle Destruction>
     "vel x: [^,]+, y: [^,]+, z: [^\]]+\] driven by '(?<driver>[^']+)' \[\d+\] " +
     "advanced from destroy level (?<destroy_level_from>\d+) to (?<destroy_level_to>\d+) " +
     "caused by '(?<caused_by>[^']+)' \[\d+\] with '(?<damage_type>[^']+)'"
+
+# Lookup Patterns
+$script:joinDatePattern = '<span class="label">Enlisted</span>\s*<strong class="value">([^<]+)</strong>'
+$script:ueePattern = '<p class="entry citizen-record">\s*<span class="label">UEE Citizen Record<\/span>\s*<strong class="value">#?(n\/a|\d+)<\/strong>\s*<\/p>'
 
 
 # ================================= Functions =================================
@@ -309,8 +318,12 @@ function Read-LogEntry {
         Write-OutputData "LogInfo=KillPattern detected"
 		$eventData = New-KillEvent -data $matches -location $location -vehicle_id $vehicle_id
 		$type = New-EventType -eventData $eventData -userName $script:UserName -killLog $config.KillLog -deathLog $config.DeathLog -otherLog $config.OtherLog
-	
-		if ($type -ne "none") {
+
+        if(Test-EventForPVE -eventData $eventData -type $type -and -ne "none"){
+            if($type -eq "Death"){$type = "Other"}else{$type = "none"}         
+        }
+
+		if ($type -ne "none") {           
             if ($type -ne "Other") {
                 $playerInfo = Get-PlayerInfo $(if ($type -eq "Kill") { $eventData.VictimPilot } else { $eventData.AgressorPilot })
             }
@@ -322,6 +335,7 @@ function Read-LogEntry {
 			if ($type -eq "Kill" -and $null -ne $config.ApiUrl -and -not $config.OfflineMode) {
                 Write-OutputData "LogInfo=Send $type data to server"
 				Send-ApiData -csvData $csvData -location $location -apiUrl $config.ApiUrl -apiKey $config.ApiKey
+                $csvData.Logged = "API"
 			}
 			Write-CSVData -csvData $csvData -csvFile $script:CSVFile
 	
@@ -356,7 +370,7 @@ function New-CsvData {
         Mode           = $script:GameMode
         GameVersion    = $script:GameVersion
         TrackRver      = $script:TrackRver
-        Logged         = $eventData.LogMode
+        Logged         = "NONE"
         PFP            = $playerInfo.PFP
     }
 
@@ -377,9 +391,9 @@ function New-KillEvent {
         [string] $vehicle_id
     )
 
-    $victimShip = $data['VictimShip']
-    $weapon = $data['Weapon']
-    $damageType = $data['DamageType']
+    $victimShip = $data.VictimShip
+    $weapon = $data.Weapon
+    $damageType = $data.DamageType
     $agressorShip = $null
 
     # Clean Weapon pattern
@@ -398,26 +412,54 @@ function New-KillEvent {
     }
 
     # Do we have a Passenger?
-    If ($victimShip -ne $script:FpsLoadout){
-        If ($victimShip -eq $script:LastKill){
+    $delay = $(Get-Date) - $script:LastKillUpdated
+    If ($victimShip -ne $script:FpsLoadout) {
+        # If last Kill is the same Ship and time it lowerthen PassengerTimeOut
+        If ($victimShip -eq $script:LastKill -and $delay.TotalSeconds -lt $script:PassengerTimeOut){  
             $victimShip = "Passenger"
         } Else {
             $script:LastKill = $victimShip
+            $script:LastKillUpdated = Get-Date
         }
     }
     
     return @{
-        VictimPilot = $data['VictimPilot']
+        VictimPilot = $data.VictimPilot
         VictimShip = $victimShip
-        AgressorPilot = $data['AgressorPilot']
+        AgressorPilot = $data.AgressorPilot
         AgressorShip = $agressorShip
         Weapon = $weapon
         DamageType = $damageType
-        #Location = if ($data['VictimShip'] -ne "vehicle_id") { $location } else { "NONE" } #I think this was an error
-        Location = if ($data['VictimShip'] -ne $vehicle_id) { $location } else { "NONE" }
+        #Location = if ($data.VictimShip -ne "vehicle_id") { $location } else { "NONE" } #I think this was an error
+        Location = if ($data.VictimShip -ne $vehicle_id) { $location } else { "NONE" }
     }
 }
 
+function Test-EventForPVE {
+    param (
+        [hashtable]$eventData,
+        [string]$type
+    )
+
+    if ($type -eq "Kill") {
+        $proofPlayer = $eventData.VictimPilot
+    }elseif ($type -eq "Death"){
+        $proofPlayer = $eventData.AgressorPilot
+    }
+
+    # Proof if event is PvE
+    if ($proofPlayer) {
+        try {
+            $null = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$proofPlayer" -ErrorAction Stop
+            Write-OutputData "LogInfo=PVP Event detected"
+            return $false
+        } catch {
+            Write-OutputData "LogInfo=PVE Event detected"
+            return $true
+        }
+    } 
+
+}
 function New-EventType {
     param (
         [hashtable]$eventData,
@@ -494,9 +536,9 @@ function Get-PlayerInfo {
     try {
         $page = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$playerName"
         
-        $joinDate = if ($page.Content -match $joinDatePattern) { $matches[1] -replace ',', '' } else { "-" }
+        $joinDate = if ($page.Content -match $script:joinDatePattern) { $matches[1] -replace ',', '' } else { "-" }
         $enemyOrgs = if ($null -eq $page.Links[0].innerHTML) { $page.Links[4].innerHTML } else { $page.Links[3].innerHTML }
-        $citizenRecord = if ($page.Content -match $ueePattern) { $matches[1] } else { "-" }
+        $citizenRecord = if ($page.Content -match $script:ueePattern) { $matches[1] } else { "-" }
         $enemyPFP = if ($page.Images[0].src -like "/media/*") { "https://robertsspaceindustries.com$($page.Images[0].src)" } else { "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" }
         
         $playerInfo = @{
@@ -592,11 +634,12 @@ function Write-CSVData {
         [string]$csvFile
     )
 
-    foreach ($property in $csvData.PSObject.Properties) {
-        if ($property.Value -is [string]) {
-            $property.Value = $property.Value -replace ',', ''
-        }
-    }
+    # JUMP redundant
+    #foreach ($property in $csvData.PSObject.Properties) {
+    #    if ($property.Value -is [string]) {
+    #        $property.Value = $property.Value -replace ',', ''
+    #    }
+    #}
 
     if (-Not (Test-Path $csvFile)) {
         $csvData | Export-Csv -Path $csvFile -NoTypeInformation
