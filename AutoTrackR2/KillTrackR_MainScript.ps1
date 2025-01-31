@@ -1,97 +1,43 @@
-﻿$TrackRver = "2.06-koda-mod"
+﻿# Script to extract informations from StarCitizen Game.log in realtime
+# GitHub: https://github.com/BubbaGumpShrump/AutoTrackR2
 
-# Path to the config file
-$appName = "AutoTrackR2"
-$scriptFolder = Join-Path -Path $env:LOCALAPPDATA -ChildPath $appName
-$configFile = Join-Path -Path $scriptFolder -ChildPath "config.ini"
+# Script version
+$script:TrackRver = "2.06-koda-mod-opt"
 
-# Read the config file into a hashtable
-if (Test-Path $configFile) {
-    Write-Output "PlayerName=Config.ini found."
-    $configContent = Get-Content $configFile | Where-Object { $_ -notmatch '^#|^\s*$' }
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-    # Escape backslashes by doubling them
-    $configContent = $configContent -replace '\\', '\\\\'
+# ================================= Configuration =================================
+$script:DebugLvl=0
 
-    # Convert to key-value pairs
-    $config = $configContent -replace '^([^=]+)=(.+)$', '$1=$2' | ConvertFrom-StringData
-} else {
-    Write-Output "Config.ini not found."
-    exit
-}
+$script:AppName = "AutoTrackR2"
+$script:ScriptFolder = Join-Path -Path $env:LOCALAPPDATA -ChildPath $AppName
+$script:ConfigFileName= "config.ini"
+$script:ConfigFile = "$script:ScriptFolder\$script:ConfigFileName" 
 
-$parentApp = (Get-Process -Name AutoTrackR2).ID
+# File Data
+$script:CSVFileName = "Kill-log.csv"
+$script:CSVFile = "$script:ScriptFolder\$script:CSVFileName"
 
-# Access config values
-$logFilePath = $config.Logfile
-$apiUrl = $config.ApiUrl
-$apiKey = $config.ApiKey
-$videoPath = $config.VideoPath
-$visorWipe = $config.VisorWipe
-$videoRecord = $config.VideoRecord
-$offlineMode = $config.OfflineMode
-$killLog = $config.KillLog
-$deathLog = $config.DeathLog
-$otherLog = $config.OtherLog
+$script:CsvBackupFileName = "_backup_Kill-log.csv"
+$script:CsvBackupFile = "$script:ScriptFolder\$script:CsvBackupFileName"
 
-if ($offlineMode -eq 1){
-	$offlineMode = $true
-} else {
-	$offlineMode = $false
-}
-Write-Output "PlayerName=OfflineMode: $offlineMode"
+$script:VisorWipeFileName = "visorwipe.ahk"
+$script:VisorWipeFile = "$script:ScriptFolder\$script:VisorWipeFileName"
+$script:VideoRecordFileName = "videorecord.ahk"
+$script:VideoRecordFile = "$script:ScriptFolder\$script:VideoRecordFileName"
 
-if ($videoRecord -eq 1){
-	$videoRecord = $true
-} else {
-	$videoRecord = $false
-}
-Write-Output "PlayerName=VideoRecord: $videoRecord"
-
-if ($visorWipe -eq 1){
-	$visorWipe = $true
-} else {
-	$visorWipe = $false
-}
-Write-Output "PlayerName=VisorWipe: $visorWipe"
-
-If (Test-Path $logFilePath) {
-	Write-Output "PlayerName=Logfile found"
-} else {
-	Write-Output "Logfile not found."
-}
-If ($null -ne $apiUrl){
-	if ($apiUrl -notlike "*/register-kill") {
-		if ($apiUrl -like "*/"){
-			$apiUrl = $apiUrl + "register-kill"
-		}
-		if ($apiUrl -notlike "*/"){
-			$apiUrl = $apiUrl + "/register-kill"
-		}
-	}
-Write-output "PlayerName=$apiURL"
-}
-
-if ($killLog -eq 1){
-    $killLog = $true
-} else {
-    $killLog = $false
-}
-Write-Output "PlayerName=KillLog: $killLog"
-
-if ($deathLog -eq 1){
-    $deathLog = $true
-} else {
-    $deathLog = $false
-}
-Write-Output "PlayerName=DeathLog: $deathLog"
-
-if ($otherLog -eq 1){
-    $otherLog = $true
-} else {
-    $otherLog = $false
-}
-Write-Output "PlayerName=OtherLog: $otherLog"
+# Definition of script variables
+$script:DateFormat = "dd MMM yyyy HH:mm UTC"
+$script:KillTally = 0
+$script:DeathTally = 0
+$script:OtherTally = 0
+$script:FpsLoadout = "Person"
+$script:LastKill = $null
+$script:PlayerCache = @{}
+$script:UserName = $null
+$script:Loadout = $script:FpsLoadout
+$script:GameMode = $null
+$script:GameVersion = $null
 
 # Ship Manufacturers
 $prefixes = @(
@@ -116,46 +62,107 @@ $prefixes = @(
 )
 
 # Define the regex pattern to extract information
-$killPattern = "<Actor Death> CActor::Kill: '(?<VictimPilot>[^']+)' \[\d+\] in zone '(?<VictimShip>[^']+)' killed by '(?<AgressorPilot>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)'"
-$puPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^ ]+ status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="SC_Default" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
-$acPattern = "ArenaCommanderFeature"
-$loadoutPattern = '\[InstancedInterior\] OnEntityLeaveZone - InstancedInterior \[(?<InstancedInterior>[^\]]+)\] \[\d+\] -> Entity \[(?<Entity>[^\]]+)\] \[\d+\] -- m_openDoors\[\d+\], m_managerGEID\[(?<ManagerGEID>\d+)\], m_ownerGEID\[(?<OwnerGEID>[^\[]+)\]'
-$shipManPattern = "^(" + ($prefixes -join "|") + ")"
-# $loginPattern = "\[Notice\] <AccountLoginCharacterStatus_Character> Character: createdAt [A-Za-z0-9]+ - updatedAt [A-Za-z0-9]+ - geid [A-Za-z0-9]+ - accountId [A-Za-z0-9]+ - name (?<Player>[A-Za-z0-9_-]+) - state STATE_CURRENT" # KEEP THIS INCASE LEGACY LOGIN IS REMOVED 
-$loginPattern = "\[Notice\] <Legacy login response> \[CIG-net\] User Login Success - Handle\[(?<Player>[A-Za-z0-9_-]+)\]"
-$cleanupPattern = '^(.+?)_\d+$'
-$versionPattern = "--system-trace-env-id='pub-sc-alpha-(?<gameversion>\d{3,4}-\d{7})'"
-$vehiclePattern = "<(?<timestamp>[^>]+)> \[Notice\] <Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: " +
+$script:KillPattern = "<Actor Death> CActor::Kill: '(?<VictimPilot>[^']+)' \[\d+\] in zone '(?<VictimShip>[^']+)' killed by '(?<AgressorPilot>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)'"
+$script:PuPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^ ]+ status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="SC_Default" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
+$script:AcPattern = "ArenaCommanderFeature"
+$script:LoadoutPattern = '\[InstancedInterior\] OnEntityLeaveZone - InstancedInterior \[(?<InstancedInterior>[^\]]+)\] \[\d+\] -> Entity \[(?<Entity>[^\]]+)\] \[\d+\] -- m_openDoors\[\d+\], m_managerGEID\[(?<ManagerGEID>\d+)\], m_ownerGEID\[(?<OwnerGEID>[^\[]+)\]'
+$script:ShipManPattern = "^(" + ($prefixes -join "|") + ")"
+# $script:LoginPattern = "\[Notice\] <AccountLoginCharacterStatus_Character> Character: createdAt [A-Za-z0-9]+ - updatedAt [A-Za-z0-9]+ - geid [A-Za-z0-9]+ - accountId [A-Za-z0-9]+ - name (?<Player>[A-Za-z0-9_-]+) - state STATE_CURRENT" # KEEP THIS INCASE LEGACY LOGIN IS REMOVED 
+$script:LoginPattern = "\[Notice\] <Legacy login response> \[CIG-net\] User Login Success - Handle\[(?<Player>[A-Za-z0-9_-]+)\]"
+$script:CleanupPattern = '^(.+?)_\d+$'
+$script:VersionPattern = "--system-trace-env-id='pub-sc-alpha-(?<gameversion>\d{3,4}-\d{7})'"
+$script:VehiclePattern = "<(?<timestamp>[^>]+)> \[Notice\] <Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: " +
     "Vehicle '(?<vehicle>[^']+)' \[\d+\] in zone '(?<vehicle_zone>[^']+)' " +
     "\[pos x: (?<pos_x>[-\d\.]+), y: (?<pos_y>[-\d\.]+), z: (?<pos_z>[-\d\.]+) " +
     "vel x: [^,]+, y: [^,]+, z: [^\]]+\] driven by '(?<driver>[^']+)' \[\d+\] " +
     "advanced from destroy level (?<destroy_level_from>\d+) to (?<destroy_level_to>\d+) " +
     "caused by '(?<caused_by>[^']+)' \[\d+\] with '(?<damage_type>[^']+)'"
 
-# Lookup Patterns
-$joinDatePattern = '<span class="label">Enlisted</span>\s*<strong class="value">([^<]+)</strong>'
-$ueePattern = '<p class="entry citizen-record">\s*<span class="label">UEE Citizen Record<\/span>\s*<strong class="value">#?(n\/a|\d+)<\/strong>\s*<\/p>'
 
-#csv variables
-$CSVPath = "$scriptFolder\Kill-log.csv"
-$CSVBackupPath = "$scriptFolder\_backup_Kill-log.csv"
+# ================================= Functions =================================
+function Get-ConfigurationSettings {
+    param (
+        [string]$configFile
+    )
+    # Get config
+    $config = @{}
+    Get-Content $configFile | Where-Object { $_ -notmatch '^#|^\s*$' } | ForEach-Object {
+        $key, $value = $_ -split '=', 2
+        $config[$key.Trim()] = $value.Trim() 
+    }
 
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$process = Get-Process | Where-Object {$_.Name -like "AutoTrackR2"}
-$global:killTally = 0
-$global:deathTally = 0
-$global:otherTally = 0
+    # Validate required settings
+    $requiredSettings = @('Logfile')
+    foreach ($setting in $requiredSettings) {
+        if (-not $config.ContainsKey($setting)) {
+            Write-Error "Missing required setting: $setting"
+            return $null
+        }
+    } 
 
-# Load historic data from csv
-if (Test-Path $CSVPath) {
-	$historicKills = Import-CSV $CSVPath
+    # Set missing config
+    $logSettings = @('OfflineMode', 'KillLog', 'DeathLog', 'OtherLog', 'VisorWipe', 'VideoRecord')
+    foreach ($setting in $logSettings) {
+        if (-not $config.ContainsKey($setting)) {
+            $config.$($setting) = $false
+            Write-OutputData "LogInfo=Missing setting: $($setting) Set to false"
+        } elseif ($config.$($setting) -eq 1) {
+            $config.$($setting) = $true
+        } else {
+            $config.$($setting) = $false
+        }
+    }
+
+    # Check if the VisorWipe script exists
+    if ($config.VisorWipe) {
+        if (-Not (Test-Path $script:VisorWipeFile)) {
+            Write-Warning "No VisorWipe script found at $script:VisorWipeFile disable VisorWipe"
+            $config.VisorWipe = $false
+        }
+    }
+
+    # Check if the VideoRecord script exists
+    if ($config.VideoRecord) {
+        if (-Not (Test-Path $script:VideoRecordFile)) {
+            Write-Warning "No VideoRecord script found at $script:VideoRecordFile disable VideoRecord"
+            $config.VideoRecord = $false
+        }
+    }
+
+    # Get Debug Level
+    if ($config.Debug) {
+        $script:DebugLvl = $config.Debug
+    }
+
+    return $config
+}
+
+function Import-CsvData {
+    param (
+        [bool]$killLog = $false,
+        [bool]$deathLog = $false,
+        [bool]$otherLog = $false,
+        [string]$csvFile
+    )
+    # Define the header for the new CSV file 
+    $csvHeader = "Type,KillTime,EnemyPilot,EnemyShip,Enlisted,RecordNumber,OrgAffiliation,Player,Weapon,Ship,Method,Mode,GameVersion,TrackRver,Logged,PFP"
+
+    # Check if the CSV file exists
+    if (-Not (Test-Path $csvFile)) {
+        Write-OutputData "LogInfo=CSV file not found. Creating a new file with headers..."     
+        # Create a new CSV file with the defined headers
+        $csvHeader | Out-File -FilePath $csvFile -Encoding utf8
+    }
+
+	$historicKills = Import-CSV $csvFile
 	$currentDate = Get-Date
-	$dateFormat = "dd MMM yyyy HH:mm UTC"
+    $header = (Get-Content $csvFile -First 1)
 
 	#Convert old csv to new
-	if($null -eq $($historicKills.Type)){
+    if ($header -notmatch "Type") {
+        Write-OutputData "LogInfo=Old CSV-format! Converting to new"
 		#Move old file to a Backup
-		Move-Item $csvPath $csvBackupPath
+        Move-Item -Path $csvFile -Destination $script:CsvBackupFile -Force
 
 		#now convert Backup to new File
 		foreach ($row in $historicKills) {
@@ -177,529 +184,466 @@ if (Test-Path $CSVPath) {
 				Logged			 = $($row.Logged)
 				PFP				 = $($row.PFP)
 			}
-			if ($killLog -eq $true -or $deathLog -eq $true -or $otherLog -eq $true) {
-				# Export to CSV
-				if (-Not (Test-Path $CSVPath)) {
-					# If file doesn't exist, create it with headers
-					$csvData | Export-Csv -Path $CSVPath -NoTypeInformation
-				} else {
-					# Append data to the existing file without adding headers
-					$csvData | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Out-File -Append -Encoding utf8 -FilePath $CSVPath
-				}
-			}			
-		}
-		#load new File
-		$historicKills = Import-CSV $CSVPath
-	}
-
-
-	foreach ($kill in $historicKills) {
-		$killDate = [datetime]::ParseExact($kill.KillTime.Trim(), $dateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
-		If ($killdate.year -eq $currentDate.Year -and $killdate.month -eq $currentDate.Month) {
-			IF ($kill.type -eq "Kill" -and $killLog -eq $true){
-				$global:killTally++
-				Try {
-					Write-Output "NewKill=throwaway,$($kill.EnemyPilot),$($kill.EnemyShip),$($kill.OrgAffiliation),$($kill.Enlisted),$($kill.RecordNumber),$($kill.KillTime), $($kill.PFP)"
-				} Catch {
-					Write-Output "Error Loading Kill: $($kill.EnemyPilot)"
-				}
-			}elseif($kill.type -eq "Death" -and $deathLog -eq $true){
-				$global:deathTally++
-				Try {
-					Write-Output "NewDeath=throwaway,$($kill.EnemyPilot),$($kill.EnemyShip),$($kill.OrgAffiliation),$($kill.Enlisted),$($kill.RecordNumber),$($kill.KillTime), $($kill.PFP)"
-				} Catch {
-					Write-Output "Error Loading Death: $($kill.EnemyPilot)"
-				}
-			}elseif($otherLog -eq $true){
-				$global:otherTally++
-				Try {
-					Write-Output "NewOther=throwaway,$($kill.Method),$($kill.KillTime)"
-				} Catch {
-					Write-Output "Error Loading Other: $($kill.Method)"
-				}
-			}
-		}
-	}
-}
-Write-Output "KillTally=$global:killTally"
-Write-Output "DeathTally=$global:deathTally"
-Write-Output "OtherTally=$global:otherTally"
-
-# Match and extract username from gamelog
-Do {
-    # Load gamelog into memory
-    $authLog = Get-Content -Path $logFilePath
-
-    # Initialize variable to store username
-    $global:userName = $null
-	$global:loadout = "Person"
-
-    # Loop through each line in the log to find the matching line
-    foreach ($line in $authLog) {
-        if ($line -match $loginPattern) {
-            $global:userName = $matches['Player']
-            Write-Output "PlayerName=$global:userName"
+            # Export to CSV
+            if (-Not (Test-Path $csvFile)) {
+                # If file doesn't exist, create it with headers
+                $csvHeader | Out-File -FilePath $csvFile -Encoding utf8
+            }
+            # Append data to the existing file without adding headers
+            $csvData | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Out-File -Append -Encoding utf8 -FilePath $csvFile
+			
         }
-		# Get Loadout
-		if ($line -match $loadoutPattern) {
-			$entity = $matches['Entity']
-			$ownerGEID = $matches['OwnerGEID']
-
-			If ($ownerGEID -eq $global:userName -and $entity -match $shipManPattern) {
-				$tryloadOut = $entity
-				If ($tryloadOut -match $cleanupPattern){
-					if ($null -ne $matches[1]){
-						$global:loadOut = $matches[1]
-					}
-				}
-			}
-		}
-		Write-Output "PlayerShip=$global:loadOut"
-		#Get SC Version
-		If ($line -match $versionPattern){
-			$global:GameVersion = $matches['gameversion']
-		}
-		#Get Game Mode
-		if ($line -match $acPattern){
-			$global:GameMode = "AC"
-		}
-		if ($line -match $puPattern){
-			$global:GameMode = "PU"
-		}
-		Write-Output "GameMode=$global:GameMode"
-
+		#load new File
+		$historicKills = Import-CSV $csvFile
 	}
-    # If no match found, print "Logged In: False"
-    if (-not $global:userName) {
-		Write-Output "PlayerName=No Player Found..."
-        Start-Sleep -Seconds 30
+
+    # Procressing CSV-Data
+    foreach ($row in $historicKills) {
+        try {
+            # Parse date and filter by current month/year
+            $killDate = [datetime]::ParseExact($row.KillTime.Trim(), $script:DateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+
+            if ($killDate.Year -eq $currentDate.Year -and $killDate.Month -eq $currentDate.Month) {
+                switch ($row.Type) {
+                    "Kill" {
+                        if ($killLog) {
+                            Update-Tally $row.Type
+                            Write-OutputData "NewKill=throwaway,$($row.EnemyPilot),$($row.EnemyShip),$($row.OrgAffiliation),$($row.Enlisted),$($row.RecordNumber),$($row.KillTime),$($row.PFP)"
+                        }
+                    }
+                    "Death" {
+                        if ($deathLog) {
+                            Update-Tally $row.Type
+                            Write-OutputData "NewDeath=throwaway,$($row.EnemyPilot),$($row.EnemyShip),$($row.OrgAffiliation),$($row.Enlisted),$($row.RecordNumber),$($row.KillTime),$($row.PFP)"
+                        }
+                    }
+                    default {
+                        if ($otherLog) {
+                            Update-Tally $row.Type
+                            Write-OutputData "NewOther=throwaway,$($row.Method),$($row.KillTime)"
+                        }
+                    }
+                }
+            }
+        } catch {
+            Write-OutputData "LogInfo=Error when processing a CSV entry: $_"
+        }
     }
 
-    # Clear the log from memory
-    $authLog = $null
-} until ($null -ne $global:userName)
+    return $historicKills
+}
 
-
-# Function to process new log entries and write to the host
 function Read-LogEntry {
     param (
-        [string]$line
+        [string]$line,
+        [hashtable]$config,
+		[switch]$initialised
     )
-    # Look for vehicle events
-    if ($line -match $vehiclePattern) {
-        # Access the named capture groups from the regex match
-        $global:vehicle_id = $matches['vehicle']
-        $global:location = $matches['vehicle_zone']
-    }
 
-    # Apply the regex pattern to the line
-    if ($line -match $killPattern) {
-        # Access the named capture groups from the regex match
-        $victimPilot = $matches['VictimPilot']
-        $victimShip = $matches['VictimShip']
-        $agressorPilot = $matches['AgressorPilot']
-		$weapon = $matches['Weapon']
-		$damageType = $matches['DamageType']
-		$ship = $global:loadOut
+	#Get SC Version
+	If ($initialised -and $line -match $script:VersionPattern){
+		$script:GameVersion = $matches['gameversion']
+		Write-OutputData "LogInfo=GameVersion: $script:GameVersion"
+	}
 
-		If ($victimShip -ne "vehicle_id"){
-            
-            $global:got_location = $location
-        }
-        else
-        {
-            $global:got_location = "NONE"
-        }
-
-		#Define the Type
-		#kill
-		IF ($agressorPilot -eq $global:userName -and $victimPilot -ne $global:userName){
-			$type = "Kill"
-			Try {
-				$page1 = Invoke-WebRequest -uri "https://robertsspaceindustries.com/citizens/$victimPilot"
-			} Catch {
-				$page1 = $null
-				$type = "none"
-			}
-		#death
-		}elseif ($agressorPilot -ne $global:userName -and $victimPilot -eq $global:userName) {
-			#acception for "unknown"
-			if ($agressorPilot -eq "unknown" -and $weapon -eq "unknown"){
-				#$damageType = "snusnu"
-				$type = "Other"
-			} else {
-				$type = "Death"
-			}
-			$agressorShip = "unknown"
-			Try {
-				$page1 = Invoke-WebRequest -uri "https://robertsspaceindustries.com/citizens/$agressorPilot"
-			} Catch {
-				$page1 = $null
-				$type = "none"
-			}
-		#other
-		}elseif($agressorPilot -eq $global:userName -or $victimPilot -eq $global:userName) {
-			$type = "Other"
-		}else {
-			$type = "none"
-		}
-
-		if ($type -ne "none") {
-			# Check if the Autotrackr2 process is running
-			if ($null -eq (Get-Process -ID $parentApp -ErrorAction SilentlyContinue)) {
-				Stop-Process -Id $PID -Force
-			}
-			
-			If ($victimShip -ne "Person"){
-				If ($victimShip -eq $global:lastKill){
-					$victimShip = "Passenger"
-				} Else {
-					$global:lastKill = $victimShip
-				}
-			}
-
-			If ($victimShip -match $cleanupPattern){
-				$victimShip = $matches[1]
-			}
-			If ($weapon -match $cleanupPattern){
-				$weapon = $matches[1]
-			}
-			If ($weapon -eq "KLWE_MassDriver_S10"){
-				if ($type -eq "Kill"){
-					$global:loadOut = "AEGS_Idris"
-				}
-				$ship = "AEGS_Idris"
-			}
-			if ($damageType -eq "Bullet" -or $weapon -like "apar_special_ballistic*") {
-				$ship = "Person"
-				$victimShip = "Person"
-				$agressorShip = "Person"
-			}
-			If ($ship -match $cleanupPattern){
-				$ship = $matches[1]
-			}
-			if ($ship -notmatch $shipManPattern){
-				$ship = "Person"
-			}
-			If ($victimShip -notmatch $shipManPattern -and $victimShip -notlike "Passenger" ) {
-				$victimShip = "Person"
-			}
-		
-			# Repeatedly remove all suffixes
-			while ($victimShip -match '_(PU|AI|CIV|MIL|PIR)$') {
-				$victimShip = $victimShip -replace '_(PU|AI|CIV|MIL|PIR)$', ''
-			}
-			while ($ship -match '_(PU|AI|CIV|MIL|PIR)$') {
-				$ship = $ship -replace '_(PU|AI|CIV|MIL|PIR)$', ''
-			}
-			while ($victimShip -match '-00(1|2|3|4|5|6|7|8|9|0)$') {
-				$victimShip = $victimShip -replace '-00(1|2|3|4|5|6|7|8|9|0)$', ''
-			}
-			while ($ship -match '-00(1|2|3|4|5|6|7|8|9|0)$') {
-				$ship = $ship -replace '-00(1|2|3|4|5|6|7|8|9|0)$', ''
-			}
-
-			$KillTime = (Get-Date).ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'", [System.Globalization.CultureInfo]::InvariantCulture)
-		
-			#If get Enemy Player data
-			If ($null -ne $page1){
-				# Get Enlisted Date
-				if ($($page1.content) -match $joinDatePattern) {
-					$joinDate = $matches[1]
-					$joinDate2 = $joinDate -replace ',', ''
-				} else {
-					$joinDate2 = "-"
-				}
-
-				# Check if there are any matches
-				If ($null -eq $page1.links[0].innerHTML) {
-					$enemyOrgs = $page1.links[4].innerHTML
-				} Else {
-					$enemyOrgs = $page1.links[3].innerHTML
-				}
-
-				# Get UEE Number
-				if ($($page1.content) -match $ueePattern) {
-					# The matched UEE Citizen Record number is in $matches[1]
-					$citizenRecord = $matches[1]
-				} else {
-					$citizenRecord = "n/a"
-				}
-				If ($citizenRecord -eq "n/a") {
-					$citizenRecordAPI = "-1"
-					$citizenRecord = "-"
-				} Else {
-					$citizenRecordAPI = $citizenRecord
-				}
-
-				# Get PFP
-				if ($page1.images[0].src -like "/media/*") {
-					$enemyPFP = "https://robertsspaceindustries.com$($page1.images[0].src)"
-				} Else {
-					$enemyPFP = "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
-				}
-			}
-
-			$global:GameMode = $global:GameMode.ToLower()
-			# Send to API (Kill only)
-			# Define the data to send
-			If ($null -ne $apiUrl -and $offlineMode -eq $false -and $type -eq "Kill"){
-				$data = @{
-					victim_ship		= $victimShip
-					victim			= $victimPilot
-					enlisted		= $joinDate
-					rsi				= $citizenRecordAPI
-					weapon			= $weapon
-					method			= $damageType
-					loadout_ship	= $ship
-					game_version	= $global:GameVersion
-					gamemode		= $global:GameMode
-					trackr_version	= $TrackRver
-					location        = $got_location
-				}
-
-				# Headers which may or may not be necessary
-				$headers = @{
-					"Authorization" = "Bearer $apiKey"
-					"Content-Type" = "application/json"
-					"User-Agent" = "AutoTrackR2"
-				}
-
-				try {
-					# Send the POST request with JSON data
-					$null = Invoke-RestMethod -Uri $apiURL -Method Post -Body ($data | ConvertTo-Json -Depth 5) -Headers $headers
-					$logMode = "API"
-					$global:got_location = "NONE"
-				} catch {
-					# Catch and display errors
-					$apiError = $_
-					# Add to output file
-					$logMode = "Err-Local"
-				}
-			} Else {
-				$logMode = "Local"
-			}
-			
-			#process Kill data
-			if ($type -eq "Kill" -and $killLog -eq $true) {
-				# Create an object to hold the data for a kill
-				$csvData = [PSCustomObject]@{
-					Type             = $type
-					KillTime         = $killTime
-					EnemyPilot       = $victimPilot
-					EnemyShip        = $victimShip
-					Enlisted         = $joinDate2
-					RecordNumber     = $citizenRecord
-					OrgAffiliation   = $enemyOrgs
-					Player           = $agressorPilot
-					Weapon           = $weapon
-					Ship             = $ship
-					Method           = $damageType
-					Mode             = $global:GameMode
-					GameVersion      = $global:GameVersion
-					TrackRver		 = $TrackRver
-					Logged			 = $logMode
-					PFP				 = $enemyPFP
-				}			
-				# Remove commas from all properties
-				foreach ($property in $csvData.PSObject.Properties) {
-					if ($property.Value -is [string]) {
-						$property.Value = $property.Value -replace ',', ''
-					}
-				}					
-				#write Kill
-				$global:killTally++
-				Write-Output "KillTally=$global:killTally"
-				Write-Output "NewKill=throwaway,$victimPilot,$victimShip,$enemyOrgs,$joinDate2,$citizenRecord,$killTime,$enemyPFP"
-
-			#process Death data
-			} elseif ($type -eq "Death" -and $deathLog -eq $true) {
-				# Create an object to hold the data for a death	
-				$csvData = [PSCustomObject]@{
-					Type             = $type
-					KillTime         = $killTime
-					EnemyPilot       = $agressorPilot
-					EnemyShip        = $agressorShip
-					Enlisted         = $joinDate2
-					RecordNumber     = $citizenRecord
-					OrgAffiliation   = $enemyOrgs
-					Player           = $victimPilot
-					Weapon           = $weapon
-					Ship             = $Ship
-					Method           = $damageType
-					Mode             = $global:GameMode
-					GameVersion      = $global:GameVersion
-					TrackRver		 = $TrackRver
-					Logged			 = $logMode
-					PFP				 = $enemyPFP
-				}
-				# Remove commas from all properties
-				foreach ($property in $csvData.PSObject.Properties) {
-					if ($property.Value -is [string]) {
-						$property.Value = $property.Value -replace ',', ''
-					}
-				}					
-				#write Death
-				$global:deathTally++
-				Write-Output "DeathTally=$global:deathTally"
-				Write-Output "NewDeath=throwaway,$agressorPilot,$agressorShip,$enemyOrgs,$joinDate2,$citizenRecord,$killTime,$enemyPFP"
-
-			#process Other data
-			} elseif ($type -eq "Other" -and $otherLog -eq $true) {
-				# Create an object to hold the data for a other
-				$csvData = [PSCustomObject]@{
-					Type             = $type
-					KillTime         = $killTime
-					EnemyPilot       = ""
-					EnemyShip        = ""
-					Enlisted         = ""
-					RecordNumber     = ""
-					OrgAffiliation   = ""
-					Player           = $global:userName
-					Weapon           = $weapon
-					Ship             = $victimShip
-					Method           = $damageType
-					Mode             = $global:GameMode
-					GameVersion      = $global:GameVersion
-					TrackRver		 = $TrackRver
-					Logged			 = $logMode
-					PFP				 = ""
-				}
-				# Remove commas from all properties
-				foreach ($property in $csvData.PSObject.Properties) {
-					if ($property.Value -is [string]) {
-						$property.Value = $property.Value -replace ',', ''
-					}
-				}	
-				#write Other
-				$global:otherTally++
-				Write-Output "OtherTally=$global:otherTally"
-				Write-Output "NewOther=throwaway,$damageType,$killTime"
-			}
-
-			
-			if ($killLog -eq $true -or $deathLog -eq $true -or $otherLog -eq $true) {
-
-				# Export to CSV
-				if (-Not (Test-Path $CSVPath)) {
-					# If file doesn't exist, create it with headers
-					$csvData | Export-Csv -Path $CSVPath -NoTypeInformation
-				} else {
-					# Append data to the existing file without adding headers
-					$csvData | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Out-File -Append -Encoding utf8 -FilePath $CSVPath
-				}
-			
-				$sleeptimer = 10
-
-				# VisorWipe
-				If ($visorWipe -eq $true -and $victimShip -ne "Passenger" -and $damageType -notlike "*Bullet*" -and $type -ne "Other"){ 
-					# send keybind for visorwipe
-					start-sleep 1
-					$sleeptimer = $sleeptimer -1
-					&"$scriptFolder\visorwipe.ahk"
-				}
-			
-				# Record video
-				if ($videoRecord -eq $true -and $victimShip -ne "Passenger" -and $damageType -ne "Suicide"){
-					# send keybind for windows game bar recording
-					Start-Sleep 2
-					$sleeptimer = $sleeptimer -9
-					&"$scriptFolder\videorecord.ahk"
-					Start-Sleep 7
-
-					$latestFile = Get-ChildItem -Path $videoPath | Where-Object { -not $_.PSIsContainer } | Sort-Object CreationTime -Descending | Select-Object -First 1
-					# Check if the latest file is no more than 30 seconds old
-					if ($latestFile) {
-						$fileAgeInSeconds = (New-TimeSpan -Start $latestFile.CreationTime -End (Get-Date)).TotalSeconds
-						if ($fileAgeInSeconds -le 30) {
-							# Generate a timestamp in ddMMMyyyy-HH:mm format
-							$timestamp = (Get-Date).ToString("ddMMMyyyy-HHmm")
-		
-							# Extract the file extension to preserve it
-							$fileExtension = $latestFile.Extension
-
-							# Rename the file, preserving the original file extension
-							Rename-Item -Path $latestFile.FullName -NewName "$type.$victimPilot.$victimShip.$timestamp$fileExtension"
-						} else {}
-					} else {}
-				}
-				Start-Sleep $sleeptimer
-			}
-		}
-	} 
-
+    <# why sould this nessesary?
 	# Get Logged-in User
-	If ($line -match $loginPattern) {
+	if ($initialised -and $line -match $script:LoginPattern) {
+        $script:UserName = $matches['Player']
+		Write-OutputData "PlayerName=$script:UserName"
+    }
+	If ($initialised -eq $false -and $line -match $script:LoginPattern) {
 		# Load gamelog into memory
-		$authLog = Get-Content -Path $logFilePath
-		$authLog = $authlog -match $loginPattern
+		$authLog = Get-Content -Path $script:logFilePath
+		$authLog = $authlog -match $script:LoginPattern
 		$authLog = $authLog | Out-String
 
 		# Extract User Name
 		$nameExtract = "name\s+(?<PlayerName>[^\s-]+)"
 
-		If ($authLog -match $nameExtract -and $global:userName -ne $nameExtract){
-			$global:userName = $matches['PlayerName']
-			Write-Output "PlayerName=$global:userName"
+		If ($authLog -match $nameExtract -and $script:UserName -ne $nameExtract){
+			$script:UserName = $matches['PlayerName']
+			Write-OutputData "PlayerName=$script:UserName"
 		}
 	}
+    #>
 
-	# Detect PU or AC
-	if ($line -match $puPattern) {
-		$global:GameMode = "PU"
-		Write-Output "GameMode=$global:GameMode"
-	}
-	if ($line -match $acPattern) {
-		$global:GameMode = "AC"
-		Write-Output "GameMode=$global:GameMode"
+	# Get Logged-in User
+	if ($line -match $script:LoginPattern) {
+		$script:UserName = $matches['Player']
+		Write-OutputData "PlayerName=$script:UserName"
 	}
 
-	#Set loadout 
-	if ($line -match $loadoutPattern) {
+    # Vehicle events
+    if ($line -match $script:VehiclePattern) {
+        # Access the named capture groups from the regex match
+        $vehicle_id = $matches['vehicle']
+        $location = $matches['vehicle_zone']
+    }
+
+    # Get Loadout
+	if ($line -match $script:LoadoutPattern) {
 		$entity = $matches['Entity']
 		$ownerGEID = $matches['OwnerGEID']
 
-        If ($ownerGEID -eq $global:userName -and $entity -match $shipManPattern) {
+        If ($ownerGEID -eq $script:UserName -and $entity -match $script:ShipManPattern) {
 			$tryloadOut = $entity
-			If ($tryloadOut -match $cleanupPattern){
-				$global:loadOut = $matches[1]
+			If ($tryloadOut -match $script:CleanupPattern){
+				$script:Loadout = $matches[1]
 			}
-			Write-Output "PlayerShip=$global:loadOut"
+		}
+		Write-OutputData "PlayerShip=$script:Loadout"
+	}
+
+    #Get Game Mode
+	if ($line -match $script:PuPattern) {
+		$script:GameMode = "PU"
+		Write-OutputData "GameMode=$script:GameMode"		
+	}
+	if ($line -match $script:AcPattern) {
+		$script:GameMode = "AC"
+		Write-OutputData "GameMode=$script:GameMode"
+	}
+
+	# Apply the regex pattern to the line
+	if (-not $initialised -and $line -match $script:KillPattern) {
+        Write-OutputData "LogInfo=KillPattern detected!"
+		$eventData = New-KillEvent -data $matches -location $location -vehicle_id $vehicle_id
+		$type = New-EventType -eventData $eventData -userName $script:UserName -killLog $config.KillLog -deathLog $config.DeathLog -otherLog $config.OtherLog
+	
+		if ($type -ne "none") {
+            if ($type -ne "Other") {
+                $playerInfo = Get-PlayerInfo $(if ($type -eq "Kill") { $eventData.VictimPilot } else { $eventData.AgressorPilot })
+            }
+            
+			$eventData.victimShip = Format-ShipName $eventData.victimShip
+            $eventData.playerShip = Format-ShipName $script:Loadout    
+	
+			$csvData = New-CsvData $type $eventData $playerInfo
+	
+			if ($type -eq "Kill" -and $null -ne $apiUrl -and -not $config.OfflineMode) {
+                Write-OutputData "LogInfo=Send $type data to server"
+				Send-ApiData $csvData
+			}
+	
+			Write-CSVData -csvData $csvData -csvFile $script:CSVFile
+	
+			Update-Tally $type
+			Write-OutputData "New$type=throwaway,$($csvData.EnemyPilot),$($csvData.EnemyShip),$($csvData.OrgAffiliation),$($csvData.Enlisted),$($csvData.RecordNumber),$($csvData.KillTime),$($csvData.PFP)"
+	
+			Invoke-PostEventActions -config $config -type $type -victimShip $eventData.victimShip -damageType $eventData.damageType
 		}
 	}
+	
 }
 
-# Monitor the log file and process new lines as they are added
-Get-Content -Path $logFilePath -Wait -Tail 0 | ForEach-Object {
-    Read-LogEntry $_
-}
+function New-CsvData {
+    param (
+        [string]$type,
+        [hashtable]$eventData,
+        [hashtable]$playerInfo
+    )
 
-<#
-# Open the log file with shared access for reading and writing
-$fileStream = [System.IO.FileStream]::new($logFilePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
-$reader = [System.IO.StreamReader]::new($fileStream, [System.Text.Encoding]::UTF8)  # Ensure we're reading as UTF-8
+    $csvData = [PSCustomObject]@{
+        Type           = $type
+        KillTime       = (Get-Date).ToUniversalTime().ToString($script:DateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+        EnemyPilot     = if ($type -eq "Death") { $eventData.AgressorPilot } else { $eventData.VictimPilot }
+        EnemyShip      = if ($type -eq "Death") { $eventData.AgressorShip } else { $eventData.VictimShip }
+        Enlisted       = $playerInfo.JoinDate
+        RecordNumber   = $playerInfo.CitizenRecord
+        OrgAffiliation = $playerInfo.Orgs
+        Player         = $script:UserName
+        Weapon         = $eventData.Weapon
+        Ship           = $eventData.playerShip
+        Method         = $eventData.DamageType
+        Mode           = $script:GameMode
+        GameVersion    = $script:GameVersion
+        TrackRver      = $script:TrackRver
+        Logged         = $eventData.LogMode
+        PFP            = $playerInfo.PFP
+    }
 
-try {
-    # Move to the end of the file to start monitoring new entries
-    $reader.BaseStream.Seek(0, [System.IO.SeekOrigin]::End)
-
-    while ($true) {
-        # Read the next line from the file
-        $line = $reader.ReadLine()
-
-        # Ensure we have new content to process
-        if ($line) {
-            # Process the line (this is where your log entry handler would go)
-            Read-LogEntry $line
+    # Remove commas from all string properties
+    foreach ($property in $csvData.PSObject.Properties) {
+        if ($property.Value -is [string]) {
+            $property.Value = $property.Value -replace ',', ''
         }
+    }
 
-        # Sleep for a brief moment to avoid high CPU usage
-        Start-Sleep -Milliseconds 100
+    return $csvData
+}
+
+function New-KillEvent {
+    param (
+        [hashtable]$data,
+        [string] $location,
+        [string] $vehicle_id
+    )
+
+    $victimShip = $data['VictimShip']
+    $weapon = $data['Weapon']
+    $damageType = $data['DamageType']
+    $agressorShip = $null
+
+    # Clean Weapon pattern
+    If ($weapon -match $script:CleanupPattern){
+        $weapon = $matches[1]
+    }
+    # Agressor is using an Idris?
+    If ($weapon -eq "KLWE_MassDriver_S10"){
+        $agressorShip = "AEGS_Idris"
+    }
+
+    # FPS evnet?
+    if ($damageType -eq "Bullet" -or $weapon -like "apar_special_ballistic*") {
+        $agressorShip = $script:FpsLoadout
+        $victimShip = $script:FpsLoadout
+    }
+
+    # Do we have a Passenger?
+    If ($victimShip -ne $script:FpsLoadout){
+        If ($victimShip -eq $script:LastKill){
+            $victimShip = "Passenger"
+        } Else {
+            $script:LastKill = $victimShip
+        }
+    }
+    
+    return @{
+        VictimPilot = $data['VictimPilot']
+        VictimShip = $victimShip
+        AgressorPilot = $data['AgressorPilot']
+        AgressorShip = $agressorShip
+        Weapon = $weapon
+        DamageType = $damageType
+        #Location = if ($data['VictimShip'] -ne "vehicle_id") { $location } else { "NONE" } #I think this was an error
+        Location = if ($data['VictimShip'] -ne $vehicle_id) { $location } else { "NONE" }
     }
 }
-finally {
-    # Ensure we close the reader and file stream properly when done
-    $reader.Close()
-    $fileStream.Close()
+
+function New-EventType {
+    param (
+        [hashtable]$eventData,
+        [string]$userName,
+        [bool]$killLog = $false,
+        [bool]$deathLog = $false,
+        [bool]$otherLog = $false
+    )
+    
+    if ($eventData.AgressorPilot -eq $userName -and $eventData.VictimPilot -ne $userName) {
+        if($killLog){return "Kill"}else{return "none"}
+    } elseif ($eventData.AgressorPilot -ne $userName -and $eventData.VictimPilot -eq $userName) {
+        if ($eventData.AgressorPilot -eq "unknown" -and $eventData.Weapon -eq "unknown") {
+            if($otherLog){return "Other"}else{return "none"}
+        }
+        if($deathLog){return "Death"}else{return "none"}
+    } elseif ($eventData.AgressorPilot -eq $userName -or $eventData.VictimPilot -eq $userName) {
+        return "Other"
+    }
+    return "none"
 }
-#>
+
+function Update-Tally {
+    param (
+        [string]$type
+    )
+
+    switch ($type) {
+        "Kill" {
+            $script:KillTally++
+			Write-OutputData "KillTally=$($script:KillTally)"
+        }
+        "Death" {
+            $script:DeathTally++
+			Write-OutputData "DeathTally=$($script:DeathTally)"
+        }
+        "Other" {
+            $script:OtherTally++
+			Write-OutputData "OtherTally=$($script:OtherTally)"
+        }
+    }
+}
+
+function Get-PlayerInfo {
+    param (
+        [string]$playerName
+    )
+    
+	# Check cache
+    if ($script:PlayerCache.ContainsKey($playerName)) {
+        return $script:PlayerCache[$playerName]
+    }
+    
+    try {
+        $page = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$playerName"
+        
+        $joinDate = if ($page.Content -match $joinDatePattern) { $matches[1] -replace ',', '' } else { "-" }
+        $enemyOrgs = if ($null -eq $page.Links[0].innerHTML) { $page.Links[4].innerHTML } else { $page.Links[3].innerHTML }
+        $citizenRecord = if ($page.Content -match $ueePattern) { $matches[1] } else { "-" }
+        $enemyPFP = if ($page.Images[0].src -like "/media/*") { "https://robertsspaceindustries.com$($page.Images[0].src)" } else { "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" }
+        
+        $playerInfo = @{
+            JoinDate = $joinDate
+            Orgs = $enemyOrgs
+            CitizenRecord = $citizenRecord
+            PFP = $enemyPFP
+        }
+        
+		# Whrite cache
+        $script:PlayerCache[$playerName] = $playerInfo
+        return $playerInfo
+    } catch {
+		Write-Warning "Error retrieving player information for PlayerName: $_"
+        return $null
+    }
+}
+
+function Format-ShipName {
+    param (
+        [string]$shipName
+    )
+
+    $shipName = $shipName -replace $script:CleanupPattern, '$1'
+    
+    while ($shipName -match '_(PU|AI|CIV|MIL|PIR)$') {
+        $shipName = $shipName -replace '_(PU|AI|CIV|MIL|PIR)$', ''
+    }
+    
+    while ($shipName -match '-00(1|2|3|4|5|6|7|8|9|0)$') {
+        $shipName = $shipName -replace '-00(1|2|3|4|5|6|7|8|9|0)$', ''
+    }
+
+    if ($shipName -notmatch $script:ShipManPattern -and $shipName -ne "Passenger") {
+        $shipName = $script:FpsLoadout
+    }
+
+    return $shipName
+}
+
+function Send-ApiData {
+    param (
+        [hashtable]$data,
+        [string]$apiUrl,
+        [string]$apiKey
+    )
+
+    $headers = @{
+        "Authorization" = "Bearer $apiKey"
+        "Content-Type" = "application/json"
+        "User-Agent" = "AutoTrackR2"
+    }
+
+    try {
+        $null = Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($data | ConvertTo-Json -Depth 5) -Headers $headers
+        return "API"
+    } catch {
+        Write-Warning "LogInfo=API-Error: $_"
+        return "Err-Local"
+    }
+}
+
+function Write-CSVData {
+    param (
+        [PSCustomObject]$csvData,
+        [string]$csvFile
+    )
+
+    foreach ($property in $csvData.PSObject.Properties) {
+        if ($property.Value -is [string]) {
+            $property.Value = $property.Value -replace ',', ''
+        }
+    }
+
+    if (-Not (Test-Path $csvFile)) {
+        $csvData | Export-Csv -Path $csvFile -NoTypeInformation
+    } else {
+        $csvData | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Out-File -Append -Encoding utf8 -FilePath $csvFile
+    }
+}
+
+function Invoke-PostEventActions{
+    param (
+        [hashtable]$config,
+        [string]$type,
+        [string]$victimShip,
+        [string]$damageType
+    )
+
+    $sleepTimer = 10
+
+    if ($config.VisorWipe -and $victimShip -ne "Passenger" -and $damageType -notlike "*Bullet*" -and $type -ne "Other") {
+        Start-Sleep 1
+        $sleepTimer--
+        & "$script:VisorWipeFile"
+    }
+
+    if ($config.VideoRecord -and $victimShip -ne "Passenger" -and $damageType -ne "Suicide") {
+        Start-Sleep 2
+        $sleepTimer -= 9
+        & "$script:VideoRecordFile"
+        Start-Sleep 7
+
+        $latestFile = Get-ChildItem -Path $videoPath | Where-Object { -not $_.PSIsContainer } | Sort-Object CreationTime -Descending | Select-Object -First 1
+        if ($latestFile -and ((New-TimeSpan -Start $latestFile.CreationTime -End (Get-Date)).TotalSeconds -le 30)) {
+            $timestamp = (Get-Date).ToString("ddMMMyyyy-HHmm")
+            $fileExtension = $latestFile.Extension
+            Rename-Item -Path $latestFile.FullName -NewName "$type.$victimPilot.$victimShip.$timestamp$fileExtension"
+        }
+    }
+
+    Start-Sleep $sleepTimer
+}
+
+function Write-OutputData {
+    param (
+        [string]$data
+    )
+    if ($data -ne $script:WritheCache) {
+        if($script:DebugLVL -eq 1){
+            Write-Host $data
+        }else{
+            if($data -notmatch "LogInfo=" ){
+                Write-Host $data
+            }
+        }    
+    }
+    # Set cache
+    $script:WritheCache = $data
+}
+
+
+# ================================= Main script =================================
+# Check if the config file exists
+if (-not (Test-Path $script:ConfigFile)) {
+    Write-Error "$script:CSVFileName not found."
+    return $null
+}
+# Get configurations
+$config = Get-ConfigurationSettings $script:ConfigFile
+
+# Check if the log file exists
+if (-not (Test-Path $config.LogFile)) {
+    Write-Error "Log file not found: $($config.LogPath)"
+    return $null
+}
+
+# Import history
+$null = Import-CsvData -killLog $config.KillLog -deathLog $config.DeathLog -otherLog $config.OtherLog -csvFile $script:CSVFile
+# Procress log file for initialising
+Do {
+    Get-Content -Path $config.LogFile | ForEach-Object {
+        Read-LogEntry -line $_ -config $config -initialised
+    }
+    # If no match found, print "Logged In: False"
+    if (-not $script:UserName) {
+        Write-OutputData "LogInfo=No Player Found. Waiting."
+        Start-Sleep -Seconds 30
+    }
+} until ($null -ne $script:UserName)
+
+Write-OutputData "LogInfo=Start monitoring $($configLogFile)"
+# Monitor the log file and process new lines as they are added
+Get-Content -Path $config.LogFile -Wait -Tail 0| ForEach-Object {
+    Read-LogEntry -line $_ -config $config
+     
+}

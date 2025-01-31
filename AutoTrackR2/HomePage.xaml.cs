@@ -462,7 +462,8 @@ namespace AutoTrackR2
 
                                 else
                                 {
-                                    DebugPanel.AppendText(e.Data + Environment.NewLine);
+                                    string currentText = DebugPanel.Text;
+                                    DebugPanel.Text = e.Data + Environment.NewLine + currentText;
                                 }
                             });
                         }
@@ -474,7 +475,8 @@ namespace AutoTrackR2
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                DebugPanel.AppendText(e.Data + Environment.NewLine);
+                                string currentText = DebugPanel.Text;
+                                DebugPanel.Text = e.Data + Environment.NewLine + currentText;
                             });
                         }
                     };
