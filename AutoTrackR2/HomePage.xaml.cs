@@ -231,9 +231,10 @@ namespace AutoTrackR2
                                     killGrid.Children.Add(killTextBlock);
 
                                     // Create the Image for the profile
+                                    string urlToUse = string.IsNullOrEmpty(killParts[7]) ? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" : killParts[7];
                                     var profileImage = new Image
                                     {
-                                        Source = new BitmapImage(new Uri(killParts[7])), // Assuming the 8th part contains the profile image URL
+                                        Source = new BitmapImage(new Uri(urlToUse)), // Assuming the 8th part contains the profile image URL
                                         Width = 90,
                                         Height = 90,
                                         Stretch = Stretch.Fill, // Adjust how the image fits
@@ -357,9 +358,10 @@ namespace AutoTrackR2
                                     killGrid.Children.Add(killTextBlock);
 
                                     // Create the Image for the profile
+                                    string urlToUse = string.IsNullOrEmpty(killParts[7]) ? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" : killParts[7];
                                     var profileImage = new Image
                                     {
-                                        Source = new BitmapImage(new Uri(killParts[7])), // Assuming the 8th part contains the profile image URL
+                                        Source = new BitmapImage(new Uri(urlToUse)), // Assuming the 8th part contains the profile image URL
                                         Width = 90,
                                         Height = 90,
                                         Stretch = Stretch.Fill, // Adjust how the image fits
