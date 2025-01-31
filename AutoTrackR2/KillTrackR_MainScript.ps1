@@ -634,13 +634,6 @@ function Write-CSVData {
         [string]$csvFile
     )
 
-    # JUMP redundant
-    #foreach ($property in $csvData.PSObject.Properties) {
-    #    if ($property.Value -is [string]) {
-    #        $property.Value = $property.Value -replace ',', ''
-    #    }
-    #}
-
     if (-Not (Test-Path $csvFile)) {
         $csvData | Export-Csv -Path $csvFile -NoTypeInformation
     } else {
