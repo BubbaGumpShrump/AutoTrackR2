@@ -13,7 +13,6 @@ $script:AppName = "AutoTrackR2"
 $script:ScriptFolder = Join-Path -Path $env:LOCALAPPDATA -ChildPath $AppName
 $script:ConfigFileName= "config.ini"
 $script:ConfigFile = "$script:ScriptFolder\$script:ConfigFileName" 
-
 # File Data
 $script:CSVFileName = "Kill-log.csv"
 $script:CSVFile = "$script:ScriptFolder\$script:CSVFileName"
@@ -307,7 +306,7 @@ function Read-LogEntry {
 
 	# Apply the regex pattern to the line
 	if (-not $initialised -and $line -match $script:KillPattern) {
-        Write-OutputData "LogInfo=KillPattern detected!"
+        Write-OutputData "LogInfo=KillPattern detected"
 		$eventData = New-KillEvent -data $matches -location $location -vehicle_id $vehicle_id
 		$type = New-EventType -eventData $eventData -userName $script:UserName -killLog $config.KillLog -deathLog $config.DeathLog -otherLog $config.OtherLog
 	
@@ -319,13 +318,11 @@ function Read-LogEntry {
 			$eventData.victimShip = Format-ShipName $eventData.victimShip
             $eventData.playerShip = Format-ShipName $script:Loadout    
 	
-			$csvData = New-CsvData $type $eventData $playerInfo
-	
-			if ($type -eq "Kill" -and $null -ne $apiUrl -and -not $config.OfflineMode) {
+			$csvData = New-CsvData -type $type -eventData $eventData -playerInfo $playerInfo
+			if ($type -eq "Kill" -and $null -ne $config.ApiUrl -and -not $config.OfflineMode) {
                 Write-OutputData "LogInfo=Send $type data to server"
-				Send-ApiData $csvData
+				Send-ApiData -csvData $csvData -location $location -apiUrl $config.ApiUrl -apiKey $config.ApiKey
 			}
-	
 			Write-CSVData -csvData $csvData -csvFile $script:CSVFile
 	
 			Update-Tally $type
@@ -429,16 +426,36 @@ function New-EventType {
         [bool]$deathLog = $false,
         [bool]$otherLog = $false
     )
+
+    # Other way's to die
+    $otherWay = @(
+        "Crash",
+        "Suicide"
+    )
     
+    # Kill
     if ($eventData.AgressorPilot -eq $userName -and $eventData.VictimPilot -ne $userName) {
         if($killLog){return "Kill"}else{return "none"}
+
+    # Death and Others
     } elseif ($eventData.AgressorPilot -ne $userName -and $eventData.VictimPilot -eq $userName) {
+
+        # Others
+        foreach ($way in $otherWay) {
+            if ($eventData.DamageType -contains $way) {
+                if($otherLog){return "Other"}else{return "none"}
+            }
+        }
         if ($eventData.AgressorPilot -eq "unknown" -and $eventData.Weapon -eq "unknown") {
             if($otherLog){return "Other"}else{return "none"}
         }
+
+        # Death
         if($deathLog){return "Death"}else{return "none"}
+
+    #Suicide
     } elseif ($eventData.AgressorPilot -eq $userName -or $eventData.VictimPilot -eq $userName) {
-        return "Other"
+        if($otherLog){return "Other"}else{return "none"}
     }
     return "none"
 }
@@ -522,7 +539,8 @@ function Format-ShipName {
 
 function Send-ApiData {
     param (
-        [hashtable]$data,
+        [PSCustomObject]$csvData,
+        [string] $location,
         [string]$apiUrl,
         [string]$apiKey
     )
@@ -533,8 +551,34 @@ function Send-ApiData {
         "User-Agent" = "AutoTrackR2"
     }
 
+    $sendData = @{
+        victim_ship		= $csvData.EnemyShip
+        victim			= $csvData.EnemyPilot
+        enlisted		= $csvData.Enlisted
+        rsi				= $csvData.RecordNumber
+        weapon			= $csvData.Weapon
+        method			= $csvData.Method
+        loadout_ship	= $csvData.Ship
+        game_version	= $csvData.GameVersion
+        gamemode		= $csvData.Mode
+        trackr_version	= $csvData.TrackRver
+        location        = $location
+    }
+
+    If ($null -ne $apiUrl){
+        if ($apiUrl -notlike "*/register-kill") {
+            if ($apiUrl -like "*/"){
+                $apiUrl = $apiUrl + "register-kill"
+            }
+            if ($apiUrl -notlike "*/"){
+                $apiUrl = $apiUrl + "/register-kill"
+            }
+        }
+        Write-OutputData "LogInfo=ApiURL: $apiURL"
+    }
+
     try {
-        $null = Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($data | ConvertTo-Json -Depth 5) -Headers $headers
+        $null = Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($sendData | ConvertTo-Json -Depth 5) -Headers $headers
         return "API"
     } catch {
         Write-Warning "LogInfo=API-Error: $_"
