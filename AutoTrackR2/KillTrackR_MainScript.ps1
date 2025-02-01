@@ -32,6 +32,7 @@ $script:OtherTally = 0
 $script:LastKill = $null
 $script:LastKillUpdated = Get-Date 
 $script:PlayerCache = @{}
+$script:UrlCache = @{}
 $script:UserName = $null
 $script:Loadout = $script:FpsLoadout
 $script:GameMode = $null
@@ -228,7 +229,7 @@ function Import-CsvData {
                     default {
                         if ($otherLog) {
                             Update-Tally $row.Type
-                            Write-OutputData "NewOther=throwaway,$($row.Method),$($row.KillTime)"
+                            Write-OutputData "NewOther=throwaway,throwaway,throwaway,throwaway,throwaway,throwaway,$($row.KillTime),throwaway,$($row.Method)"
                         }
                     }
                 }
@@ -319,9 +320,9 @@ function Read-LogEntry {
 		$eventData = New-KillEvent -data $matches -location $location -vehicle_id $vehicle_id
 		$type = New-EventType -eventData $eventData -userName $script:UserName -killLog $config.KillLog -deathLog $config.DeathLog -otherLog $config.OtherLog
 
-        if(Test-EventForPVE -eventData $eventData -type $type -and -ne "none"){
-            if($type -eq "Death"){$type = "Other"}else{$type = "none"}         
-        }
+        #if(Test-EventForPVE -eventData $eventData -type $type -and -ne "none"){
+        #    if($type -eq "Death"){$type = "Other"}else{$type = "none"}         
+        #}
 
 		if ($type -ne "none") {           
             if ($type -ne "Other") {
@@ -340,9 +341,9 @@ function Read-LogEntry {
 			Write-CSVData -csvData $csvData -csvFile $script:CSVFile
 	
 			Update-Tally $type
-			Write-OutputData "New$type=throwaway,$($csvData.EnemyPilot),$($csvData.EnemyShip),$($csvData.OrgAffiliation),$($csvData.Enlisted),$($csvData.RecordNumber),$($csvData.KillTime),$($csvData.PFP)"
+			Write-OutputData "New$type=throwaway,$($csvData.EnemyPilot),$($csvData.EnemyShip),$($csvData.OrgAffiliation),$($csvData.Enlisted),$($csvData.RecordNumber),$($csvData.KillTime),$($csvData.PFP),$($csvData.Method)"
 	
-			Invoke-PostEventActions -config $config -type $type -victimShip $eventData.victimShip -damageType $eventData.damageType
+			Invoke-PostEventActions -config $config -type $type -victimShip $eventData.victimShip -victimPilot $eventData.victimPilot -damageType $eventData.damageType
 		}
 	}
 	
@@ -358,8 +359,8 @@ function New-CsvData {
     $csvData = [PSCustomObject]@{
         Type           = $type
         KillTime       = (Get-Date).ToUniversalTime().ToString($script:DateFormat, [System.Globalization.CultureInfo]::InvariantCulture)
-        EnemyPilot     = if ($type -eq "Death") { $eventData.AgressorPilot } else { $eventData.VictimPilot }
-        EnemyShip      = if ($type -eq "Death") { $eventData.AgressorShip } else { $eventData.VictimShip }
+        EnemyPilot     = if ($type -eq "Death" -or $type -eq "Other") { $eventData.AgressorPilot } else { $eventData.VictimPilot }
+        EnemyShip      = if ($type -eq "Death" -or $type -eq "Other") { $eventData.AgressorShip } else { $eventData.VictimShip }
         Enlisted       = $playerInfo.JoinDate
         RecordNumber   = $playerInfo.CitizenRecord
         OrgAffiliation = $playerInfo.Orgs
@@ -435,31 +436,6 @@ function New-KillEvent {
     }
 }
 
-function Test-EventForPVE {
-    param (
-        [hashtable]$eventData,
-        [string]$type
-    )
-
-    if ($type -eq "Kill") {
-        $proofPlayer = $eventData.VictimPilot
-    }elseif ($type -eq "Death"){
-        $proofPlayer = $eventData.AgressorPilot
-    }
-
-    # Proof if event is PvE
-    if ($proofPlayer) {
-        try {
-            $null = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$proofPlayer" -ErrorAction Stop
-            Write-OutputData "LogInfo=PVP Event detected"
-            return $false
-        } catch {
-            Write-OutputData "LogInfo=PVE Event detected"
-            return $true
-        }
-    } 
-
-}
 function New-EventType {
     param (
         [hashtable]$eventData,
@@ -475,9 +451,10 @@ function New-EventType {
         "Suicide"
     )
     
+    $type = "none"
     # Kill
     if ($eventData.AgressorPilot -eq $userName -and $eventData.VictimPilot -ne $userName) {
-        if($killLog){return "Kill"}else{return "none"}
+        if($killLog){$type = "Kill"}else{$type = "none"}
 
     # Death and Others
     } elseif ($eventData.AgressorPilot -ne $userName -and $eventData.VictimPilot -eq $userName) {
@@ -485,21 +462,69 @@ function New-EventType {
         # Others
         foreach ($way in $otherWay) {
             if ($eventData.DamageType -contains $way) {
-                if($otherLog){return "Other"}else{return "none"}
+                if($otherLog){$type = "Other"}else{$type = "none"}
             }
         }
         if ($eventData.AgressorPilot -eq "unknown" -and $eventData.Weapon -eq "unknown") {
-            if($otherLog){return "Other"}else{return "none"}
+            if($otherLog){$type = "Other"}else{$type = "none"}
         }
 
         # Death
-        if($deathLog){return "Death"}else{return "none"}
+        if($deathLog){$type = "Death"}else{$type = "none"}
 
     #Suicide
     } elseif ($eventData.AgressorPilot -eq $userName -or $eventData.VictimPilot -eq $userName) {
-        if($otherLog){return "Other"}else{return "none"}
+        if($otherLog){$type = "Other"}else{$type = "none"}
     }
-    return "none"
+
+    if(Test-EventForPVE -eventData $eventData -type $type -and $type -ne "none"){
+        if($type -eq "Death" -or $type -eq "Other"){$type = "Other"}else{$type = "none"}         
+    }
+
+    return $type
+}
+
+function Test-EventForPVE {
+    param (
+        [hashtable]$eventData,
+        [string]$type
+    )
+
+    if ($type -eq "Kill") {
+        $proofPlayer = $eventData.VictimPilot
+    }elseif ($type -eq "Death"){
+        $proofPlayer = $eventData.AgressorPilot
+    }
+
+    $pveEvent = $true
+    # Proof if event is PvE
+    if ($proofPlayer) {
+        # Check for space in Name      
+        if ($proofPlayer -match ' ') {
+            $pveEvent = $true
+        # Check cache
+        }elseif ($script:UrlCache.ContainsKey($proofPlayer)) {
+            $pveEvent = $false
+        # Check if citizen exists
+        } else {
+            try {
+                $page = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$proofPlayer" -ErrorAction Stop
+                # Whrite cache
+                $script:UrlCache[$proofPlayer] = $page
+                $pveEvent = $false
+            } catch {             
+                $pveEvent = $true
+            }
+        }
+    } 
+
+    if ($pveEvent) {
+        Write-OutputData "LogInfo=PVE Event detected"
+    }else {
+        Write-OutputData "LogInfo=PVP Event detected"
+    }
+    
+    return $pveEvent
 }
 
 function Update-Tally {
@@ -534,8 +559,13 @@ function Get-PlayerInfo {
     }
     
     try {
-        $page = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$playerName"
-        
+        # Use UrlCache if available
+        if ($script:UrlCache.ContainsKey($playerName)) {
+            $page = $script:UrlCache[$playerName]
+        }else{
+             $page = Invoke-WebRequest -Uri "https://robertsspaceindustries.com/citizens/$playerName"
+        }
+       
         $joinDate = if ($page.Content -match $script:joinDatePattern) { $matches[1] -replace ',', '' } else { "-" }
         $enemyOrgs = if ($null -eq $page.Links[0].innerHTML) { $page.Links[4].innerHTML } else { $page.Links[3].innerHTML }
         $citizenRecord = if ($page.Content -match $script:ueePattern) { $matches[1] } else { "-" }
@@ -646,24 +676,27 @@ function Invoke-PostEventActions{
         [hashtable]$config,
         [string]$type,
         [string]$victimShip,
+        [string]$victimPilot,
         [string]$damageType
     )
 
     $sleepTimer = 10
 
     if ($config.VisorWipe -and $victimShip -ne "Passenger" -and $damageType -notlike "*Bullet*" -and $type -ne "Other") {
+        Write-OutputData "LogInfo=Execute VisorWipe"
         Start-Sleep 1
         $sleepTimer--
         & "$script:VisorWipeFile"
     }
 
     if ($config.VideoRecord -and $victimShip -ne "Passenger" -and $damageType -ne "Suicide") {
+        Write-OutputData "LogInfo=Execute VideoRecord"
         Start-Sleep 2
         $sleepTimer -= 9
         & "$script:VideoRecordFile"
         Start-Sleep 7
 
-        $latestFile = Get-ChildItem -Path $videoPath | Where-Object { -not $_.PSIsContainer } | Sort-Object CreationTime -Descending | Select-Object -First 1
+        $latestFile = Get-ChildItem -Path $config.VideoPath | Where-Object { -not $_.PSIsContainer } | Sort-Object CreationTime -Descending | Select-Object -First 1
         if ($latestFile -and ((New-TimeSpan -Start $latestFile.CreationTime -End (Get-Date)).TotalSeconds -le 30)) {
             $timestamp = (Get-Date).ToString("ddMMMyyyy-HHmm")
             $fileExtension = $latestFile.Extension

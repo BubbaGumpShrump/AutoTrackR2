@@ -425,7 +425,7 @@ namespace AutoTrackR2
                                         Foreground = altTextColorBrush,
                                         FontFamily = orbitronFontFamily,
                                     });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[1]}\n"));
+                                    killTextBlock.Inlines.Add(new Run($"{killParts[8]}\n"));
 
                                     // Repeat for other lines
                                     killTextBlock.Inlines.Add(new Run("Sueside Time: ")
@@ -433,7 +433,7 @@ namespace AutoTrackR2
                                         Foreground = altTextColorBrush,
                                         FontFamily = orbitronFontFamily,
                                     });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[2]}"));
+                                    killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
 
                                     // Create a Border and apply the RoundedTextBlockWithBorder style
                                     var killBorder = new Border
