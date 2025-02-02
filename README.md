@@ -2,14 +2,14 @@ AutoTrackR2 - Star Citizen Kill-Tracking Tool
 AutoTrackR2 is a powerful and customizable kill-tracking tool for Star Citizen. Designed with gankers and combat enthusiasts in mind, it integrates seamlessly with the game to log, display, and manage your kills, providing detailed information and optional API integration for advanced tracking.
 
 🚀 Features
-Log File Integration: Point to Star Citizen's live game.log to track kills in real-time.
+Log File Integration: Point to Star Citizen's live game.log to track kills, death and other way's to die, in real-time.
 
 API Integration (Optional):
 Configure a desired API to send kill data for external tracking or display.
 Secure your data with an optional API key.
 
 Video Clipping (Optional):
-Set a path to your clipping software to save kills automatically.
+Set a path to your clipping software to save log events except suicides automatically.
 
 Visor Wipe Integration:
 Automates visor wiping using an AutoHotkey script (visorwipe.ahk).
@@ -53,6 +53,21 @@ AutoHotkey v2 is required.
 Offline Mode:
 Enable to disable API submission. Restart the tracker to apply changes.
 
+KillLog:
+Enable to disable the log of a Kill event.
+There will also no wipe or Video Recording if disabled.
+
+DeathLog:
+Enable to disable the log of a Death event.
+There will also no wipe or Video Recording if disabled.
+
+
+OtherLog:
+Enable to disable the log of a Oter way to die event.
+There will also no wipe or Video Recording if disabled.
+Suicide event will never be Recorded.
+
+
 🛡️ Privacy & Data Usage
 No Personal Data Collection:
 AutoTrackR2 does not collect or store personal or system information, other than common file paths to manage necessary files.
@@ -70,6 +85,9 @@ The program scrapes the profile page of killed players to display their informat
 Download the latest release from the releases page.
 Follow the setup instructions included in the installer.
 Configure the tool using the settings outlined above.
+
+❗Update
+Log-Files 2.06-stable and older will be automatically backup into _backup_Kill-log.csv and converted.
 
 💡 Customization
 To customize themes or behaviors:
