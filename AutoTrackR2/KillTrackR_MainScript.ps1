@@ -371,7 +371,7 @@ function New-CsvData {
         Mode           = $script:GameMode
         GameVersion    = $script:GameVersion
         TrackRver      = $script:TrackRver
-        Logged         = "NONE"
+        Logged         = "local"
         PFP            = $playerInfo.PFP
     }
 
@@ -432,7 +432,7 @@ function New-KillEvent {
         Weapon = $weapon
         DamageType = $damageType
         #Location = if ($data.VictimShip -ne "vehicle_id") { $location } else { "NONE" } #I think this was an error
-        Location = if ($data.VictimShip -ne $vehicle_id) { $location } else { "NONE" }
+        Location = if ($data.VictimShip -ne $vehicle_id) { $location } else { "none" }
     }
 }
 
@@ -470,7 +470,7 @@ function New-EventType {
         }
 
         # Death
-        if($deathLog){$type = "Death"}else{$type = "none"}
+        elseif($deathLog){$type = "Death"}else{$type = "none"}
 
     #Suicide
     } elseif ($eventData.AgressorPilot -eq $userName -or $eventData.VictimPilot -eq $userName) {
