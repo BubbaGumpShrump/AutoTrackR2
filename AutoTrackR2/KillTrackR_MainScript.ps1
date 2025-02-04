@@ -1,4 +1,4 @@
-﻿$TrackRver = "2.06"
+﻿$TrackRver = "2.07"
 
 # Path to the config file
 $appName = "AutoTrackR2"
@@ -32,41 +32,37 @@ $videoRecord = $config.VideoRecord
 $offlineMode = $config.OfflineMode
 
 if ($offlineMode -eq 1){
-	$offlineMode = $true
+    $offlineMode = $true
 } else {
-	$offlineMode = $false
+    $offlineMode = $false
 }
 Write-Output "PlayerName=OfflineMode: $offlineMode"
 
 if ($videoRecord -eq 1){
-	$videoRecord = $true
+    $videoRecord = $true
 } else {
-	$videoRecord = $false
+    $videoRecord = $false
 }
 Write-Output "PlayerName=VideoRecord: $videoRecord"
 
 if ($visorWipe -eq 1){
-	$visorWipe = $true
+    $visorWipe = $true
 } else {
-	$visorWipe = $false
+    $visorWipe = $false
 }
 Write-Output "PlayerName=VisorWipe: $visorWipe"
 
 If (Test-Path $logFilePath) {
-	Write-Output "PlayerName=Logfile found"
+    Write-Output "PlayerName=Logfile found"
 } else {
-	Write-Output "Logfile not found."
+    Write-Output "Logfile not found."
 }
+
 If ($null -ne $apiUrl){
-	if ($apiUrl -notlike "*/register-kill") {
-		if ($apiUrl -like "*/"){
-			$apiUrl = $apiUrl + "register-kill"
-		}
-		if ($apiUrl -notlike "*/"){
-			$apiUrl = $apiUrl + "/register-kill"
-		}
-	}
-Write-output "PlayerName=$apiURL"
+    if ($apiUrl -notlike "*/register-kill") {
+        $apiUrl = $apiUrl.TrimEnd("/") + "/register-kill"
+    }
+    Write-output "PlayerName=$apiURL"
 }
 
 # Ship Manufacturers
