@@ -250,15 +250,18 @@ function Read-LogEntry {
 				if ($damageType -eq "Bullet" -or $weapon -like "apar_special_ballistic*") {
 					$ship = "Player"
 					$enemyShip = "Player"
+					$global:got_location = "NONE"
 				}
 				If ($ship -match $cleanupPattern){
 					$ship = $matches[1]
 				}
 				if ($ship -notmatch $shipManPattern){
 					$ship = "Player"
+					$global:got_location = "NONE"
 				}
 				If ($enemyShip -notmatch $shipManPattern -and $enemyShip -notlike "Passenger" ) {
 					$enemyShip = "Player"
+					$global:got_location = "NONE"
 				}
 			
 				# Repeatedly remove all suffixes
