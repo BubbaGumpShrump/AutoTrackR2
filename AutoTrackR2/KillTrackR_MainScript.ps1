@@ -2,7 +2,7 @@
 # GitHub: https://github.com/BubbaGumpShrump/AutoTrackR2
 
 # Script version
-$script:TrackRver = "2.06-koda-mod-opt"
+$script:TrackRver = "2.07-koda-mod"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -13,6 +13,7 @@ $script:AppName = "AutoTrackR2"
 $script:ScriptFolder = Join-Path -Path $env:LOCALAPPDATA -ChildPath $AppName
 $script:ConfigFileName= "config.ini"
 $script:ConfigFile = "$script:ScriptFolder\$script:ConfigFileName" 
+
 # File Data
 $script:CSVFileName = "Kill-log.csv"
 $script:CSVFile = "$script:ScriptFolder\$script:CSVFileName"
@@ -68,8 +69,8 @@ $prefixes = @(
 
 # Define the regex pattern to extract information
 $script:KillPattern = "<Actor Death> CActor::Kill: '(?<VictimPilot>[^']+)' \[\d+\] in zone '(?<VictimShip>[^']+)' killed by '(?<AgressorPilot>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)'"
-$script:PuPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^ ]+ status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="SC_Default" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
-$script:AcPattern = "ArenaCommanderFeature"
+$script:PuPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^ ]+ status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="(?<Gamerules>[^"]+)" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
+# $script:AcPattern = "Requesting Mode Change"  # "ArenaCommanderFeature"
 $script:LoadoutPattern = '\[InstancedInterior\] OnEntityLeaveZone - InstancedInterior \[(?<InstancedInterior>[^\]]+)\] \[\d+\] -> Entity \[(?<Entity>[^\]]+)\] \[\d+\] -- m_openDoors\[\d+\], m_managerGEID\[(?<ManagerGEID>\d+)\], m_ownerGEID\[(?<OwnerGEID>[^\[]+)\]'
 $script:ShipManPattern = "^(" + ($prefixes -join "|") + ")"
 # $script:LoginPattern = "\[Notice\] <AccountLoginCharacterStatus_Character> Character: createdAt [A-Za-z0-9]+ - updatedAt [A-Za-z0-9]+ - geid [A-Za-z0-9]+ - accountId [A-Za-z0-9]+ - name (?<Player>[A-Za-z0-9_-]+) - state STATE_CURRENT" # KEEP THIS INCASE LEGACY LOGIN IS REMOVED 
@@ -255,28 +256,6 @@ function Read-LogEntry {
 		Write-OutputData "LogInfo=GameVersion: $script:GameVersion"
 	}
 
-    <# why sould this nessesary?
-	# Get Logged-in User
-	if ($initialised -and $line -match $script:LoginPattern) {
-        $script:UserName = $matches['Player']
-		Write-OutputData "PlayerName=$script:UserName"
-    }
-	If ($initialised -eq $false -and $line -match $script:LoginPattern) {
-		# Load gamelog into memory
-		$authLog = Get-Content -Path $script:logFilePath
-		$authLog = $authlog -match $script:LoginPattern
-		$authLog = $authLog | Out-String
-
-		# Extract User Name
-		$nameExtract = "name\s+(?<PlayerName>[^\s-]+)"
-
-		If ($authLog -match $nameExtract -and $script:UserName -ne $nameExtract){
-			$script:UserName = $matches['PlayerName']
-			Write-OutputData "PlayerName=$script:UserName"
-		}
-	}
-    #>
-
 	# Get Logged-in User
 	if ($line -match $script:LoginPattern) {
 		$script:UserName = $matches['Player']
@@ -305,24 +284,27 @@ function Read-LogEntry {
 	}
 
     #Get Game Mode
-	if ($line -match $script:PuPattern) {
+	if ($line -match $script:PuPattern) { 
+        Write-OutputData "LogInfo=Gamerules: $($matches.Gamerules)"  
+        if ($($matches.Gamerules) -match "SC_Default") {
 		$script:GameMode = "PU"
-		Write-OutputData "GameMode=$script:GameMode"		
+		    
+        }else{
+            $script:GameMode = "$($matches.Gamerules)"
 	}
-	if ($line -match $script:AcPattern) {
-		$script:GameMode = "AC"
 		Write-OutputData "GameMode=$script:GameMode"
 	}
+
+#	if (-not $initialised -and $line -match $script:AcPattern) {
+#		$script:GameMode = "AC"
+#		Write-OutputData "GameMode=$script:GameMode"
+#	}
 
 	# Apply the regex pattern to the line
 	if (-not $initialised -and $line -match $script:KillPattern) {
         Write-OutputData "LogInfo=KillPattern detected"
 		$eventData = New-KillEvent -data $matches -location $location -vehicle_id $vehicle_id
 		$type = New-EventType -eventData $eventData -userName $script:UserName -killLog $config.KillLog -deathLog $config.DeathLog -otherLog $config.OtherLog
-
-        #if(Test-EventForPVE -eventData $eventData -type $type -and -ne "none"){
-        #    if($type -eq "Death"){$type = "Other"}else{$type = "none"}         
-        #}
 
 		if ($type -ne "none") {           
             if ($type -ne "Other") {
@@ -431,7 +413,6 @@ function New-KillEvent {
         AgressorShip = $agressorShip
         Weapon = $weapon
         DamageType = $damageType
-        #Location = if ($data.VictimShip -ne "vehicle_id") { $location } else { "NONE" } #I think this was an error
         Location = if ($data.VictimShip -ne $vehicle_id) { $location } else { "none" }
     }
 }

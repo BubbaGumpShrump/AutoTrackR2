@@ -9,7 +9,7 @@ namespace AutoTrackR2
 {
     public partial class UpdatePage : UserControl
     {
-        private string currentVersion = "v2.06-koda-mod";
+        private string currentVersion = "v2.07";
         private string latestVersion;
 
         public UpdatePage()
@@ -86,8 +86,8 @@ namespace AutoTrackR2
 
         private bool IsNewVersionAvailable(string currentVersion, string latestVersion)
         {
-            // Compare version strings (you can implement more complex version parsing logic if needed)
-            return string.Compare(currentVersion, latestVersion, StringComparison.Ordinal) < 0;
+            // Return true if the versions are different
+            return !currentVersion.Equals(latestVersion, StringComparison.Ordinal);
         }
 
         private async void InstallButton_Click(object sender, RoutedEventArgs e)
