@@ -136,330 +136,15 @@ namespace AutoTrackR2
                                 }
                                 else if (e.Data.Contains("NewKill="))
                                 {
-                                    // Parse the kill data
-                                    var killData = e.Data.Split('=')[1].Trim(); // Assume the kill data follows after "NewKill="
-                                    var killParts = killData.Split(',');
-
-                                    // Fetch the dynamic resource for AltTextColor
-                                    var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
-                                    var accentColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AccentColor"]);
-
-                                    // Fetch the Orbitron FontFamily from resources
-                                    var orbitronFontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
-                                    var gemunuFontFamily = (FontFamily)Application.Current.Resources["Gemunu"];
-
-                                    // Create a new TextBlock for each kill
-                                    var killTextBlock = new TextBlock
-                                    {
-                                        Margin = new Thickness(0, 10, 0, 10),
-                                        Style = (Style)Application.Current.Resources["RoundedTextBlock"], // Apply style for text
-                                        FontSize = 14,
-                                        FontWeight = FontWeights.Bold,
-                                        FontFamily = gemunuFontFamily,
-                                    };
-
-                                    // Add styled content using Run elements
-                                    killTextBlock.Inlines.Add(new Run("Event Type: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run("Kill\n"));
-
-                                    // Repeat for other lines
-                                    killTextBlock.Inlines.Add(new Run("Victim Name: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[1]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Victim Ship: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[2]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Victim Org: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[3]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Join Date: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[4]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("UEE Record: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[5]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Kill Time: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
-
-                                    // Create a Border and apply the RoundedTextBlockWithBorder style
-                                    var killBorder = new Border
-                                    {
-                                        Style = (Style)Application.Current.Resources["RoundedTextBlockWithBorder"], // Apply border style
-                                    };
-
-                                    // Create a Grid to hold the TextBlock and the Image
-                                    var killGrid = new Grid
-                                    {
-                                        Width = 400, // Adjust the width of the Grid
-                                        Height = 150, // Adjust the height as needed
-                                    };
-
-                                    // Define two columns in the Grid: one for the text and one for the image
-                                    killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // Text column
-                                    killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // Image column
-
-                                    // Add the TextBlock to the first column of the Grid
-                                    Grid.SetColumn(killTextBlock, 0);
-                                    killGrid.Children.Add(killTextBlock);
-
-                                    // Create the Image for the profile
-                                    string urlToUse = string.IsNullOrEmpty(killParts[7]) ? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" : killParts[7];
-                                    var profileImage = new Image
-                                    {
-                                        Source = new BitmapImage(new Uri(urlToUse)), // Assuming the 8th part contains the profile image URL
-                                        Width = 90,
-                                        Height = 90,
-                                        Stretch = Stretch.Fill, // Adjust how the image fits
-                                    };
-
-                                    // Create a Border around the Image
-                                    var imageBorder = new Border
-                                    {
-                                        BorderBrush = accentColorBrush, // Set the border color
-                                        BorderThickness = new Thickness(2), // Set the border thickness
-                                        Padding = new Thickness(0), // Optional padding inside the border
-                                        CornerRadius = new CornerRadius(5),
-                                        Margin = new Thickness(10,18,15,18),
-                                        Child = profileImage // Set the Image as the content of the Border
-                                    };
-
-                                    // Add the Border (with the image inside) to the Grid
-                                    Grid.SetColumn(imageBorder, 1);
-                                    killGrid.Children.Add(imageBorder);
-
-                                    // Set the Grid as the child of the Border
-                                    killBorder.Child = killGrid;
-
-                                    // Add the new Border to the StackPanel inside the Border
-                                    KillFeedStackPanel.Children.Insert(0, killBorder);
+                                    HandleKillEvent("Kill", e.Data);
                                 }
                                 else if (e.Data.Contains("NewDeath="))
                                 {
-                                    // Parse the death data
-                                    var killData = e.Data.Split('=')[1].Trim(); // Assume the death data follows after "NewKill="
-                                    var killParts = killData.Split(',');
-
-                                    // Fetch the dynamic resource for AltTextColor
-                                    var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
-                                    var accentColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AccentColor"]);
-
-                                    // Fetch the Orbitron FontFamily from resources
-                                    var orbitronFontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
-                                    var gemunuFontFamily = (FontFamily)Application.Current.Resources["Gemunu"];
-
-                                    // Create a new TextBlock for each Death
-                                    var killTextBlock = new TextBlock
-                                    {
-                                        Margin = new Thickness(0, 10, 0, 10),
-                                        Style = (Style)Application.Current.Resources["RoundedTextBlock"], // Apply style for text
-                                        FontSize = 14,
-                                        FontWeight = FontWeights.Bold,
-                                        FontFamily = gemunuFontFamily,
-                                    };
-
-                                    // Add styled content using Run elements
-                                    killTextBlock.Inlines.Add(new Run("Event Type: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run("Death\n"));
-
-                                    // Repeat for other lines
-                                    killTextBlock.Inlines.Add(new Run("Agressor Name: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[1]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Agressor Ship: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[2]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Agressor Org: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[3]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Join Date: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[4]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("UEE Record: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[5]}\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Death Time: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
-
-                                    // Create a Border and apply the RoundedTextBlockWithBorder style
-                                    var killBorder = new Border
-                                    {
-                                        Style = (Style)Application.Current.Resources["RoundedTextBlockWithBorder"], // Apply border style
-                                    };
-
-                                    // Create a Grid to hold the TextBlock and the Image
-                                    var killGrid = new Grid
-                                    {
-                                        Width = 400, // Adjust the width of the Grid
-                                        Height = 150, // Adjust the height as needed
-                                    };
-
-                                    // Define two columns in the Grid: one for the text and one for the image
-                                    killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // Text column
-                                    killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // Image column
-
-                                    // Add the TextBlock to the first column of the Grid
-                                    Grid.SetColumn(killTextBlock, 0);
-                                    killGrid.Children.Add(killTextBlock);
-
-                                    // Create the Image for the profile
-                                    string urlToUse = string.IsNullOrEmpty(killParts[7]) ? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" : killParts[7];
-                                    var profileImage = new Image
-                                    {
-                                        Source = new BitmapImage(new Uri(urlToUse)), // Assuming the 8th part contains the profile image URL
-                                        Width = 90,
-                                        Height = 90,
-                                        Stretch = Stretch.Fill, // Adjust how the image fits
-                                    };
-
-                                    // Create a Border around the Image
-                                    var imageBorder = new Border
-                                    {
-                                        BorderBrush = accentColorBrush, // Set the border color
-                                        BorderThickness = new Thickness(2), // Set the border thickness
-                                        Padding = new Thickness(0), // Optional padding inside the border
-                                        CornerRadius = new CornerRadius(5),
-                                        Margin = new Thickness(10,18,15,18),
-                                        Child = profileImage // Set the Image as the content of the Border
-                                    };
-
-                                    // Add the Border (with the image inside) to the Grid
-                                    Grid.SetColumn(imageBorder, 1);
-                                    killGrid.Children.Add(imageBorder);
-
-                                    // Set the Grid as the child of the Border
-                                    killBorder.Child = killGrid;
-
-                                    // Add the new Border to the StackPanel inside the Border
-                                    KillFeedStackPanel.Children.Insert(0, killBorder);
+                                    HandleKillEvent("Death", e.Data);
                                 }
                                 else if (e.Data.Contains("NewOther="))
                                 {
-                                    // Parse the death data
-                                    var killData = e.Data.Split('=')[1].Trim(); // Assume the death data follows after "NewKill="
-                                    var killParts = killData.Split(',');
-
-                                    // Fetch the dynamic resource for AltTextColor
-                                    var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
-                                    var accentColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AccentColor"]);
-
-                                    // Fetch the Orbitron FontFamily from resources
-                                    var orbitronFontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
-                                    var gemunuFontFamily = (FontFamily)Application.Current.Resources["Gemunu"];
-
-                                    // Create a new TextBlock for each Death
-                                    var killTextBlock = new TextBlock
-                                    {
-                                        Margin = new Thickness(0, 10, 0, 10),
-                                        Style = (Style)Application.Current.Resources["RoundedTextBlock"], // Apply style for text
-                                        FontSize = 14,
-                                        FontWeight = FontWeights.Bold,
-                                        FontFamily = gemunuFontFamily,
-                                    };
-
-                                    // Add styled content using Run elements
-                                    killTextBlock.Inlines.Add(new Run("Event Type: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run("Other\n"));
-
-                                    killTextBlock.Inlines.Add(new Run("Death by: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[8]}\n"));
-
-                                    // Repeat for other lines
-                                    killTextBlock.Inlines.Add(new Run("Sueside Time: ")
-                                    {
-                                        Foreground = altTextColorBrush,
-                                        FontFamily = orbitronFontFamily,
-                                    });
-                                    killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
-
-                                    // Create a Border and apply the RoundedTextBlockWithBorder style
-                                    var killBorder = new Border
-                                    {
-                                        Style = (Style)Application.Current.Resources["RoundedTextBlockWithBorder"], // Apply border style
-                                    };
-
-                                    // Create a Grid to hold the TextBlock and the Image
-                                    var killGrid = new Grid
-                                    {
-                                        Width = 400, // Adjust the width of the Grid
-                                        Height = 70, // Adjust the height as needed
-                                    };
-
-                                    // Define two columns in the Grid: one for the text and one for the image
-                                    killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // Text column
-
-                                    // Add the TextBlock to the first column of the Grid
-                                    Grid.SetColumn(killTextBlock, 0);
-                                    killGrid.Children.Add(killTextBlock);
-
-                                    // Set the Grid as the child of the Border
-                                    killBorder.Child = killGrid;
-
-                                    // Add the new Border to the StackPanel inside the Border
-                                    KillFeedStackPanel.Children.Insert(0, killBorder);
+                                    HandleKillEvent("Other", e.Data);
                                 }
 
                                 else
@@ -556,6 +241,140 @@ namespace AutoTrackR2
 
             // Apply the adjusted font size
             textBlock.FontSize = fontSize;
+        }
+
+        private void HandleKillEvent(string eventType, string data)
+        {
+            // Parse the kill data
+            var killData = data.Split('=')[1].Trim();
+            var killParts = killData.Split(',');
+
+            // Fetch the dynamic resource for AltTextColor
+            var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
+            var accentColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AccentColor"]);
+
+            // Fetch the Orbitron FontFamily from resources
+            var orbitronFontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+            var gemunuFontFamily = (FontFamily)Application.Current.Resources["Gemunu"];
+
+            // Create a new TextBlock
+            var killTextBlock = new TextBlock
+            {
+                Margin = new Thickness(0, 10, 0, 10),
+                Style = (Style)Application.Current.Resources["RoundedTextBlock"],
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                FontFamily = gemunuFontFamily
+            };
+
+            // Add content dynamically
+            killTextBlock.Inlines.Add(new Run("Event Type: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+            killTextBlock.Inlines.Add(new Run($"{eventType}\n"));
+
+            if (eventType == "Kill")
+            {
+                killTextBlock.Inlines.Add(new Run("Victim Name: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[1]}\n"));
+        
+                killTextBlock.Inlines.Add(new Run("Victim Ship: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[2]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Victim Org: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[3]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Join Date: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[4]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("UEE Record: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[5]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Kill Time: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
+            }
+            else if (eventType == "Death")
+            {
+                killTextBlock.Inlines.Add(new Run("Agressor Name: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[1]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Agressor Ship: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[2]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Agressor Org: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[3]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Join Date: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[4]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("UEE Record: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[5]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Death Time: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
+            }
+            else if (eventType == "Other")
+            {
+                killTextBlock.Inlines.Add(new Run("Death by: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[8]}\n"));
+
+                killTextBlock.Inlines.Add(new Run("Sueside Time: ") { Foreground = altTextColorBrush, FontFamily = orbitronFontFamily });
+                killTextBlock.Inlines.Add(new Run($"{killParts[6]}"));
+
+            }
+
+            // Create a Border and apply the RoundedTextBlockWithBorder style
+            var killBorder = new Border
+            {
+                Style = (Style)Application.Current.Resources["RoundedTextBlockWithBorder"]
+            };
+
+            // Create a Grid to hold the TextBlock and the Image
+            var killGrid = new Grid
+            {
+                Width = 400,                                // Adjust the width of the Grid
+                Height = eventType == "Other" ? 70 : 150    // Adjust the height as needed
+            };
+            
+            // Define two columns in the Grid: one for the text and one for the image
+            killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });  // Text column
+             killGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });  // Image column
+
+            // Add the TextBlock to the first column of the Grid
+            Grid.SetColumn(killTextBlock, 0);
+            killGrid.Children.Add(killTextBlock);
+
+            if (eventType == "Kill")
+            {
+                // Create the Image for the profile
+                string urlToUse = string.IsNullOrEmpty(killParts[7]) ? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" : killParts[7];
+                var profileImage = new Image
+                {
+                    Source = new BitmapImage(new Uri(urlToUse)), // Assuming the 8th part contains the profile image URL
+                    Width = 90,
+                    Height = 90,
+                    Stretch = Stretch.Fill, // Adjust how the image fits
+                };
+
+                // Create a Border around the Image
+                var imageBorder = new Border
+                {
+                    BorderBrush = accentColorBrush, // Set the border color
+                    BorderThickness = new Thickness(2), // Set the border thickness
+                    Padding = new Thickness(0), // Optional padding inside the border
+                    CornerRadius = new CornerRadius(5),
+                    Margin = new Thickness(10,18,15,18),
+                    Child = profileImage // Set the Image as the content of the Border
+                };
+
+                // Add the Border (with the image inside) to the Grid
+                Grid.SetColumn(imageBorder, 1);
+                killGrid.Children.Add(imageBorder);
+            }
+
+            // Set the Grid as the child of the Border
+            killBorder.Child = killGrid;
+
+            // Add the new Border to the StackPanel inside the Border
+            KillFeedStackPanel.Children.Insert(0, killBorder);
         }
     }
 }
