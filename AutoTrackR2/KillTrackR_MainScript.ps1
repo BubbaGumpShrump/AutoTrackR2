@@ -2,7 +2,7 @@
 # GitHub: https://github.com/BubbaGumpShrump/AutoTrackR2
 
 # Script version
-$script:TrackRver = "2.07-koda-mod"
+$script:TrackRver = "2.07-koda-mod_20250311_001"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -69,7 +69,7 @@ $prefixes = @(
 
 # Define the regex pattern to extract information
 $script:KillPattern = "<Actor Death> CActor::Kill: '(?<VictimPilot>[^']+)' \[\d+\] in zone '(?<VictimShip>[^']+)' killed by '(?<AgressorPilot>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)'"
-$script:PuPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^ ]+ status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="(?<Gamerules>[^"]+)" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
+$script:PuPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^\s()]+\(\d+\) status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="(?<Gamerules>[^"]+)" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
 # $script:AcPattern = "Requesting Mode Change"  # "ArenaCommanderFeature"
 $script:LoadoutPattern = '\[InstancedInterior\] OnEntityLeaveZone - InstancedInterior \[(?<InstancedInterior>[^\]]+)\] \[\d+\] -> Entity \[(?<Entity>[^\]]+)\] \[\d+\] -- m_openDoors\[\d+\], m_managerGEID\[(?<ManagerGEID>\d+)\], m_ownerGEID\[(?<OwnerGEID>[^\[]+)\]'
 $script:ShipManPattern = "^(" + ($prefixes -join "|") + ")"
@@ -105,7 +105,16 @@ function Get-ConfigurationSettings {
     $requiredSettings = @('Logfile')
     foreach ($setting in $requiredSettings) {
         if (-not $config.ContainsKey($setting)) {
-            Write-Error "Missing required setting: $setting"
+            Write-OutputData "LogERROR=Missing required setting $setting in $configFile"
+            Write-Error "Missing required setting $setting in $configFile"
+            return $null
+        }
+    
+        # Überprüfen, ob die Datei existiert
+        $filePath = $config[$setting]
+        if (-not (Test-Path -Path $filePath)) {
+            Write-OutputData "LogERROR=The $setting specified in $configFile does not exist: $filePath"
+            Write-Error "The $setting specified in $configFile does not exist: $filePath"
             return $null
         }
     } 
@@ -563,7 +572,7 @@ function Get-PlayerInfo {
         $script:PlayerCache[$playerName] = $playerInfo
         return $playerInfo
     } catch {
-		Write-Warning "Error retrieving player information for PlayerName: $_"
+		Write-Warning "Unable retrieving player information for PlayerName: $_"
         return $null
     }
 }
@@ -620,12 +629,7 @@ function Send-ApiData {
 
     If ($null -ne $apiUrl){
         if ($apiUrl -notlike "*/register-kill") {
-            if ($apiUrl -like "*/"){
-                $apiUrl = $apiUrl + "register-kill"
-            }
-            if ($apiUrl -notlike "*/"){
-                $apiUrl = $apiUrl + "/register-kill"
-            }
+            $apiUrl = $apiUrl.TrimEnd("/") + "/register-kill"
         }
         Write-OutputData "LogInfo=ApiURL: $apiURL"
     }
@@ -634,10 +638,11 @@ function Send-ApiData {
         $null = Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($sendData | ConvertTo-Json -Depth 5) -Headers $headers
         return "API"
     } catch {
-        Write-Warning "LogInfo=API-Error: $_"
+        Write-Warning "API-Error: $_"
         return "Err-Local"
     }
 }
+
 
 function Write-CSVData {
     param (
@@ -690,9 +695,12 @@ function Invoke-PostEventActions{
 
 function Write-OutputData {
     param (
-        [string]$data
+        [string]$data,
+        [switch]$force
     )
-    if ($data -ne $script:WritheCache) {
+    if($force){
+        Write-Host $data
+    }elseif ($data -ne $script:WritheCache) {
         if($script:DebugLVL -eq 1){
             Write-Host $data
         }else{
@@ -709,6 +717,7 @@ function Write-OutputData {
 # ================================= Main script =================================
 # Check if the config file exists
 if (-not (Test-Path $script:ConfigFile)) {
+    Write-OutputData "LogERROR=$script:CSVFileName not found."
     Write-Error "$script:CSVFileName not found."
     return $null
 }
@@ -717,6 +726,7 @@ $config = Get-ConfigurationSettings $script:ConfigFile
 
 # Check if the log file exists
 if (-not (Test-Path $config.LogFile)) {
+    Write-OutputData "LogERROR=Log file not found: $($config.LogPath)"
     Write-Error "Log file not found: $($config.LogPath)"
     return $null
 }

@@ -98,7 +98,14 @@ namespace AutoTrackR2
                             Dispatcher.Invoke(() =>
                             {
                                 // Parse and display key-value pairs in the OutputTextBox
-                                if (e.Data.Contains("PlayerName="))
+                                if (e.Data.Contains("LogERROR="))
+                                {
+                                    string LogERROR = e.Data.Split('=')[1].Trim(); 
+                                    string currentText = DebugPanel.Text;
+                                    DebugPanel.Text = "An error has occurred: " + LogERROR + Environment.NewLine + currentText;
+                                    StopButton_Click(null, null);
+                                }
+                                else if (e.Data.Contains("PlayerName="))
                                 {
                                     string pilotName = e.Data.Split('=')[1].Trim();
                                     PilotNameTextBox.Text = pilotName; // Update the Button's Content
@@ -342,7 +349,7 @@ namespace AutoTrackR2
             Grid.SetColumn(killTextBlock, 0);
             killGrid.Children.Add(killTextBlock);
 
-            if (eventType == "Kill")
+            if (eventType != "Other")
             {
                 // Create the Image for the profile
                 string urlToUse = string.IsNullOrEmpty(killParts[7]) ? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg" : killParts[7];
