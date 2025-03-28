@@ -147,6 +147,11 @@ public partial class HomePage : UserControl
             }
         };
         
+        // Vehicle Destruction
+        TrackREventDispatcher.VehicleDestructionEvent += (data) => {
+            LocalPlayerData.LastSeenVehicleLocation = data.VehicleZone;
+        };
+        
         _UIEventsRegistered = true;
     }
 

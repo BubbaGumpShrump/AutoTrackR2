@@ -51,7 +51,7 @@ public static class WebHandler
         var ueeMatch = ueePattern.Match(content);
         if (ueeMatch.Success)
         {
-            playerData.UEERecord = ueeMatch.Groups[1].Value;
+            playerData.UEERecord = ueeMatch.Groups[1].Value == "n/a" ? "-1" : ueeMatch.Groups[1].Value;
         }
         
         var orgMatch = orgPattern.Match(content);
@@ -88,15 +88,28 @@ public static class WebHandler
             rsi = enemyPlayerData?.UEERecord,
             weapon = deathData.Weapon,
             method = deathData.DamageType,
+            // loadout_ship = LocalPlayerData.PlayerShip ?? "Unknown",
             loadout_ship = LocalPlayerData.PlayerShip ?? "Unknown",
             game_version = LocalPlayerData.GameVersion ?? "Unknown",
-            gamemode = LocalPlayerData.CurrentGameMode.ToString() ?? "Unknown",
-            trackr_version = UpdatePage.currentVersion ?? "Unknown",
+            trackr_version = UpdatePage.currentVersion.Replace("v", "") ?? "Unknown",
             location = LocalPlayerData.LastSeenVehicleLocation ?? "Unknown"
         };
         
+        switch (LocalPlayerData.CurrentGameMode)
+        {
+            case GameMode.PersistentUniverse:
+                killData.gamemode = "pu";
+                break;
+            case GameMode.ArenaCommander:
+                killData.gamemode = "ac";
+                break;
+        }
+        
         var httpClient = new HttpClient();
         string jsonData = JsonSerializer.Serialize(killData);
-        await httpClient.PostAsync(ConfigManager.ApiUrl + "/register-kill", new StringContent(jsonData, Encoding.UTF8, "application/json"));
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + ConfigManager.ApiKey);
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "AutoTrackR2");
+        httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+        await httpClient.PostAsync(ConfigManager.ApiUrl + "register-kill", new StringContent(jsonData, Encoding.UTF8, "application/json"));
     }
 }

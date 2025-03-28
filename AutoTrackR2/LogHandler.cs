@@ -29,7 +29,7 @@ public class LogHandler(string logPath)
         new InstancedInteriorEvent(),
         new InArenaCommanderEvent(),
         new InPersistentUniverseEvent(),
-        new GameVersionEvent(),
+        new GameVersionEvent()
     ];
 
     // Initialize the LogHandler and run all startup handlers
