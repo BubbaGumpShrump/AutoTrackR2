@@ -90,8 +90,8 @@ $prefixes = @(
 # Define the regex pattern to extract information
 $killPattern = "<Actor Death> CActor::Kill: '(?<EnemyPilot>[^']+)' \[\d+\] in zone '(?<EnemyShip>[^']+)' killed by '(?<Player>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)'"
 $puPattern = '<\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z> \[Notice\] <ContextEstablisherTaskFinished> establisher="CReplicationModel" message="CET completed" taskname="StopLoadingScreen" state=[^\s()]+\(\d+\) status="Finished" runningTime=\d+\.\d+ numRuns=\d+ map="megamap" gamerules="SC_Default" sessionId="[a-f0-9\-]+" \[Team_Network\]\[Network\]\[Replication\]\[Loading\]\[Persistence\]'
+$loadoutPattern = '<Jump Drive State Changed>.*.adam: (?<ShipName>.*.) in'
 $acPattern =  "Requesting Mode Change"  # "ArenaCommanderFeature"
-$loadoutPattern = '\[InstancedInterior\] OnEntityLeaveZone - InstancedInterior \[(?<InstancedInterior>[^\]]+)\] \[\d+\] -> Entity \[(?<Entity>[^\]]+)\] \[\d+\] -- m_openDoors\[\d+\], m_managerGEID\[(?<ManagerGEID>\d+)\], m_ownerGEID\[(?<OwnerGEID>[^\[]+)\]'
 $shipManPattern = "^(" + ($prefixes -join "|") + ")"
 # $loginPattern = "\[Notice\] <AccountLoginCharacterStatus_Character> Character: createdAt [A-Za-z0-9]+ - updatedAt [A-Za-z0-9]+ - geid [A-Za-z0-9]+ - accountId [A-Za-z0-9]+ - name (?<Player>[A-Za-z0-9_-]+) - state STATE_CURRENT" # KEEP THIS INCASE LEGACY LOGIN IS REMOVED 
 $loginPattern = "\[Notice\] <Legacy login response> \[CIG-net\] User Login Success - Handle\[(?<Player>[A-Za-z0-9_-]+)\]"
@@ -148,19 +148,13 @@ Do {
         }
 		# Get Loadout
 		if ($line -match $loadoutPattern) {
-			$entity = $matches['Entity']
-			$ownerGEID = $matches['OwnerGEID']
-
-			If ($ownerGEID -eq $global:userName -and $entity -match $shipManPattern) {
-				$tryloadOut = $entity
-				If ($tryloadOut -match $cleanupPattern){
+				If ($matches['ShipName'] -match $cleanupPattern){
 					if ($null -ne $matches[1]){
 						$global:loadOut = $matches[1]
 					}
-				}
-			}
+		        }
+		    Write-Output "PlayerShip=$global:loadOut"
 		}
-		Write-Output "PlayerShip=$global:loadOut"
 
 		If ($line -match $versionPattern){
 			$global:GameVersion = $matches['gameversion']
@@ -468,18 +462,15 @@ function Read-LogEntry {
 	}
 
 	#Set loadout 
-	if ($line -match $loadoutPattern) {
-		$entity = $matches['Entity']
-		$ownerGEID = $matches['OwnerGEID']
+    if ($line -match $loadoutPattern) {
+            If ($matches['ShipName'] -match $cleanupPattern){
+                if ($null -ne $matches[1]){
+                    $global:loadOut = $matches[1]
+                }
+            }
+        Write-Output "PlayerShip=$global:loadOut"
+    }
 
-        If ($ownerGEID -eq $global:userName -and $entity -match $shipManPattern) {
-			$tryloadOut = $entity
-			If ($tryloadOut -match $cleanupPattern){
-				$global:loadOut = $matches[1]
-			}
-			Write-Output "PlayerShip=$global:loadOut"
-		}
-	}
 }
 
 
