@@ -81,6 +81,7 @@ public partial class HomePage : UserControl
         // _logHandler = new LogHandler(@"U:\\StarCitizen\\StarCitizen\\LIVE\\Game.log");
         _logHandler = new LogHandler(ConfigManager.LogFile);
         _logHandler.Initialize();
+        
     }
     
     private void AddKillHistoryKillsToUI()
@@ -158,9 +159,16 @@ public partial class HomePage : UserControl
                     {
                         AddKillToScreen(killData);
                     });
-                    
-                    await WebHandler.SubmitKill(actorDeathData, playerData);
+    
+                    // Only submit kill data if not in offline mode
+                    if (ConfigManager.OfflineMode == 0)
+                    {
+                        await WebHandler.SubmitKill(actorDeathData, playerData);
+                    }
+
                     _killHistoryManager.AddKill(killData);
+                    VisorWipe();
+                    VideoRecord();
                 }
             }
         };
@@ -342,12 +350,39 @@ public partial class HomePage : UserControl
         // Apply the adjusted font size
         textBlock.FontSize = fontSize;
     }
+    
+    public static void RunAHKScript(string path)
+    {
+        string scriptPath = Path.Combine(ConfigManager.AHKScriptFolder, path);
+            
+        if (!File.Exists(scriptPath))
+        {
+            return;
+        }
+            
+        // Run the script using powershell
+        using var ahkProcess = new Process();
+            
+        // Runs the script via Explorer, ensuring it uses whatever the
+        // default binary for AHK is. Skips having to find a specific path to AHK
+        ahkProcess.StartInfo.FileName = "explorer";
+        ahkProcess.StartInfo.Arguments = "\"" + scriptPath + "\"";
+        ahkProcess.Start();
+    }
 
     private void VisorWipe()
     {
         if (ConfigManager.VisorWipe == 1)
         {
-            
+            RunAHKScript(ConfigManager.VisorWipeScript);
+        }
+    }
+    
+    private void VideoRecord()
+    {
+        if (ConfigManager.VideoRecord == 1)
+        {
+            RunAHKScript(ConfigManager.VideoRecordScript);
         }
     }
 }

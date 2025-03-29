@@ -413,8 +413,7 @@ namespace AutoTrackR2
 
             // Build the dynamic file path for the current user
             string filePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2",
+                ConfigManager.AHKScriptFolder,
                 "visorwipe.ahk"
             );
 

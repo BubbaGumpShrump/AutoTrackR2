@@ -1,4 +1,6 @@
 ﻿//using System.Collections.Generic;
+
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -193,6 +195,12 @@ namespace AutoTrackR2
     {
         public static string LogFile { get; set; }
         public static string KillHistoryFile { get; set; }
+        
+        public static string AHKScriptFolder { get; set; }
+        
+        public static string VisorWipeScript { get; set; }
+        public static string VideoRecordScript { get; set; }
+        
         public static string ApiUrl { get; set; }
         public static string ApiKey { get; set; }
         public static string VideoPath { get; set; }
@@ -212,6 +220,14 @@ namespace AutoTrackR2
                 "AutoTrackR2",
                 "Kill-log.csv"
             );
+            
+            AHKScriptFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2"
+            );
+            
+            VisorWipeScript = "visorwipe.ahk";
+            VideoRecordScript = "videorecord.ahk";
         }
 
         public static void LoadConfig()
