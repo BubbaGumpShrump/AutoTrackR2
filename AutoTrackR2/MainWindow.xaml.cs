@@ -195,6 +195,7 @@ namespace AutoTrackR2
     public static class ConfigManager
     {
         public static string LogFile { get; set; }
+        public static string KillHistoryFile { get; set; }
         public static string ApiUrl { get; set; }
         public static string ApiKey { get; set; }
         public static string VideoPath { get; set; }
@@ -202,6 +203,17 @@ namespace AutoTrackR2
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
         public static int Theme { get; set; }
+        
+        static ConfigManager()
+        {
+            // Set default values
+            // AppData\Local\AutoTrackR2\Kill-log.csv
+            KillHistoryFile = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2",
+                "Kill-log.csv"
+            );
+        }
 
         public static void LoadConfig()
         {

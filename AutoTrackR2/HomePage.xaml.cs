@@ -5,38 +5,31 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Documents;
 using System.Globalization;
+using System.IO;
+using System.Text;
 using System.Windows.Media.Imaging;
 using AutoTrackR2.LogEventHandlers;
 
 namespace AutoTrackR2;
 
-public struct PlayerData
-{
-    public string? PFPURL;
-    public string? UEERecord;
-    public string? OrgURL;
-    public string? OrgName;
-    public string? JoinDate;
-}
-
 public partial class HomePage : UserControl
 {
+    private Process runningProcess; // Field to store the running process
+    private LogHandler? _logHandler;
+    private KillHistoryManager _killHistoryManager;
+    private bool _UIEventsRegistered = false;
+    
     public HomePage()
     {
         InitializeComponent();
-
-        // Get the current month
-        string currentMonth = DateTime.Now.ToString("MMMM", CultureInfo.InvariantCulture);
+        
+        _killHistoryManager = new KillHistoryManager(ConfigManager.KillHistoryFile);
 
         // Set the TextBlock text
-        KillTallyTitle.Text = $"Kill Tally - {currentMonth}";
+        KillTallyTitle.Text = $"Kill Tally - {_killHistoryManager.GetKillsInCurrentMonth().Count}";
+        AddKillHistoryKillsToUI();
     }
-
-    private Process runningProcess; // Field to store the running process
-    private LogHandler _logHandler;
-    private bool _UIEventsRegistered = false;
-
-
+    
     // Update Start/Stop button states based on the isRunning flag
     public void UpdateButtonState(bool isRunning)
     {
@@ -89,6 +82,15 @@ public partial class HomePage : UserControl
         _logHandler = new LogHandler(ConfigManager.LogFile);
         _logHandler.Initialize();
     }
+    
+    private void AddKillHistoryKillsToUI()
+    {
+        var kills = _killHistoryManager.GetKills();
+        foreach (var kill in kills)
+        {
+            Dispatcher.Invoke(() => { AddKillToScreen(kill); });
+        }
+    }
 
     private void RegisterUIEventHandlers()
     {
@@ -134,15 +136,31 @@ public partial class HomePage : UserControl
         };
         
         // Actor Death
-        TrackREventDispatcher.ActorDeathEvent += async (data) => {
-            if (data.VictimPilot != LocalPlayerData.Username)
+        TrackREventDispatcher.ActorDeathEvent += async (actorDeathData) => {
+            if (actorDeathData.VictimPilot != LocalPlayerData.Username)
             {
-                var playerData = await WebHandler.GetPlayerData(data.VictimPilot);
+                var playerData = await WebHandler.GetPlayerData(actorDeathData.VictimPilot);
 
                 if (playerData != null)
                 {
-                    Dispatcher.Invoke(() => { AddKillToScreen(data, playerData); });
-                    await WebHandler.SubmitKill(data, playerData);
+                    var killData = new KillData
+                    {
+                        EnemyPilot = actorDeathData.VictimPilot,
+                        EnemyShip = actorDeathData.VictimShip,
+                        OrgAffiliation = playerData?.OrgName,
+                        Enlisted = playerData?.JoinDate,
+                        KillTime = DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"),
+                        PFP = playerData?.PFPURL
+                    };
+                    
+                    // Add kill to UI
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddKillToScreen(killData);
+                    });
+                    
+                    await WebHandler.SubmitKill(actorDeathData, playerData);
+                    _killHistoryManager.AddKill(killData);
                 }
             }
         };
@@ -155,7 +173,7 @@ public partial class HomePage : UserControl
         _UIEventsRegistered = true;
     }
 
-    private void AddKillToScreen(ActorDeathData deathData, PlayerData? playerData)
+    private void AddKillToScreen(KillData killData)
     { 
         // Fetch the dynamic resource for AltTextColor
         var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
@@ -181,7 +199,7 @@ public partial class HomePage : UserControl
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
-        killTextBlock.Inlines.Add(new Run($"{deathData.VictimPilot}\n"));
+        killTextBlock.Inlines.Add(new Run($"{killData.EnemyPilot}\n"));
 
         // Repeat for other lines
         killTextBlock.Inlines.Add(new Run("Victim Ship: ")
@@ -189,21 +207,21 @@ public partial class HomePage : UserControl
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
-        killTextBlock.Inlines.Add(new Run($"{deathData.VictimShip}\n"));
+        killTextBlock.Inlines.Add(new Run($"{killData.EnemyShip}\n"));
 
         killTextBlock.Inlines.Add(new Run("Victim Org: ")
         {
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
-        killTextBlock.Inlines.Add(new Run($"{playerData?.OrgName}\n"));
+        killTextBlock.Inlines.Add(new Run($"{killData.OrgAffiliation}\n"));
         
         killTextBlock.Inlines.Add(new Run("Join Date: ")
         {
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
-        killTextBlock.Inlines.Add(new Run($"{playerData?.JoinDate}\n"));
+        killTextBlock.Inlines.Add(new Run($"{killData.Enlisted}\n"));
         
         killTextBlock.Inlines.Add(new Run("UEE Record: ")
         {
@@ -211,16 +229,12 @@ public partial class HomePage : UserControl
             FontFamily = orbitronFontFamily,
         });
         
-        
-        const string dateFormatString = "dd MMM yyyy HH:mm";
-        var currentTime = DateTime.UtcNow.ToString(dateFormatString);
-        
         killTextBlock.Inlines.Add(new Run("Kill Time: ")
         {
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
-        killTextBlock.Inlines.Add(new Run($"{currentTime}"));
+        killTextBlock.Inlines.Add(new Run($"{killData.KillTime}"));
 
         // Create a Border and apply the RoundedTextBlockWithBorder style
         var killBorder = new Border
@@ -246,7 +260,7 @@ public partial class HomePage : UserControl
         // Create the Image for the profile
         var profileImage = new Image
         {
-            Source = new BitmapImage(new Uri(playerData?.PFPURL)), // Assuming the 8th part contains the profile image URL
+            Source = new BitmapImage(new Uri(killData.PFP)), // Assuming the 8th part contains the profile image URL
             Width = 90,
             Height = 90,
             Stretch = Stretch.Fill, // Adjust how the image fits
@@ -279,15 +293,15 @@ public partial class HomePage : UserControl
 
     public void StopButton_Click(object sender, RoutedEventArgs e)
     {
-        _logHandler.Stop();
+        _logHandler?.Stop();
 
         // Clear the text boxes
-        System.Threading.Thread.Sleep(200);
-        PilotNameTextBox.Text = string.Empty;
-        PlayerShipTextBox.Text = string.Empty;
-        GameModeTextBox.Text = string.Empty;
-        KillTallyTextBox.Text = string.Empty;
-        KillFeedStackPanel.Children.Clear();
+        // System.Threading.Thread.Sleep(200);
+        // PilotNameTextBox.Text = string.Empty;
+        // PlayerShipTextBox.Text = string.Empty;
+        // GameModeTextBox.Text = string.Empty;
+        // KillTallyTextBox.Text = string.Empty;
+        // KillFeedStackPanel.Children.Clear();
     }
 
     private void AdjustFontSize(TextBlock textBlock)
