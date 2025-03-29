@@ -109,16 +109,13 @@ public partial class HomePage : UserControl
         };
         
         // Ship
-        TrackREventDispatcher.InstancedInteriorEvent += (data) => {
-            if (data.OwnerGEID == LocalPlayerData.Username && data.Ship != null)
-            {
+        TrackREventDispatcher.JumpDriveStateChangedEvent += (shipName) => {
                 Dispatcher.Invoke(() =>
                 {
-                    PlayerShipTextBox.Text = data.Ship;
+                    PlayerShipTextBox.Text = shipName;
                     AdjustFontSize(PlayerShipTextBox);
-                    LocalPlayerData.PlayerShip = data.Ship;
+                    LocalPlayerData.PlayerShip = shipName;
                 });
-            }
         };
         
         // Game Mode

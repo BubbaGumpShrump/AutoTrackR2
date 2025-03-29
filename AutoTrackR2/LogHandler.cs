@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Text.RegularExpressions;
 using AutoTrackR2.LogEventHandlers;
 
@@ -13,11 +14,20 @@ public class LogEntry
     public required string? Message { get; set; }
     
 }
+
+enum GameProcessState
+{
+    NotRunning,
+    Running,
+    Unknown
+}
+
 public class LogHandler(string logPath)
 {
     private readonly string? _logPath = logPath;
     private FileStream? _fileStream;
     private StreamReader? _reader;
+    private GameProcessState _gameProcessState = GameProcessState.Unknown;
 
     private CancellationTokenSource cancellationToken = new CancellationTokenSource(); 
     Thread? monitorThread;
@@ -29,7 +39,9 @@ public class LogHandler(string logPath)
         new InstancedInteriorEvent(),
         new InArenaCommanderEvent(),
         new InPersistentUniverseEvent(),
-        new GameVersionEvent()
+        new GameVersionEvent(),
+        new JumpDriveStateChangedEvent(),
+        new RequestJumpFailedEvent()
     ];
 
     // Initialize the LogHandler and run all startup handlers
@@ -66,6 +78,7 @@ public class LogHandler(string logPath)
     // Parse a single line of the log file and run matching handlers
     private void HandleLogEntry(string line)
     {
+        Console.WriteLine(line);
         foreach (var handler in _eventHandlers)
         {
             var match = handler.Pattern.Match(line);
@@ -85,10 +98,14 @@ public class LogHandler(string logPath)
     {
         while (!token.IsCancellationRequested)
         {
+            CheckGameProcessState();
+            
             if (_reader?.ReadLine() is { } line)
             {
-                HandleLogEntry(line);
-                Console.WriteLine(line);
+                // start new thread to handle log entry
+                var thread = new Thread(() => HandleLogEntry(line));
+                thread.Start();
+                // Console.WriteLine(line);
             }
             else
             {
@@ -97,5 +114,33 @@ public class LogHandler(string logPath)
             }
         }
         Console.WriteLine("Monitor thread stopped");
+    }
+
+    private void CheckGameProcessState()
+    {
+        // Check if the game process is running by window name
+        var process = Process.GetProcesses().FirstOrDefault(p => p.MainWindowTitle == "Star Citizen");
+        
+        GameProcessState newGameProcessState = process != null ? GameProcessState.Running : GameProcessState.NotRunning;
+        
+        if (newGameProcessState == GameProcessState.Running && _gameProcessState == GameProcessState.NotRunning)
+        {
+            // Game process went from NotRunning to Running, so reload the Game.log file
+            Console.WriteLine("Game process started, reloading log file");
+                
+            _reader?.Close();
+            _fileStream?.Close();
+            
+            // Wait for the log file to be written to
+            Thread.Sleep(3000);
+            
+            _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            _reader = new StreamReader(_fileStream);
+            
+            // Skip all the startup junk
+            while (_reader.ReadLine() is { } line) { }
+        }
+        
+        _gameProcessState = newGameProcessState;
     }
 }
