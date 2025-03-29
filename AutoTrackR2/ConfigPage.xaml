@@ -56,18 +56,21 @@
 
                 <!-- Visor Wipe Toggle Slider -->
                 <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
+                    <TextBlock Text="ⓘ" ToolTip="Perform a Visor Wipe animation on player kill. Requires AHKv2." Foreground="{DynamicResource TextBrush}" FontSize="20" Margin="0,4,3,5"/>
                     <TextBlock Text="Visor Wipe:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
                     <Slider Name="VisorWipeSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="27,-4,0,0" ValueChanged="VisorWipeSlider_ValueChanged"/>
                 </StackPanel>
 
                 <!-- Video Record Toggle Slider -->
                 <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
+                    <TextBlock Text="ⓘ" ToolTip="Automatically clip your last kill. Check the README for more info." Foreground="{DynamicResource TextBrush}" FontSize="20" Margin="0,4,3,5"/>
                     <TextBlock Text="Video Record:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
                     <Slider Name="VideoRecordSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="10,-4,0,0" ValueChanged="VideoRecordSlider_ValueChanged"/>
                 </StackPanel>
 
                 <!-- Offline Mode Toggle Slider -->
                 <StackPanel Margin="0,0,0,15" Orientation="Horizontal">
+                    <TextBlock Text="ⓘ" ToolTip="With Offline Mode enabled, kills will not be submitted to the configured API" Foreground="{DynamicResource TextBrush}" FontSize="20" Margin="0,4,3,5"/>
                     <TextBlock Text="Offline Mode:" Foreground="{DynamicResource TextBrush}" FontSize="16" Margin="0,7,0,5"/>
                     <Slider Name="OfflineModeSlider" Minimum="0" Maximum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="0" Style="{StaticResource ToggleSliderStyle}" Margin="12,-4,0,0" ValueChanged="OfflineModeSlider_ValueChanged"/>
                 </StackPanel>
