@@ -33,9 +33,6 @@ namespace AutoTrackR2
         {
             InitializeComponent();
 
-            // Load configuration settings before setting them in any page
-            ConfigManager.LoadConfig();
-
             homePage = new HomePage(); // Create a single instance of HomePage
             ContentControl.Content = homePage; // Default to HomePage
 
@@ -205,7 +202,9 @@ namespace AutoTrackR2
         public static int Theme { get; set; }
         
         static ConfigManager()
-        {
+        {   
+            LoadConfig();
+            
             // Set default values
             // AppData\Local\AutoTrackR2\Kill-log.csv
             KillHistoryFile = Path.Combine(
@@ -253,7 +252,7 @@ namespace AutoTrackR2
             // Define the config file path in a writable location
             string configDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "YourAppName"
+                "AutoTrackR2"
             );
 
             // Ensure the directory exists

@@ -342,4 +342,12 @@ public partial class HomePage : UserControl
         // Apply the adjusted font size
         textBlock.FontSize = fontSize;
     }
+
+    private void VisorWipe()
+    {
+        if (ConfigManager.VisorWipe == 1)
+        {
+            
+        }
+    }
 }
