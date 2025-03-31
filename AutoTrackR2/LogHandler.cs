@@ -100,14 +100,20 @@ public class LogHandler(string logPath)
         {
             CheckGameProcessState();
             
-            if (_reader?.ReadLine() is { } line)
+            List<string> lines = new List<string>();
+            while (_reader.ReadLine() is { } line)
+            {
+                lines.Add(line);
+            }
+
+            foreach (var line in lines)
             {
                 // start new thread to handle log entry
                 var thread = new Thread(() => HandleLogEntry(line));
                 thread.Start();
                 // Console.WriteLine(line);
             }
-            else
+
             {
                 // Wait for new lines to be written to the log file
                 Thread.Sleep(1000);
@@ -131,14 +137,8 @@ public class LogHandler(string logPath)
             _reader?.Close();
             _fileStream?.Close();
             
-            // Wait for the log file to be written to
-            Thread.Sleep(3000);
-            
             _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _reader = new StreamReader(_fileStream);
-            
-            // Skip all the startup junk
-            while (_reader.ReadLine() is { } line) { }
         }
         
         _gameProcessState = newGameProcessState;
