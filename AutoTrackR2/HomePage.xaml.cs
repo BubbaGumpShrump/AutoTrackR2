@@ -146,10 +146,26 @@ public partial class HomePage : UserControl
                         EnemyPilot = actorDeathData.VictimPilot,
                         EnemyShip = actorDeathData.VictimShip,
                         OrgAffiliation = playerData?.OrgName,
+                        Weapon = actorDeathData.Weapon,
+                        Ship = LocalPlayerData.PlayerShip ?? "Unknown",
+                        Method = actorDeathData.DamageType,
+                        RecordNumber = playerData?.UEERecord,
+                        GameVersion = LocalPlayerData.GameVersion ?? "Unknown",
+                        TrackRver = UpdatePage.currentVersion.Replace("v", "") ?? "Unknown",
                         Enlisted = playerData?.JoinDate,
                         KillTime = DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"),
-                        PFP = playerData?.PFPURL
+                        PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
                     };
+                    
+                    switch (LocalPlayerData.CurrentGameMode)
+                    {
+                        case GameMode.PersistentUniverse:
+                            killData.Mode = "pu";
+                            break;
+                        case GameMode.ArenaCommander:
+                            killData.Mode = "ac";
+                            break;
+                    }
                     
                     // Add kill to UI
                     Dispatcher.Invoke(() =>
@@ -160,7 +176,7 @@ public partial class HomePage : UserControl
                     // Only submit kill data if not in offline mode
                     if (ConfigManager.OfflineMode == 0)
                     {
-                        await WebHandler.SubmitKill(actorDeathData, playerData);
+                        await WebHandler.SubmitKill(killData);
                     }
 
                     _killHistoryManager.AddKill(killData);
@@ -234,6 +250,8 @@ public partial class HomePage : UserControl
             FontFamily = orbitronFontFamily,
         });
         
+        killTextBlock.Inlines.Add(new Run($"{killData.RecordNumber}\n"));
+        
         killTextBlock.Inlines.Add(new Run("Kill Time: ")
         {
             Foreground = altTextColorBrush,
@@ -261,6 +279,11 @@ public partial class HomePage : UserControl
         // Add the TextBlock to the first column of the Grid
         Grid.SetColumn(killTextBlock, 0);
         killGrid.Children.Add(killTextBlock);
+
+        if (killData.PFP == "")
+        {
+            killData.PFP = "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg";
+        }
         
         // Create the Image for the profile
         var profileImage = new Image

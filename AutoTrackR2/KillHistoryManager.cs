@@ -28,6 +28,9 @@ public class KillHistoryManager
             File.WriteAllText(_killHistoryPath, _headers);
         }
         
+        // Remove comma from Enlisted
+        killData.Enlisted = killData.Enlisted?.Replace(",", string.Empty);
+        
         // Append the new kill data to the CSV file
         var csv = new StringBuilder();
         csv.AppendLine($"\"{killData.KillTime}\",\"{killData.EnemyPilot}\",\"{killData.EnemyShip}\",\"{killData.Enlisted}\",\"{killData.RecordNumber}\",\"{killData.OrgAffiliation}\",\"{killData.Player}\",\"{killData.Weapon}\",\"{killData.Ship}\",\"{killData.Method}\",\"{killData.Mode}\",\"{killData.GameVersion}\",\"{killData.TrackRver}\",\"{killData.Logged}\",\"{killData.PFP}\"");

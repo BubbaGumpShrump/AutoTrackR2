@@ -27,7 +27,7 @@ public static class WebHandler
     public static async Task<PlayerData?> GetPlayerData(string enemyPilot)
     {
         var joinDataPattern = new Regex("<span class=\"label\">Enlisted</span>\\s*<strong class=\"value\">([^<]+)</strong>");
-        var ueePattern = new Regex("<p class=\"entry citizen-record\">\\s*<span class=\"label\">UEE Citizen Record<\\/span>\\s*<strong class=\"value\">#?(n\\/a|\\d+)<\\/strong>\\s*<\\/p>");
+        var ueePattern = new Regex("<p class=\"entry citizen-record\">\\n.*.<span class=\"label\">UEE Citizen Record<\\/span>\\n.*.<strong class=\"value\">#(?<UEERecord>\\d+)<\\/strong>");
         var orgPattern = new Regex("\\/orgs\\/(?<OrgURL>[A-z0-9]+)\" .*\\>(?<OrgName>.*)<");
         var pfpPattern = new Regex("/media/(.*)\"");
        
@@ -51,7 +51,7 @@ public static class WebHandler
         var ueeMatch = ueePattern.Match(content);
         if (ueeMatch.Success)
         {
-            playerData.UEERecord = ueeMatch.Groups[1].Value == "n/a" ? "-1" : ueeMatch.Groups[1].Value;
+            playerData.UEERecord = ueeMatch.Groups["UEERecord"].Value == "n/a" ? "-1" : ueeMatch.Groups[1].Value;
         }
         
         var orgMatch = orgPattern.Match(content);
@@ -78,32 +78,22 @@ public static class WebHandler
         return playerData;
     }
     
-    public static async Task SubmitKill(ActorDeathData deathData, PlayerData? enemyPlayerData)
+    public static async Task SubmitKill(KillData killData)
     {
-        var killData = new APIKillData
+        var apiKillData = new APIKillData
         {
-            victim_ship = deathData.VictimShip,
-            victim = deathData.VictimPilot,
-            enlisted = enemyPlayerData?.JoinDate,
-            rsi = enemyPlayerData?.UEERecord,
-            weapon = deathData.Weapon,
-            method = deathData.DamageType,
+            victim_ship = killData.EnemyShip,
+            victim = killData.EnemyPilot,
+            enlisted = killData.Enlisted,
+            rsi = killData.RecordNumber,
+            weapon = killData.Weapon,
+            method = killData.Method,
             // loadout_ship = LocalPlayerData.PlayerShip ?? "Unknown",
-            loadout_ship = LocalPlayerData.PlayerShip ?? "Unknown",
-            game_version = LocalPlayerData.GameVersion ?? "Unknown",
-            trackr_version = UpdatePage.currentVersion.Replace("v", "") ?? "Unknown",
-            location = LocalPlayerData.LastSeenVehicleLocation ?? "Unknown"
+            loadout_ship = killData.Ship,
+            game_version = killData.GameVersion,
+            trackr_version = killData.TrackRver,
+            location = "Unknown"
         };
-        
-        switch (LocalPlayerData.CurrentGameMode)
-        {
-            case GameMode.PersistentUniverse:
-                killData.gamemode = "pu";
-                break;
-            case GameMode.ArenaCommander:
-                killData.gamemode = "ac";
-                break;
-        }
         
         var httpClient = new HttpClient();
         string jsonData = JsonSerializer.Serialize(killData);
