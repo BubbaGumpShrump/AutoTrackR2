@@ -33,7 +33,7 @@ jobs:
           Copy-Item "AutoTrackR2_Setup\bin\Release\*" "artifacts\"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: AutoTrackR2-Release
           path: artifacts/
