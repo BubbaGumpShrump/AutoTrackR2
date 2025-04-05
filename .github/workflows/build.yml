@@ -1,0 +1,40 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore AutoTrackR2.sln
+
+      - name: Build
+        run: dotnet build AutoTrackR2.sln --configuration Release --no-restore
+
+      - name: Create artifacts directory
+        run: mkdir artifacts
+
+      - name: Copy build output
+        run: |
+          Copy-Item "AutoTrackR2\bin\Release\net6.0-windows\*" "artifacts\"
+          Copy-Item "AutoTrackR2_Setup\bin\Release\*" "artifacts\"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: AutoTrackR2-Release
+          path: artifacts/
+          retention-days: 5
