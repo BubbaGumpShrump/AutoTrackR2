@@ -49,6 +49,13 @@ jobs:
             exit 1
           }
 
+      - name: Copy AutoHotkey scripts
+        run: |
+          # Create scripts directory in artifacts
+          mkdir artifacts\scripts
+          # Copy AutoHotkey scripts
+          Copy-Item "AutoTrackR2\scripts\*.ahk" -Destination "artifacts\scripts\" -Force
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
