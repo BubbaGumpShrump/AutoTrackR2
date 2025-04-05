@@ -1,0 +1,71 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [default]
+  pull_request:
+    branches: [default]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract version
+        id: version
+        run: |
+          $version = (Select-String -Path "AutoTrackR2/UpdatePage.xaml.cs" -Pattern 'currentVersion = "(.+?)"' | Select-Object -First 1).Matches.Groups[1].Value
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore AutoTrackR2.sln
+
+      - name: Build
+        run: dotnet build AutoTrackR2.sln --configuration Release --no-restore
+
+      - name: List build output directories
+        run: |
+          Write-Host "Listing build output directories:"
+          Get-ChildItem -Recurse -Directory -Filter "Release" | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Create artifacts directory
+        run: mkdir artifacts
+
+      - name: Copy build output
+        run: |
+          $releaseDir = Get-ChildItem -Recurse -Directory -Filter "Release" | Select-Object -First 1
+          if ($releaseDir) {
+            Write-Host "Copying from: $($releaseDir.FullName)"
+            Copy-Item "$($releaseDir.FullName)\*" "artifacts\" -Recurse
+          } else {
+            Write-Host "No Release directory found"
+            exit 1
+          }
+
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoTrackR2-${{ steps.version.outputs.version }}
+          path: artifacts/
+          retention-days: 5
+
+      - name: Upload visorwipe script
+        uses: actions/upload-artifact@v4
+        with:
+          name: visorwipe.ahk
+          path: AutoTrackR2/scripts/visorwipe.ahk
+          retention-days: 5
+
+      - name: Upload videorecord script
+        uses: actions/upload-artifact@v4
+        with:
+          name: videorecord.ahk
+          path: AutoTrackR2/scripts/videorecord.ahk
+          retention-days: 5
