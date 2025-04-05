@@ -24,13 +24,24 @@ jobs:
       - name: Build
         run: dotnet build AutoTrackR2.sln --configuration Release --no-restore
 
+      - name: List build output directories
+        run: |
+          Write-Host "Listing build output directories:"
+          Get-ChildItem -Recurse -Directory -Filter "Release" | ForEach-Object { Write-Host $_.FullName }
+
       - name: Create artifacts directory
         run: mkdir artifacts
 
       - name: Copy build output
         run: |
-          Copy-Item "AutoTrackR2\bin\Release\net9.0-windows\*" "artifacts\"
-          Copy-Item "AutoTrackR2_Setup\bin\Release\*" "artifacts\"
+          $releaseDir = Get-ChildItem -Recurse -Directory -Filter "Release" | Select-Object -First 1
+          if ($releaseDir) {
+            Write-Host "Copying from: $($releaseDir.FullName)"
+            Copy-Item "$($releaseDir.FullName)\*" "artifacts\" -Recurse
+          } else {
+            Write-Host "No Release directory found"
+            exit 1
+          }
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
