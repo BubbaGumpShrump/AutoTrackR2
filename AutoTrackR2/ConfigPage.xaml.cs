@@ -341,6 +341,16 @@ namespace AutoTrackR2
                     );
                     ChangeLogo("/Assets/Gankhub.png");
                     break;
+                case 21: // IronPoint
+                    UpdateThemeColors(
+                        (Color)ColorConverter.ConvertFromString("#C83300"), // Accent/Border
+                        (Color)ColorConverter.ConvertFromString("#2D2D2D"), // Button
+                        (Color)ColorConverter.ConvertFromString("#161515"), // Background
+                        (Color)ColorConverter.ConvertFromString("#ffffff"), // Text
+                        (Color)ColorConverter.ConvertFromString("#aaaaaa")  // AltText
+                    );
+                    ChangeLogo("/Assets/IP.png", (Color)ColorConverter.ConvertFromString("#3F1210"));
+                    break;
             }
         }
 
