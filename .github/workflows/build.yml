@@ -49,16 +49,23 @@ jobs:
             exit 1
           }
 
-      - name: Copy AutoHotkey scripts
-        run: |
-          # Create scripts directory in artifacts
-          mkdir artifacts\scripts
-          # Copy AutoHotkey scripts
-          Copy-Item "AutoTrackR2\scripts\*.ahk" -Destination "artifacts\scripts\" -Force
-
-      - name: Upload artifacts
+      - name: Upload application artifact
         uses: actions/upload-artifact@v4
         with:
           name: AutoTrackR2-${{ steps.version.outputs.version }}
           path: artifacts/
+          retention-days: 5
+
+      - name: Upload visorwipe script
+        uses: actions/upload-artifact@v4
+        with:
+          name: visorwipe.ahk
+          path: AutoTrackR2/scripts/visorwipe.ahk
+          retention-days: 5
+
+      - name: Upload videorecord script
+        uses: actions/upload-artifact@v4
+        with:
+          name: videorecord.ahk
+          path: AutoTrackR2/scripts/videorecord.ahk
           retention-days: 5
