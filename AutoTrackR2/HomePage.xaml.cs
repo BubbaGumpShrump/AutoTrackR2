@@ -18,17 +18,17 @@ public partial class HomePage : UserControl
     private LogHandler? _logHandler;
     private KillHistoryManager _killHistoryManager;
     private bool _UIEventsRegistered = false;
-    
+
     public HomePage()
     {
         InitializeComponent();
-        
+
         _killHistoryManager = new KillHistoryManager(ConfigManager.KillHistoryFile);
 
         // Set the TextBlock text
         KillTallyTitle.Text = $"Kill Tally - {_killHistoryManager.GetKillsInCurrentMonth().Count}";
         AddKillHistoryKillsToUI();
-        
+
     }
     //
     public void UpdateButtonState(bool isRunning)
@@ -68,7 +68,7 @@ public partial class HomePage : UserControl
             StartButton.Style = (Style)FindResource("ButtonStyle");
             StopButton.IsEnabled = false; // Disable Stop button
         }
-        
+
         RegisterUIEventHandlers();
     }
 
@@ -77,13 +77,13 @@ public partial class HomePage : UserControl
         UpdateButtonState(true);
         //string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "KillTrackR_MainScript.ps1");
         // TailFileAsync(scriptPath);
-        
+
         // _logHandler = new LogHandler(@"U:\\StarCitizen\\StarCitizen\\LIVE\\Game.log");
         _logHandler = new LogHandler(ConfigManager.LogFile);
         _logHandler.Initialize();
-        
+
     }
-    
+
     private void AddKillHistoryKillsToUI()
     {
         var kills = _killHistoryManager.GetKills();
@@ -97,9 +97,10 @@ public partial class HomePage : UserControl
     {
         if (_UIEventsRegistered)
             return;
-        
+
         // Username
-        TrackREventDispatcher.PlayerLoginEvent += (username) => {
+        TrackREventDispatcher.PlayerLoginEvent += (username) =>
+        {
             Dispatcher.Invoke(() =>
             {
                 PilotNameTextBox.Text = username;
@@ -107,19 +108,21 @@ public partial class HomePage : UserControl
                 LocalPlayerData.Username = username;
             });
         };
-        
+
         // Ship
-        TrackREventDispatcher.JumpDriveStateChangedEvent += (shipName) => {
-                Dispatcher.Invoke(() =>
-                {
-                    PlayerShipTextBox.Text = shipName;
-                    AdjustFontSize(PlayerShipTextBox);
-                    LocalPlayerData.PlayerShip = shipName;
-                });
+        TrackREventDispatcher.JumpDriveStateChangedEvent += (shipName) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                PlayerShipTextBox.Text = shipName;
+                AdjustFontSize(PlayerShipTextBox);
+                LocalPlayerData.PlayerShip = shipName;
+            });
         };
-        
+
         // Game Mode
-        TrackREventDispatcher.PlayerChangedGameModeEvent += (mode) => {
+        TrackREventDispatcher.PlayerChangedGameModeEvent += (mode) =>
+        {
             Dispatcher.Invoke(() =>
             {
                 GameModeTextBox.Text = mode.ToString();
@@ -127,14 +130,16 @@ public partial class HomePage : UserControl
                 LocalPlayerData.CurrentGameMode = mode;
             });
         };
-        
+
         // Game Version
-        TrackREventDispatcher.GameVersionEvent += (version) => {
-                LocalPlayerData.GameVersion = version;
+        TrackREventDispatcher.GameVersionEvent += (version) =>
+        {
+            LocalPlayerData.GameVersion = version;
         };
-        
+
         // Actor Death
-        TrackREventDispatcher.ActorDeathEvent += async (actorDeathData) => {
+        TrackREventDispatcher.ActorDeathEvent += async (actorDeathData) =>
+        {
             if (actorDeathData.VictimPilot != LocalPlayerData.Username)
             {
                 var playerData = await WebHandler.GetPlayerData(actorDeathData.VictimPilot);
@@ -156,7 +161,7 @@ public partial class HomePage : UserControl
                         KillTime = DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"),
                         PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
                     };
-                    
+
                     switch (LocalPlayerData.CurrentGameMode)
                     {
                         case GameMode.PersistentUniverse:
@@ -166,13 +171,13 @@ public partial class HomePage : UserControl
                             killData.Mode = "ac";
                             break;
                     }
-                    
+
                     // Add kill to UI
                     Dispatcher.Invoke(() =>
                     {
                         AddKillToScreen(killData);
                     });
-    
+
                     // Only submit kill data if not in offline mode
                     if (ConfigManager.OfflineMode == 0)
                     {
@@ -185,17 +190,18 @@ public partial class HomePage : UserControl
                 }
             }
         };
-        
+
         // Vehicle Destruction
-        TrackREventDispatcher.VehicleDestructionEvent += (data) => {
+        TrackREventDispatcher.VehicleDestructionEvent += (data) =>
+        {
             LocalPlayerData.LastSeenVehicleLocation = data.VehicleZone;
         };
-        
+
         _UIEventsRegistered = true;
     }
 
     private void AddKillToScreen(KillData killData)
-    { 
+    {
         // Fetch the dynamic resource for AltTextColor
         var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
         var accentColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AccentColor"]);
@@ -236,22 +242,22 @@ public partial class HomePage : UserControl
             FontFamily = orbitronFontFamily,
         });
         killTextBlock.Inlines.Add(new Run($"{killData.OrgAffiliation}\n"));
-        
+
         killTextBlock.Inlines.Add(new Run("Join Date: ")
         {
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
         killTextBlock.Inlines.Add(new Run($"{killData.Enlisted}\n"));
-        
+
         killTextBlock.Inlines.Add(new Run("UEE Record: ")
         {
             Foreground = altTextColorBrush,
             FontFamily = orbitronFontFamily,
         });
-        
+
         killTextBlock.Inlines.Add(new Run($"{killData.RecordNumber}\n"));
-        
+
         killTextBlock.Inlines.Add(new Run("Kill Time: ")
         {
             Foreground = altTextColorBrush,
@@ -284,7 +290,7 @@ public partial class HomePage : UserControl
         {
             killData.PFP = "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg";
         }
-        
+
         // Create the Image for the profile
         var profileImage = new Image
         {
@@ -295,15 +301,13 @@ public partial class HomePage : UserControl
         };
 
         // Create a Border around the Image
-        var imageBorder = new Border
-        {
-            BorderBrush = accentColorBrush, // Set the border color
-            BorderThickness = new Thickness(2), // Set the border thickness
-            Padding = new Thickness(0), // Optional padding inside the border
-            CornerRadius = new CornerRadius(5),
-            Margin = new Thickness(10,18,15,18),
-            Child = profileImage // Set the Image as the content of the Border
-        };
+        var imageBorder = new Border();
+        imageBorder.SetResourceReference(Border.BorderBrushProperty, "AccentBrush");
+        imageBorder.BorderThickness = new Thickness(2);
+        imageBorder.Padding = new Thickness(0);
+        imageBorder.CornerRadius = new CornerRadius(5);
+        imageBorder.Margin = new Thickness(10, 18, 15, 18);
+        imageBorder.Child = profileImage;
 
         // Add the Border (with the image inside) to the Grid
         Grid.SetColumn(imageBorder, 1);
@@ -370,19 +374,19 @@ public partial class HomePage : UserControl
         // Apply the adjusted font size
         textBlock.FontSize = fontSize;
     }
-    
+
     public static void RunAHKScript(string path)
     {
         string scriptPath = Path.Combine(ConfigManager.AHKScriptFolder, path);
-            
+
         if (!File.Exists(scriptPath))
         {
             return;
         }
-            
+
         // Run the script using powershell
         using var ahkProcess = new Process();
-            
+
         // Runs the script via Explorer, ensuring it uses whatever the
         // default binary for AHK is. Skips having to find a specific path to AHK
         ahkProcess.StartInfo.FileName = "explorer";
@@ -397,7 +401,7 @@ public partial class HomePage : UserControl
             RunAHKScript(ConfigManager.VisorWipeScript);
         }
     }
-    
+
     private void VideoRecord()
     {
         if (ConfigManager.VideoRecord == 1)
