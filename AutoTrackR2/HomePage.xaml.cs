@@ -26,7 +26,9 @@ public partial class HomePage : UserControl
         _killHistoryManager = new KillHistoryManager(ConfigManager.KillHistoryFile);
 
         // Set the TextBlock text
-        KillTallyTitle.Text = $"Kill Tally - {_killHistoryManager.GetKillsInCurrentMonth().Count}";
+        KillTallyTitle.Text = $"Kill Tally - {DateTime.Now.ToString("MMMM")}";
+        KillTallyTextBox.Text = _killHistoryManager.GetKillsInCurrentMonth().Count.ToString();
+        AdjustFontSize(KillTallyTextBox);
         AddKillHistoryKillsToUI();
 
     }
@@ -125,7 +127,7 @@ public partial class HomePage : UserControl
         {
             Dispatcher.Invoke(() =>
             {
-                GameModeTextBox.Text = mode.ToString();
+                GameModeTextBox.Text = mode == GameMode.PersistentUniverse ? "PU" : mode.ToString();
                 AdjustFontSize(GameModeTextBox);
                 LocalPlayerData.CurrentGameMode = mode;
             });
