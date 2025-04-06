@@ -34,7 +34,19 @@ public class KillHistoryManager
         // Append the new kill data to the CSV file
         var csv = new StringBuilder();
         csv.AppendLine($"\"{killData.KillTime}\",\"{killData.EnemyPilot}\",\"{killData.EnemyShip}\",\"{killData.Enlisted}\",\"{killData.RecordNumber}\",\"{killData.OrgAffiliation}\",\"{killData.Player}\",\"{killData.Weapon}\",\"{killData.Ship}\",\"{killData.Method}\",\"{killData.Mode}\",\"{killData.GameVersion}\",\"{killData.TrackRver}\",\"{killData.Logged}\",\"{killData.PFP}\"");
-        File.AppendAllText(_killHistoryPath, csv.ToString());
+        
+        // Check file can be written to
+        try
+        {
+            using var fileStream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.None);
+            using var writer = new StreamWriter(fileStream);
+            writer.Write(csv.ToString());
+        }
+        catch (IOException ex)
+        {
+            // Handle the exception (e.g., log it)
+            Console.WriteLine($"Error writing to file: {ex.Message}");
+        }
     }
     
     public List<KillData> GetKills()

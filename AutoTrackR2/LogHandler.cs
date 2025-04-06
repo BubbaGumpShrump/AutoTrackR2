@@ -78,7 +78,7 @@ public class LogHandler(string logPath)
     // Parse a single line of the log file and run matching handlers
     private void HandleLogEntry(string line)
     {
-        Console.WriteLine(line);
+        // Console.WriteLine(line);
         foreach (var handler in _eventHandlers)
         {
             var match = handler.Pattern.Match(line);
@@ -98,6 +98,11 @@ public class LogHandler(string logPath)
     {
         while (!token.IsCancellationRequested)
         {
+            if (_reader == null || _fileStream == null)
+            {
+                break;
+            }
+            
             CheckGameProcessState();
             
             List<string> lines = new List<string>();

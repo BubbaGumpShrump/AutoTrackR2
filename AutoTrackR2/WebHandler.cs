@@ -80,6 +80,8 @@ public static class WebHandler
     
     public static async Task SubmitKill(KillData killData)
     {
+        // int secondSpaceIndex = killData.Enlisted.IndexOf(" ", killData.Enlisted.IndexOf(" ") + 1);
+        // killData.Enlisted = killData.Enlisted.Insert(secondSpaceIndex, ",");
         var apiKillData = new APIKillData
         {
             victim_ship = killData.EnemyShip,
@@ -88,6 +90,7 @@ public static class WebHandler
             rsi = killData.RecordNumber,
             weapon = killData.Weapon,
             method = killData.Method,
+            gamemode = killData.Mode,
             // loadout_ship = LocalPlayerData.PlayerShip ?? "Unknown",
             loadout_ship = killData.Ship,
             game_version = killData.GameVersion,
@@ -95,11 +98,25 @@ public static class WebHandler
             location = "Unknown"
         };
         
+        if (string.IsNullOrEmpty(apiKillData.rsi))
+        {
+            apiKillData.rsi = "-1";
+        }
+        
         var httpClient = new HttpClient();
-        string jsonData = JsonSerializer.Serialize(killData);
+        string jsonData = JsonSerializer.Serialize(apiKillData);
         httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + ConfigManager.ApiKey);
         httpClient.DefaultRequestHeaders.Add("User-Agent", "AutoTrackR2");
         httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-        await httpClient.PostAsync(ConfigManager.ApiUrl + "register-kill", new StringContent(jsonData, Encoding.UTF8, "application/json"));
+        var response = await httpClient.PostAsync(ConfigManager.ApiUrl + "register-kill", new StringContent(jsonData, Encoding.UTF8, "application/json"));
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            Console.WriteLine("Failed to submit kill data: ");
+            Console.WriteLine(jsonData);
+        }
+        else if (response.StatusCode == HttpStatusCode.OK)
+        {
+            Console.WriteLine("Successfully submitted kill data");
+        }
     }
 }

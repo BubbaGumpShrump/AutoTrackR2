@@ -28,9 +28,9 @@ public partial class HomePage : UserControl
         // Set the TextBlock text
         KillTallyTitle.Text = $"Kill Tally - {_killHistoryManager.GetKillsInCurrentMonth().Count}";
         AddKillHistoryKillsToUI();
+        
     }
-    
-    // Update Start/Stop button states based on the isRunning flag
+    //
     public void UpdateButtonState(bool isRunning)
     {
         var accentColor = (Color)Application.Current.Resources["AccentColor"];
