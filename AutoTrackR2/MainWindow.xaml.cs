@@ -1,4 +1,6 @@
 ﻿//using System.Collections.Generic;
+
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -32,9 +34,6 @@ namespace AutoTrackR2
         public MainWindow()
         {
             InitializeComponent();
-
-            // Load configuration settings before setting them in any page
-            ConfigManager.LoadConfig();
 
             homePage = new HomePage(); // Create a single instance of HomePage
             ContentControl.Content = homePage; // Default to HomePage
@@ -195,6 +194,13 @@ namespace AutoTrackR2
     public static class ConfigManager
     {
         public static string LogFile { get; set; }
+        public static string KillHistoryFile { get; set; }
+        
+        public static string AHKScriptFolder { get; set; }
+        
+        public static string VisorWipeScript { get; set; }
+        public static string VideoRecordScript { get; set; }
+        
         public static string ApiUrl { get; set; }
         public static string ApiKey { get; set; }
         public static string VideoPath { get; set; }
@@ -202,6 +208,27 @@ namespace AutoTrackR2
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
         public static int Theme { get; set; }
+        
+        static ConfigManager()
+        {   
+            LoadConfig();
+            
+            // Set default values
+            // AppData\Local\AutoTrackR2\Kill-log.csv
+            KillHistoryFile = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2",
+                "Kill-log.csv"
+            );
+            
+            AHKScriptFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2"
+            );
+            
+            VisorWipeScript = "visorwipe.ahk";
+            VideoRecordScript = "videorecord.ahk";
+        }
 
         public static void LoadConfig()
         {
@@ -241,7 +268,7 @@ namespace AutoTrackR2
             // Define the config file path in a writable location
             string configDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "YourAppName"
+                "AutoTrackR2"
             );
 
             // Ensure the directory exists

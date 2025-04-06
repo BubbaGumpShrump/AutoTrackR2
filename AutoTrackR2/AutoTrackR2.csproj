@@ -109,9 +109,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="KillTrackR_MainScript.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="update.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

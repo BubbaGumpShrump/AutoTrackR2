@@ -24,10 +24,10 @@ namespace AutoTrackR2
         {
             InitializeComponent();
             this.mainWindow = mainWindow;
-         
+
             LogFilePath.Text = ConfigManager.LogFile;
             ApiUrl.Text = ConfigManager.ApiUrl;
-            ApiKey.Text = ConfigManager.ApiKey;
+            ApiKey.Password = ConfigManager.ApiKey;
             VideoPath.Text = ConfigManager.VideoPath;
             VisorWipeSlider.Value = ConfigManager.VisorWipe;
             VideoRecordSlider.Value = ConfigManager.VideoRecord;
@@ -70,7 +70,7 @@ namespace AutoTrackR2
             // Set the textboxes with the loaded values
             LogFilePath.Text = logFile;
             ApiUrl.Text = apiUrl;
-            ApiKey.Text = apiKey;
+            ApiKey.Password = apiKey;
             VideoPath.Text = videoPath;
 
             // Set the sliders with the loaded values
@@ -123,7 +123,7 @@ namespace AutoTrackR2
 
             // Apply the selected theme
             ApplyTheme(themeIndex);
-            
+
             mainWindow.UpdateTabVisuals();
         }
 
@@ -413,8 +413,7 @@ namespace AutoTrackR2
 
             // Build the dynamic file path for the current user
             string filePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2",
+                ConfigManager.AHKScriptFolder,
                 "visorwipe.ahk"
             );
 
@@ -508,36 +507,19 @@ namespace AutoTrackR2
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Get the directory for the user's local application data
-            string appDataDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2"
-            );
+            ConfigManager.ApiKey = ApiKey.Password;
+            ConfigManager.ApiUrl = ApiUrl.Text;
+            ConfigManager.LogFile = LogFilePath.Text;
+            ConfigManager.VideoPath = VideoPath.Text;
+            ConfigManager.VisorWipe = (int)VisorWipeSlider.Value;
+            ConfigManager.VideoRecord = (int)VideoRecordSlider.Value;
+            ConfigManager.OfflineMode = (int)OfflineModeSlider.Value;
+            ConfigManager.Theme = (int)ThemeSlider.Value;
 
-            // Ensure the directory exists
-            if (!Directory.Exists(appDataDirectory))
-            {
-                Directory.CreateDirectory(appDataDirectory);
-            }
-
-            // Combine the app data directory with the config file name
-            string configFilePath = Path.Combine(appDataDirectory, "config.ini");
-
-            using (StreamWriter writer = new StreamWriter(configFilePath))
-            {
-                writer.WriteLine($"LogFile={LogFilePath.Text}");
-                writer.WriteLine($"ApiUrl={ApiUrl.Text}");
-                writer.WriteLine($"ApiKey={ApiKey.Text}");
-                writer.WriteLine($"VideoPath={VideoPath.Text}");
-                writer.WriteLine($"VisorWipe={(int)VisorWipeSlider.Value}");
-                writer.WriteLine($"VideoRecord={(int)VideoRecordSlider.Value}");
-                writer.WriteLine($"OfflineMode={(int)OfflineModeSlider.Value}");
-                writer.WriteLine($"Theme={(int)ThemeSlider.Value}"); // Assumes you are saving the theme slider value (0, 1, or 2)
-            }
-
+            // Save the current config values
+            ConfigManager.SaveConfig();
             // Start the flashing effect
             FlashSaveButton();
-            ConfigManager.LoadConfig();
         }
 
         private void FlashSaveButton()
@@ -591,7 +573,7 @@ namespace AutoTrackR2
         {
             string apiUrl = ApiUrl.Text;
             string modifiedUrl = Regex.Replace(apiUrl, @"(https?://[^/]+)/?.*", "$1/test");
-            string apiKey = ApiKey.Text;
+            string apiKey = ApiKey.Password;
             Debug.WriteLine($"Sending to {modifiedUrl}");
 
             try
