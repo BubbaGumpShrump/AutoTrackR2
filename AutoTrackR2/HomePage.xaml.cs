@@ -131,13 +131,15 @@ public partial class HomePage : UserControl
         };
 
         // Ship
-        TrackREventDispatcher.JumpDriveStateChangedEvent += (shipName) =>
+        TrackREventDispatcher.JumpDriveStateChangedEvent += (data) =>
         {
             Dispatcher.Invoke(() =>
             {
-                PlayerShipTextBox.Text = LocalPlayerData.CurrentGameMode == GameMode.PersistentUniverse ? shipName : "Unknown";
+                PlayerShipTextBox.Text = data.ShipName;
+                Console.WriteLine(data.ShipName);
                 AdjustFontSize(PlayerShipTextBox);
-                LocalPlayerData.PlayerShip = shipName;
+                LocalPlayerData.PlayerShip = data.ShipName;
+                LocalPlayerData.LastSeenVehicleLocation = data.Location;
             });
         };
 
@@ -170,6 +172,7 @@ public partial class HomePage : UserControl
                     {
                         EnemyPilot = actorDeathData.VictimPilot,
                         EnemyShip = actorDeathData.VictimShip,
+                        Location = LocalPlayerData.LastSeenVehicleLocation,
                         OrgAffiliation = playerData?.OrgName,
                         Weapon = actorDeathData.Weapon,
                         Ship = LocalPlayerData.PlayerShip ?? "Unknown",

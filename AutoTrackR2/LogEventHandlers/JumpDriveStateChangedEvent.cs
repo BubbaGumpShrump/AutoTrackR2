@@ -2,6 +2,12 @@
 
 namespace AutoTrackR2.LogEventHandlers;
 
+public struct JumpDriveStateChangedData
+{
+    public string ShipName { get; set; }
+    public string Location { get; set; }
+}
+
 public class JumpDriveStateChangedEvent : ILogEventHandler
 {
     public Regex Pattern { get; }
@@ -9,7 +15,7 @@ public class JumpDriveStateChangedEvent : ILogEventHandler
     
     public JumpDriveStateChangedEvent()
     {
-        Pattern = new Regex(@"<Jump Drive State Changed>.*.adam: (?<ShipName>.*.) in");
+        Pattern = new Regex(@"<Jump Drive State Changed>.*.adam: (?<ShipName>.*.) in zone (?<Location>.*.)\)");
     }
     
     public void Handle(LogEntry entry)
@@ -17,11 +23,20 @@ public class JumpDriveStateChangedEvent : ILogEventHandler
         if (entry.Message is null) return;
         var match = Pattern.Match(entry.Message);
         if (!match.Success) return;
-        
+
+        var data = new JumpDriveStateChangedData
+        {
+            Location = match.Groups["Location"].Value
+        };
+
         match = _cleanUpPattern.Match(match.Groups["ShipName"].Value);
         if (match.Success)
         {
-            TrackREventDispatcher.OnJumpDriveStateChangedEvent(match.Groups[1].Value);;
+            data.ShipName = match.Groups[1].Value;
+        }
+        if (!string.IsNullOrEmpty(data.ShipName) && !string.IsNullOrEmpty(data.Location))
+        {
+            TrackREventDispatcher.OnJumpDriveStateChangedEvent(data);
         }
     }
 }

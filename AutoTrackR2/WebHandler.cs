@@ -94,7 +94,7 @@ public static class WebHandler
             loadout_ship = killData.Ship,
             game_version = killData.GameVersion,
             trackr_version = killData.TrackRver,
-            location = "Unknown",
+            location = killData.Location,
             time = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
 
@@ -123,6 +123,7 @@ public static class WebHandler
         Console.WriteLine($"API URL: {ConfigManager.ApiUrl}register-kill");
         Console.WriteLine($"Victim: {apiKillData.victim}");
         Console.WriteLine($"Victim Ship: {apiKillData.victim_ship}");
+        Console.WriteLine($"Location: {apiKillData.location}");
         Console.WriteLine($"Weapon: {apiKillData.weapon}");
         Console.WriteLine($"Method: {apiKillData.method}");
         Console.WriteLine($"Game Mode: {apiKillData.gamemode}");

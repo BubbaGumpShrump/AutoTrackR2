@@ -19,6 +19,7 @@ public struct KillData
     public string? Enlisted;
     public string? RecordNumber;
     public string? OrgAffiliation;
+    public string? Location;
     public string? Player;
     public string? Weapon;
     public string? Ship;

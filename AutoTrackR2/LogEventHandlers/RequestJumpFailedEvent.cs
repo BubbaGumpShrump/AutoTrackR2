@@ -9,7 +9,7 @@ public class RequestJumpFailedEvent : ILogEventHandler
     
     public RequestJumpFailedEvent()
     {
-        Pattern = new Regex(@"<Request Jump Failed>.*.adam: (?<ShipName>.*.) in");
+        Pattern = new Regex(@"<Request Jump Failed>.*.adam: (?<ShipName>.*.) in zone (?<Location>.*.)\)");
     }
     
     public void Handle(LogEntry entry)
@@ -18,10 +18,20 @@ public class RequestJumpFailedEvent : ILogEventHandler
         var match = Pattern.Match(entry.Message);
         if (!match.Success) return;
         
+        var data = new JumpDriveStateChangedData
+        {
+            Location = match.Groups["Location"].Value
+        };
+        
         match = _cleanUpPattern.Match(match.Groups["ShipName"].Value);
         if (match.Success)
         {
-            TrackREventDispatcher.OnJumpDriveStateChangedEvent(match.Groups[1].Value);;
+            data.ShipName = match.Groups[1].Value;
+        }
+        
+        if (!string.IsNullOrEmpty(data.ShipName) && !string.IsNullOrEmpty(data.Location))
+        {
+            TrackREventDispatcher.OnJumpDriveStateChangedEvent(data);
         }
     }
 }

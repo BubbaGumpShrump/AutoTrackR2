@@ -49,9 +49,9 @@ public static class TrackREventDispatcher
     
     // Jump Drive state has changed
     // Todo: Add proper data for this event. Right now only ship name is used.
-    public static event Action<string>? JumpDriveStateChangedEvent;
-    public static void OnJumpDriveStateChangedEvent(string shipName)
+    public static event Action<JumpDriveStateChangedData>? JumpDriveStateChangedEvent;
+    public static void OnJumpDriveStateChangedEvent(JumpDriveStateChangedData data)
     {
-        JumpDriveStateChangedEvent?.Invoke(shipName);
+        JumpDriveStateChangedEvent?.Invoke(data);
     }
 }

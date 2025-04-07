@@ -14,5 +14,5 @@ public static class LocalPlayerData
     public static string? PlayerShip;
     public static string? GameVersion;
     public static GameMode CurrentGameMode;
-    public static string? LastSeenVehicleLocation;
+    public static string? LastSeenVehicleLocation = "Unknown";
 }

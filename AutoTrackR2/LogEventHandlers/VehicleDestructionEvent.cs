@@ -21,14 +21,16 @@ public class VehicleDestructionEvent : ILogEventHandler
     public Regex Pattern { get; }
     public VehicleDestructionEvent()
     {
-        Pattern = new Regex("""
-                            "<(?<timestamp>[^>]+)> \[Notice\] <Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: " +
-                            "Vehicle '(?<vehicle>[^']+)' \[\d+\] in zone '(?<vehicle_zone>[^']+)' " +
-                            "\[pos x: (?<pos_x>[-\d\.]+), y: (?<pos_y>[-\d\.]+), z: (?<pos_z>[-\d\.]+) " +
-                            "vel x: [^,]+, y: [^,]+, z: [^\]]+\] driven by '(?<driver>[^']+)' \[\d+\] " +
-                            "advanced from destroy level (?<destroy_level_from>\d+) to (?<destroy_level_to>\d+) " +
-                            "caused by '(?<caused_by>[^']+)' \[\d+\] with '(?<damage_type>[^']+)'"
-                            """);
+        const string patternStr = """
+                                  <(?<timestamp>[^>]+)> \[Notice\] <Vehicle Destruction> CVehicle::OnAdvanceDestroyLevel: 
+                                  Vehicle '(?<vehicle>[^']+)' \[\d+\] in zone '(?<vehicle_zone>[^']+)' 
+                                  \[pos x: (?<pos_x>[-\d\.]+), y: (?<pos_y>[-\d\.]+), z: (?<pos_z>[-\d\.]+) 
+                                  vel x: [^,]+, y: [^,]+, z: [^\]]+\] driven by '(?<driver>[^']+)' \[\d+\] 
+                                  advanced from destroy level (?<destroy_level_from>\d+) to (?<destroy_level_to>\d+) 
+                                  caused by '(?<caused_by>[^']+)' \[\d+\] with '(?<damage_type>[^']+)'
+                                  """;
+        
+        Pattern = new Regex(Regex.Replace(patternStr, @"\t|\n|\r", ""));
     }
 
     public void Handle(LogEntry entry)

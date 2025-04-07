@@ -42,7 +42,8 @@ public class LogHandler
         new InPersistentUniverseEvent(),
         new GameVersionEvent(),
         new JumpDriveStateChangedEvent(),
-        new RequestJumpFailedEvent()
+        new RequestJumpFailedEvent(),
+        new VehicleDestructionEvent()
     ];
   
     public LogHandler(string? logPath)
