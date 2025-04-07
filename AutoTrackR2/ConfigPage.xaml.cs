@@ -20,7 +20,7 @@ public partial class ConfigPage : UserControl
     private double savedSliderValue = 0;
 
     private MainWindow mainWindow;
-    
+
     Dictionary<string, Theme>? _themes = null;
 
     public ConfigPage(MainWindow mainWindow)
@@ -38,11 +38,17 @@ public partial class ConfigPage : UserControl
         ThemeSlider.Value = ConfigManager.Theme;
 
         ApplyToggleModeStyle(OfflineModeSlider.Value, VisorWipeSlider.Value, VideoRecordSlider.Value);
-        
-        
+
+
         const string themeJsonPath = "themes.json";
         var themeJson = File.ReadAllText(themeJsonPath);
         _themes = JsonSerializer.Deserialize<Dictionary<string, Theme>>(themeJson);
+
+        // Set the theme slider's maximum value based on the number of themes
+        if (_themes != null)
+        {
+            ThemeSlider.Maximum = _themes.Count - 1;
+        }
     }
 
     // Method to change the logo image in MainWindow
@@ -88,7 +94,7 @@ public partial class ConfigPage : UserControl
 
         // Handle themes
         ApplyTheme(theme);
-        
+
     }
 
     private void ApplyToggleModeStyle(double offlineModeValue, double visorWipeValue, double videoRecordValue)
@@ -133,13 +139,13 @@ public partial class ConfigPage : UserControl
     {
         var theme = _themes?.Values.ElementAtOrDefault(themeIndex);
         if (theme == null) return;
-        
+
         // Update the logo
         if (theme.Logo != null && theme.Logo.Path != null)
         {
             ChangeLogo(theme.Logo.Path,
                 theme.Logo.Primary != null
-                    ? (Color) ColorConverter.ConvertFromString(theme.Logo.Primary)
+                    ? (Color)ColorConverter.ConvertFromString(theme.Logo.Primary)
                     : Colors.Transparent);
         }
 

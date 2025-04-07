@@ -207,7 +207,6 @@
                                                    Margin="0,7,0,5"/>
                                         <Slider x:Name="ThemeSlider"
                                                 Minimum="0"
-                                                Maximum="24"
                                                 Value="0"
                                                 TickFrequency="1"
                                                 IsSnapToTickEnabled="True"
