@@ -297,7 +297,7 @@ namespace AutoTrackR2
                         (Color)ColorConverter.ConvertFromString("#1B0C04"), // Button
                         (Color)ColorConverter.ConvertFromString("#1B0C04"), // Background
                         (Color)ColorConverter.ConvertFromString("#FFE4B5"), // Text
-                        (Color)ColorConverter.ConvertFromString("#FFE4B5")  // AltText 
+                        (Color)ColorConverter.ConvertFromString("#A88F2C")  // AltText 
                     );
                     ChangeLogo("/Assets/chibifox.png", (Color)ColorConverter.ConvertFromString("#FFA500"));
                     break;
