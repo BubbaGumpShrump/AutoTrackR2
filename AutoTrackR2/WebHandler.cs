@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using AutoTrackR2.LogEventHandlers;
 using System.Globalization;
+using System.Security.Cryptography;
 
 namespace AutoTrackR2;
 
@@ -24,6 +25,27 @@ public static class WebHandler
         public string? trackr_version { get; set; }
         public string? location { get; set; }
         public long time { get; set; }
+        public string hash { get; set; } = string.Empty;
+    }
+
+    private static string GenerateKillHash(string victimName, long timestamp)
+    {
+        // Combine victim name and timestamp
+        string combined = $"{victimName}_{timestamp}";
+
+        // Create SHA256 hash
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(combined));
+
+            // Convert byte array to hex string
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
     }
 
     public static async Task<PlayerData?> GetPlayerData(string enemyPilot)
@@ -82,6 +104,7 @@ public static class WebHandler
 
     public static async Task SubmitKill(KillData killData)
     {
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var apiKillData = new APIKillData
         {
             victim_ship = killData.EnemyShip,
@@ -95,7 +118,8 @@ public static class WebHandler
             game_version = killData.GameVersion,
             trackr_version = killData.TrackRver,
             location = killData.Location,
-            time = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            time = timestamp,
+            hash = GenerateKillHash(killData.EnemyPilot!, timestamp)
         };
 
         if (string.IsNullOrEmpty(apiKillData.rsi))
