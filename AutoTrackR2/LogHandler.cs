@@ -46,8 +46,12 @@ public class LogHandler
         new RequestJumpFailedEvent()
     ];
 
-    public LogHandler(string logPath)
+    public LogHandler(string? logPath)
     {
+        if (string.IsNullOrEmpty(logPath))
+        {
+            throw new ArgumentNullException(nameof(logPath), "Log path cannot be null or empty");
+        }
         _logPath = logPath;
     }
 

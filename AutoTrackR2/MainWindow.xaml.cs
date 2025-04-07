@@ -58,7 +58,7 @@ namespace AutoTrackR2
             }
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             // Clean up resources
             homePage?.Cleanup();
@@ -163,10 +163,10 @@ namespace AutoTrackR2
 
             // Set the fields in ConfigPage.xaml.cs based on the loaded config
             configPage.SetConfigValues(
-                ConfigManager.LogFile,
-                ConfigManager.ApiUrl,
-                ConfigManager.ApiKey,
-                ConfigManager.VideoPath,
+                ConfigManager.LogFile ?? string.Empty,
+                ConfigManager.ApiUrl ?? string.Empty,
+                ConfigManager.ApiKey ?? string.Empty,
+                ConfigManager.VideoPath ?? string.Empty,
                 ConfigManager.VisorWipe,
                 ConfigManager.VideoRecord,
                 ConfigManager.OfflineMode,
@@ -177,17 +177,14 @@ namespace AutoTrackR2
 
     public static class ConfigManager
     {
-        public static string LogFile { get; set; }
-        public static string KillHistoryFile { get; set; }
-
-        public static string AHKScriptFolder { get; set; }
-
-        public static string VisorWipeScript { get; set; }
-        public static string VideoRecordScript { get; set; }
-
-        public static string ApiUrl { get; set; }
-        public static string ApiKey { get; set; }
-        public static string VideoPath { get; set; }
+        public static string? LogFile { get; set; } = string.Empty;
+        public static string? KillHistoryFile { get; set; } = string.Empty;
+        public static string? AHKScriptFolder { get; set; } = string.Empty;
+        public static string? VisorWipeScript { get; set; } = string.Empty;
+        public static string? VideoRecordScript { get; set; } = string.Empty;
+        public static string? ApiUrl { get; set; } = string.Empty;
+        public static string? ApiKey { get; set; } = string.Empty;
+        public static string? VideoPath { get; set; } = string.Empty;
         public static int VisorWipe { get; set; }
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }

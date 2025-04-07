@@ -19,7 +19,7 @@ public struct VehicleDestructionData
 public class VehicleDestructionEvent : ILogEventHandler
 {
     public Regex Pattern { get; }
-    
+
     public VehicleDestructionEvent()
     {
         Pattern = new Regex("""
@@ -34,6 +34,10 @@ public class VehicleDestructionEvent : ILogEventHandler
 
     public void Handle(LogEntry entry)
     {
+        if (entry.Message == null)
+        {
+            return;
+        }
         var match = Pattern.Match(entry.Message);
         if (!match.Success)
         {

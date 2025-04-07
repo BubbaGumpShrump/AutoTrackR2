@@ -399,11 +399,14 @@ namespace AutoTrackR2
             dialog.ValidateNames = false;
             dialog.Filter = "All files|*.*";
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true && dialog.FileName != null)
             {
                 // Extract only the directory path from the file
-                string selectedFolder = Path.GetDirectoryName(dialog.FileName);
-                VideoPath.Text = selectedFolder; // Set the folder path
+                string? selectedFolder = Path.GetDirectoryName(dialog.FileName);
+                if (selectedFolder != null)
+                {
+                    VideoPath.Text = selectedFolder; // Set the folder path
+                }
             }
         }
 
@@ -412,6 +415,11 @@ namespace AutoTrackR2
             Slider slider = (Slider)sender;
 
             // Build the dynamic file path for the current user
+            if (string.IsNullOrEmpty(ConfigManager.AHKScriptFolder))
+            {
+                MessageBox.Show("AHK script folder path is not configured.", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             string filePath = Path.Combine(
                 ConfigManager.AHKScriptFolder,
                 "visorwipe.ahk"
@@ -524,7 +532,7 @@ namespace AutoTrackR2
 
         private void FlashSaveButton()
         {
-            string originalText = SaveButton.Content.ToString();
+            string? originalText = SaveButton.Content?.ToString() ?? string.Empty;
             SaveButton.Content = "Saved";
 
             // Save button color change effect

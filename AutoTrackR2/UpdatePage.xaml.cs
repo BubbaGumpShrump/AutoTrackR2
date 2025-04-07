@@ -10,7 +10,7 @@ namespace AutoTrackR2
     public partial class UpdatePage : UserControl
     {
         public static string currentVersion = "v2.09";
-        private string latestVersion;
+        private string? latestVersion = string.Empty;
 
         public UpdatePage()
         {
@@ -60,7 +60,7 @@ namespace AutoTrackR2
                 // Parse the JSON using System.Text.Json
                 using var document = System.Text.Json.JsonDocument.Parse(response);
                 var root = document.RootElement;
-                var tagName = root.GetProperty("tag_name").GetString();
+                var tagName = root.GetProperty("tag_name").GetString() ?? "unknown";
 
                 return tagName;
             }
@@ -77,7 +77,8 @@ namespace AutoTrackR2
                 if (root.GetArrayLength() > 0)
                 {
                     var firstRelease = root[0];
-                    return firstRelease.GetProperty("tag_name").GetString();
+                    var tagName = firstRelease.GetProperty("tag_name").GetString() ?? "unknown";
+                    return tagName;
                 }
 
                 throw new Exception("No releases found.");
@@ -90,7 +91,7 @@ namespace AutoTrackR2
             return !currentVersion.Equals(latestVersion, StringComparison.Ordinal);
         }
 
-        private async void InstallButton_Click(object sender, RoutedEventArgs e)
+        private void InstallButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {

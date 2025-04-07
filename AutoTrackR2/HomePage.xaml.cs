@@ -26,6 +26,10 @@ public partial class HomePage : UserControl
     {
         InitializeComponent();
 
+        if (string.IsNullOrEmpty(ConfigManager.KillHistoryFile))
+        {
+            throw new InvalidOperationException("KillHistoryFile path is not configured.");
+        }
         _killHistoryManager = new KillHistoryManager(ConfigManager.KillHistoryFile);
 
         // Set the TextBlock text
@@ -51,7 +55,7 @@ public partial class HomePage : UserControl
         }
     }
 
-    private void CheckStarCitizenStatus(object sender, ElapsedEventArgs e)
+    private void CheckStarCitizenStatus(object? sender, ElapsedEventArgs e)
     {
         bool isRunning = IsStarCitizenRunning();
         Dispatcher.Invoke(() =>
@@ -311,7 +315,7 @@ public partial class HomePage : UserControl
         // Create the Image for the profile
         var profileImage = new Image
         {
-            Source = new BitmapImage(new Uri(killData.PFP)), // Assuming the 8th part contains the profile image URL
+            Source = new BitmapImage(new Uri(killData.PFP ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg")),
             Width = 90,
             Height = 90,
             Stretch = Stretch.Fill, // Adjust how the image fits
@@ -392,8 +396,13 @@ public partial class HomePage : UserControl
         textBlock.FontSize = fontSize;
     }
 
-    public static void RunAHKScript(string path)
+    public static void RunAHKScript(string? path)
     {
+        if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(ConfigManager.AHKScriptFolder))
+        {
+            return;
+        }
+
         string scriptPath = Path.Combine(ConfigManager.AHKScriptFolder, path);
 
         if (!File.Exists(scriptPath))
