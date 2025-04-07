@@ -33,6 +33,9 @@
     <None Remove="config.ini" />
     <None Remove="Fonts\Orbitron-Bold.ttf" />
     <None Remove="Fonts\Roboto-Regular.ttf" />
+    <None Update="themes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

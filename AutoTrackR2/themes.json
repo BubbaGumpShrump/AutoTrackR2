@@ -1,0 +1,321 @@
+{
+    "Blue": {
+      "Colors": {
+        "Accent": "#00A9E0",
+        "Button": "#0F1A2B",
+        "Background": "#1D2D44",
+        "Text": "#FFFFFF",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/AutoTrackR.png"
+      }
+    },
+    "Green": {
+      "Colors": {
+        "Accent": "#1D9F00",
+        "Button": "#262424",
+        "Background": "#072501",
+        "Text": "#D7AF3C",
+        "AltText": "#DCD6C4"
+      },
+      "Logo": {
+        "Path": "/Assets/AutoTrackR.png"
+      }
+    },
+    "Red": {
+      "Colors": {
+        "Accent": "#D32F2F",
+        "Button": "#424242",
+        "Background": "#212121",
+        "Text": "#E0E0E0",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/AutoTrackR.png"
+      }
+    },
+    "Purple": {
+      "Colors": {
+        "Accent": "#32CD32",
+        "Button": "#33065F",
+        "Background": "#43065F",
+        "Text": "#00FF00",
+        "AltText": "#B3976E"
+      },
+      "Logo": {
+        "Path": "/Assets/AutoTrackR.png"
+      }
+    },
+    "GN": {
+      "Colors": {
+        "Accent": "#FF0000",
+        "Button": "#1A0000",
+        "Background": "#0A0000",
+        "Text": "#FFD700",
+        "AltText": "#FF4500"
+      },
+      "Logo": {
+        "Path": "/Assets/GN.png",
+        "primary": "#FF0000"
+      }
+    },
+    "NW": {
+      "Colors": {
+        "Accent": "#B92D2D",
+        "Button": "#1C1C1C",
+        "Background": "#262424",
+        "Text": "#01DDDA",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/NW.png",
+        "primary": "#01DDDA"
+      }
+    },
+    "D3VL": {
+      "Colors": {
+        "Accent": "#AA0000",
+        "Button": "#333333",
+        "Background": "#220000",
+        "Text": "#FF0000",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/D3VL.png",
+        "primary": "#CC0000"
+      }
+    },
+    "HIT": {
+      "Colors": {
+        "Accent": "#B92D2D",
+        "Button": "#1C1C1C",
+        "Background": "#262424",
+        "Text": "#7d7d7d",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/HIT.png"
+      }
+    },
+    "WRAITH": {
+      "Colors": {
+        "Accent": "#ff0000",
+        "Button": "#2a2a2a",
+        "Background": "#0a0a0a",
+        "Text": "#DFDFDF",
+        "AltText": "#8B0000"
+      },
+      "Logo": {
+        "Path": "/Assets/WRITH.png",
+        "primary": "#ff0000"
+      }
+    },
+    "Cinderborn": {
+      "Colors": {
+        "Accent": "#FF4500",
+        "Button": "#2A0A0A",
+        "Background": "#1A0000",
+        "Text": "#FF8C42",
+        "AltText": "#FF6B35"
+      },
+      "Logo": {
+        "Path": "/Assets/cinderborn.png",
+        "primary": "#FF4500"
+      }
+    },
+    "EMP": {
+      "Colors": {
+        "Accent": "#F5721C",
+        "Button": "#535353",
+        "Background": "#080000",
+        "Text": "#FFFFFF",
+        "AltText": "#CEA75B"
+      },
+      "Logo": {
+        "Path": "/Assets/EMP.png",
+        "primary": "#F3BD9B"
+      }
+    },
+    "AVS": {
+      "Colors": {
+        "Accent": "#00BFFF",
+        "Button": "#001F3F",
+        "Background": "#000B1A",
+        "Text": "#FFFFFF",
+        "AltText": "#87CEEB"
+      },
+      "Logo": {
+        "Path": "/Assets/AVSQN.png",
+        "primary": "#00BFFF"
+      }
+    },
+    "HEX": {
+      "Colors": {
+        "Accent": "#00FF00",
+        "Button": "#001A00",
+        "Background": "#000D00",
+        "Text": "#FFFFFF",
+        "AltText": "#39FF14"
+      },
+      "Logo": {
+        "Path": "/Assets/HEX.png",
+        "primary": "#00FF00"
+      }
+    },
+    "Mammon": {
+      "Colors": {
+        "Accent": "#FFD700",
+        "Button": "#2C2C2C",
+        "Background": "#1A1A1A",
+        "Text": "#FFFFFF",
+        "AltText": "#DAA520"
+      },
+      "Logo": {
+        "Path": "/Assets/MAMMON.png",
+        "primary": "#FFD700"
+      }
+    },
+    "Shadow Moses": {
+      "Colors": {
+        "Accent": "#FF69B4",
+        "Button": "#2C2C2C",
+        "Background": "#2C1F28",
+        "Text": "#E6E6E6",
+        "AltText": "#FF1493"
+      },
+      "Logo": {
+        "Path": "/Assets/ShadowMoses.png",
+        "primary": "#FF69B4"
+      }
+    },
+    "Mongrel Squad": {
+      "Colors": {
+        "Accent": "#00BFFF",
+        "Button": "#003366",
+        "Background": "#001F3F",
+        "Text": "#E6F3FF",
+        "AltText": "#87CEEB"
+      },
+      "Logo": {
+        "Path": "/Assets/BOBGREL.png",
+        "primary": "#00BFFF"
+      }
+    },
+    "Feezy": {
+      "Colors": {
+        "Accent": "#FFA500",
+        "Button": "#1B0C04",
+        "Background": "#1B0C04",
+        "Text": "#FFE4B5",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/chibifox.png",
+        "primary": "#FFA500"
+      }
+    },
+    "NMOS": {
+      "Colors": {
+        "Accent": "#EAB787",
+        "Button": "#601C1B",
+        "Background": "#170402",
+        "Text": "#F6DBAD",
+        "AltText": "#EBCAA0"
+      },
+      "Logo": {
+        "Path": "/Assets/NMOS.png",
+        "primary": "#EAB787"
+      }
+    },
+    "Rakk": {
+      "Colors": {
+        "Accent": "#FF00FF",
+        "Button": "#1C1C1C",
+        "Background": "#0A0A0A",
+        "Text": "#E6E6E6",
+        "AltText": "#00BFFF"
+      },
+      "Logo": {
+        "Path": "/Assets/RACKETEERS.png",
+        "primary": "#FF00FF"
+      }
+    },
+    "Blightveil": {
+      "Colors": {
+        "Accent": "#8B4AC6",
+        "Button": "#2A2035",
+        "Background": "#1A1621",
+        "Text": "#FFFFFF",
+        "AltText": "#FF3333"
+      },
+      "Logo": {
+        "Path": "/Assets/Blightveil.png",
+        "primary": "#8B4AC6"
+      }
+    },
+    "Gankhub": {
+      "Colors": {
+        "Accent": "#ffa500",
+        "Button": "#2C2C2C",
+        "Background": "#1b1b1b",
+        "Text": "#FFFFFF",
+        "AltText": "#ffa500"
+      },
+      "Logo": {
+        "Path": "/Assets/Gankhub.png"
+      }
+    },
+    "IronPoint": {
+      "Colors": {
+        "Accent": "#FF0000",
+        "Button": "#1C1C1C",
+        "Background": "#000000",
+        "Text": "#FFFFFF",
+        "AltText": "#A88F2C"
+      },
+      "Logo": {
+        "Path": "/Assets/IP.png",
+        "primary": "#FF0000"
+      }
+    },
+    "Shadow Guardian": {
+      "Colors": {
+        "Accent": "#8B0000",
+        "Button": "#1A0000",
+        "Background": "#0A0000",
+        "Text": "#D3D3D3",
+        "AltText": "#B22222"
+      },
+      "Logo": {
+        "Path": "/Assets/shadowguard.png",
+        "primary": "#8B0000"
+      }
+    },
+    "VOX": {
+      "Colors": {
+        "Accent": "#C0C0C0",
+        "Button": "#1C1C1C",
+        "Background": "#424242",
+        "Text": "#FFD700",
+        "AltText": "#817E79"
+      },
+      "Logo": {
+        "Path": "/Assets/VOX.png",
+        "primary": "#FFD700"
+      }
+    },
+    "Zap": {
+      "Colors": {
+        "Accent": "#FFD700",
+        "Button": "#1A1A1A",
+        "Background": "#0A0A0A",
+        "Text": "#FFFFFF",
+        "AltText": "#FFA500"
+      },
+      "Logo": {
+        "Path": "/Assets/ZAP.png",
+        "primary": "#FFD700"
+      }
+    }
+}
