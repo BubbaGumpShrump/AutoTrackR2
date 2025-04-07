@@ -293,11 +293,11 @@ namespace AutoTrackR2
                     break;
                 case 16: // Feezy
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#FFA500"), // Accent/Border - Orange
-                        (Color)ColorConverter.ConvertFromString("#FFE4B5"), // Button - Moccasin
-                        (Color)ColorConverter.ConvertFromString("#FFF8DC"), // Background - Cornsilk
-                        (Color)ColorConverter.ConvertFromString("#8B4513"), // Text - Saddle Brown
-                        (Color)ColorConverter.ConvertFromString("#FF7F50")  // AltText - Coral
+                        (Color)ColorConverter.ConvertFromString("#FFA500"), // Accent/Border
+                        (Color)ColorConverter.ConvertFromString("#1B0C04"), // Button
+                        (Color)ColorConverter.ConvertFromString("#1B0C04"), // Background
+                        (Color)ColorConverter.ConvertFromString("#FFE4B5"), // Text
+                        (Color)ColorConverter.ConvertFromString("#FFE4B5")  // AltText 
                     );
                     ChangeLogo("/Assets/chibifox.png", (Color)ColorConverter.ConvertFromString("#FFA500"));
                     break;

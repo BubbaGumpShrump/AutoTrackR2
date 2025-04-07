@@ -93,14 +93,6 @@ namespace AutoTrackR2
                 // Reuse the existing HomePage instance
                 ContentControl.Content = homePage;
             }
-            else if (clickedTabName == "StatsTab")
-            {
-                ContentControl.Content = new StatsPage();
-            }
-            else if (clickedTabName == "UpdateTab")
-            {
-                ContentControl.Content = new UpdatePage();
-            }
             else if (clickedTabName == "ConfigTab")
             {
                 ContentControl.Content = new ConfigPage(this);
