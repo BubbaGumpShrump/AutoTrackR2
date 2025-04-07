@@ -136,7 +136,6 @@ public partial class HomePage : UserControl
             Dispatcher.Invoke(() =>
             {
                 PlayerShipTextBox.Text = data.ShipName;
-                Console.WriteLine(data.ShipName);
                 AdjustFontSize(PlayerShipTextBox);
                 LocalPlayerData.PlayerShip = data.ShipName;
                 LocalPlayerData.LastSeenVehicleLocation = data.Location;
