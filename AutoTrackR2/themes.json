@@ -57,7 +57,7 @@
       },
       "Logo": {
         "Path": "/Assets/GN.png",
-        "primary": "#FF0000"
+        "Primary": "#FF0000"
       }
     },
     "NW": {
@@ -70,7 +70,7 @@
       },
       "Logo": {
         "Path": "/Assets/NW.png",
-        "primary": "#01DDDA"
+        "Primary": "#01DDDA"
       }
     },
     "D3VL": {
@@ -83,7 +83,7 @@
       },
       "Logo": {
         "Path": "/Assets/D3VL.png",
-        "primary": "#CC0000"
+        "Primary": "#CC0000"
       }
     },
     "HIT": {
@@ -108,7 +108,7 @@
       },
       "Logo": {
         "Path": "/Assets/WRITH.png",
-        "primary": "#ff0000"
+        "Primary": "#ff0000"
       }
     },
     "Cinderborn": {
@@ -121,7 +121,7 @@
       },
       "Logo": {
         "Path": "/Assets/cinderborn.png",
-        "primary": "#FF4500"
+        "Primary": "#FF4500"
       }
     },
     "EMP": {
@@ -134,7 +134,7 @@
       },
       "Logo": {
         "Path": "/Assets/EMP.png",
-        "primary": "#F3BD9B"
+        "Primary": "#F3BD9B"
       }
     },
     "AVS": {
@@ -147,7 +147,7 @@
       },
       "Logo": {
         "Path": "/Assets/AVSQN.png",
-        "primary": "#00BFFF"
+        "Primary": "#00BFFF"
       }
     },
     "HEX": {
@@ -160,7 +160,7 @@
       },
       "Logo": {
         "Path": "/Assets/HEX.png",
-        "primary": "#00FF00"
+        "Primary": "#00FF00"
       }
     },
     "Mammon": {
@@ -173,7 +173,7 @@
       },
       "Logo": {
         "Path": "/Assets/MAMMON.png",
-        "primary": "#FFD700"
+        "Primary": "#FFD700"
       }
     },
     "Shadow Moses": {
@@ -186,7 +186,7 @@
       },
       "Logo": {
         "Path": "/Assets/ShadowMoses.png",
-        "primary": "#FF69B4"
+        "Primary": "#FF69B4"
       }
     },
     "Mongrel Squad": {
@@ -199,7 +199,7 @@
       },
       "Logo": {
         "Path": "/Assets/BOBGREL.png",
-        "primary": "#00BFFF"
+        "Primary": "#00BFFF"
       }
     },
     "Feezy": {
@@ -212,7 +212,7 @@
       },
       "Logo": {
         "Path": "/Assets/chibifox.png",
-        "primary": "#FFA500"
+        "Primary": "#FFA500"
       }
     },
     "NMOS": {
@@ -225,7 +225,7 @@
       },
       "Logo": {
         "Path": "/Assets/NMOS.png",
-        "primary": "#EAB787"
+        "Primary": "#EAB787"
       }
     },
     "Rakk": {
@@ -238,7 +238,7 @@
       },
       "Logo": {
         "Path": "/Assets/RACKETEERS.png",
-        "primary": "#FF00FF"
+        "Primary": "#FF00FF"
       }
     },
     "Blightveil": {
@@ -251,7 +251,7 @@
       },
       "Logo": {
         "Path": "/Assets/Blightveil.png",
-        "primary": "#8B4AC6"
+        "Primary": "#8B4AC6"
       }
     },
     "Gankhub": {
@@ -276,7 +276,7 @@
       },
       "Logo": {
         "Path": "/Assets/IP.png",
-        "primary": "#FF0000"
+        "Primary": "#FF0000"
       }
     },
     "Shadow Guardian": {
@@ -289,7 +289,7 @@
       },
       "Logo": {
         "Path": "/Assets/shadowguard.png",
-        "primary": "#8B0000"
+        "Primary": "#8B0000"
       }
     },
     "VOX": {
@@ -302,7 +302,7 @@
       },
       "Logo": {
         "Path": "/Assets/VOX.png",
-        "primary": "#FFD700"
+        "Primary": "#FFD700"
       }
     },
     "Zap": {
@@ -315,7 +315,7 @@
       },
       "Logo": {
         "Path": "/Assets/ZAP.png",
-        "primary": "#FFD700"
+        "Primary": "#FFD700"
       }
     }
 }

@@ -135,9 +135,12 @@ public partial class ConfigPage : UserControl
         if (theme == null) return;
         
         // Update the logo
-        if (theme.Logo != null && theme.Logo.LogoPath != null)
+        if (theme.Logo != null && theme.Logo.Path != null)
         {
-            ChangeLogo(theme.Logo.LogoPath, Colors.Transparent);
+            ChangeLogo(theme.Logo.Path,
+                theme.Logo.Primary != null
+                    ? (Color) ColorConverter.ConvertFromString(theme.Logo.Primary)
+                    : Colors.Transparent);
         }
 
         // Update the colors
@@ -437,6 +440,6 @@ public class ThemeColors
 
 public class ThemeLogo
 {
-    public string? LogoPath { get; set; }
+    public string? Path { get; set; }
     public string? Primary { get; set; } // Optional: null if not used
 }
