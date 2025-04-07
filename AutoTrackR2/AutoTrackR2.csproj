@@ -31,6 +31,7 @@
     <None Remove="Assets\WRITH.png" />
     <None Remove="Assets\ZAP.png" />
     <None Remove="Assets\DMC.png" />
+    <None Remove="Assets\BRTE.png" />
     <None Remove="config.ini" />
     <None Remove="Fonts\Orbitron-Bold.ttf" />
     <None Remove="Fonts\Roboto-Regular.ttf" />
@@ -111,6 +112,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\DMC.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\BRTE.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="config.ini" />

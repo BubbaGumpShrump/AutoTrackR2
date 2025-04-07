@@ -250,7 +250,7 @@
       "AltText": "#FF3333"
     },
     "Logo": {
-      "Path": "/Assets/Blightveil.png",
+      "Path": "/Assets/BlightVeil.png",
       "Primary": "#8B4AC6"
     }
   },
@@ -329,6 +329,19 @@
     "Logo": {
       "Path": "/Assets/DMC.png",
       "Primary": "#FF0000"
+    }
+  },
+  "BRTE": {
+    "Colors": {
+      "Accent": "#FF4500",
+      "Button": "#1A0A00",
+      "Background": "#0A0500",
+      "Text": "#FFFFFF",
+      "AltText": "#FF8C42"
+    },
+    "Logo": {
+      "Path": "/Assets/BRTE.png",
+      "Primary": "#FF4500"
     }
   }
 }
