@@ -173,11 +173,11 @@ namespace AutoTrackR2
                     break;
                 case 4: // GN Theme
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#FF0000"), // Accent/Border
-                        (Color)ColorConverter.ConvertFromString("#1C1C1C"), // Button
-                        (Color)ColorConverter.ConvertFromString("#000000"), // Background
-                        (Color)ColorConverter.ConvertFromString("#FBC603"), // Text
-                        (Color)ColorConverter.ConvertFromString("#BFA8A6")  // AltText
+                        (Color)ColorConverter.ConvertFromString("#FF0000"), // Accent/Border - Pure red for maximum impact
+                        (Color)ColorConverter.ConvertFromString("#1A0000"), // Button - Deep black-red
+                        (Color)ColorConverter.ConvertFromString("#0A0000"), // Background - Near black
+                        (Color)ColorConverter.ConvertFromString("#FFD700"), // Text - Gold for high visibility
+                        (Color)ColorConverter.ConvertFromString("#FF4500")  // AltText - Orange-red for contrast
                     );
                     ChangeLogo("/Assets/GN.png", (Color)ColorConverter.ConvertFromString("#FF0000"));
                     break;
@@ -221,15 +221,15 @@ namespace AutoTrackR2
                     );
                     ChangeLogo("/Assets/WRITH.png", (Color)ColorConverter.ConvertFromString("#ff0000"));
                     break;
-                case 9: // VOX Theme
+                case 9: // Cinderborn Theme
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#C0C0C0"), // Accent/Border
-                        (Color)ColorConverter.ConvertFromString("#1C1C1C"), // Button
-                        (Color)ColorConverter.ConvertFromString("#424242"), // Background
-                        (Color)ColorConverter.ConvertFromString("#FFD700"), // Text
-                        (Color)ColorConverter.ConvertFromString("#817E79")  // AltText
+                        (Color)ColorConverter.ConvertFromString("#FF4500"), // Accent/Border - Bright fiery orange-red
+                        (Color)ColorConverter.ConvertFromString("#2A0A0A"), // Button - Deep blood red
+                        (Color)ColorConverter.ConvertFromString("#1A0000"), // Background - Darkest red-black
+                        (Color)ColorConverter.ConvertFromString("#FF8C42"), // Text - Warm orange
+                        (Color)ColorConverter.ConvertFromString("#FF6B35")  // AltText - Slightly darker orange
                     );
-                    ChangeLogo("/Assets/VOX.png", (Color)ColorConverter.ConvertFromString("#FFD700"));
+                    ChangeLogo("/Assets/cinderborn.png", (Color)ColorConverter.ConvertFromString("#FF4500"));
                     break;
                 case 10: // EMP Theme
                     UpdateThemeColors(
@@ -243,23 +243,23 @@ namespace AutoTrackR2
                     break;
                 case 11: // AVS Theme
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#3fbcff"), // Accent/Border
-                        (Color)ColorConverter.ConvertFromString("#060606"), // Button
-                        (Color)ColorConverter.ConvertFromString("#333333"), // Background
-                        (Color)ColorConverter.ConvertFromString("#e8e8e8"), // Text
-                        (Color)ColorConverter.ConvertFromString("#A88F2C")  // AltText
+                        (Color)ColorConverter.ConvertFromString("#00BFFF"), // Accent/Border - Deep Sky Blue
+                        (Color)ColorConverter.ConvertFromString("#001F3F"), // Button - Dark Navy
+                        (Color)ColorConverter.ConvertFromString("#000B1A"), // Background - Darker Navy
+                        (Color)ColorConverter.ConvertFromString("#FFFFFF"), // Text - Pure White
+                        (Color)ColorConverter.ConvertFromString("#87CEEB")  // AltText - Sky Blue
                     );
-                    ChangeLogo("/Assets/AVSQN.png", (Color)ColorConverter.ConvertFromString("#3fbcff"));
+                    ChangeLogo("/Assets/AVSQN.png", (Color)ColorConverter.ConvertFromString("#00BFFF"));
                     break;
                 case 12: // HEX Theme
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#39FF14"), // Accent/Border
-                        (Color)ColorConverter.ConvertFromString("#535353"), // Button
-                        (Color)ColorConverter.ConvertFromString("#000800"), // Background
-                        (Color)ColorConverter.ConvertFromString("#FFFFFF"), // Text
-                        (Color)ColorConverter.ConvertFromString("#CFFF04")  // AltText
+                        (Color)ColorConverter.ConvertFromString("#00FF00"), // Accent/Border - Bright Green
+                        (Color)ColorConverter.ConvertFromString("#001A00"), // Button - Deep Forest Green
+                        (Color)ColorConverter.ConvertFromString("#000D00"), // Background - Darker Forest Green
+                        (Color)ColorConverter.ConvertFromString("#FFFFFF"), // Text - Pure White
+                        (Color)ColorConverter.ConvertFromString("#39FF14")  // AltText - Neon Green
                     );
-                    ChangeLogo("/Assets/HEX.png", (Color)ColorConverter.ConvertFromString("#39FF14"));
+                    ChangeLogo("/Assets/HEX.png", (Color)ColorConverter.ConvertFromString("#00FF00"));
                     break;
                 case 13: // Mammon Theme
                     UpdateThemeColors(
@@ -283,13 +283,13 @@ namespace AutoTrackR2
                     break;
                 case 15: // Mongrel Squad
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#00416A"), // Accent/Border - NyQuil Dark Blue
-                        (Color)ColorConverter.ConvertFromString("#1B3F5C"), // Button - Midnight Blue
-                        (Color)ColorConverter.ConvertFromString("#002E4D"), // Background - Deep NyQuil Blue
-                        (Color)ColorConverter.ConvertFromString("#B0C4DE"), // Text - Light Steel Blue
-                        (Color)ColorConverter.ConvertFromString("#4F94CD")  // AltText - Steel Blue
+                        (Color)ColorConverter.ConvertFromString("#00BFFF"), // Accent/Border - Deep Sky Blue
+                        (Color)ColorConverter.ConvertFromString("#003366"), // Button - Dark Navy
+                        (Color)ColorConverter.ConvertFromString("#001F3F"), // Background - Darker Navy
+                        (Color)ColorConverter.ConvertFromString("#E6F3FF"), // Text - Light Sky Blue
+                        (Color)ColorConverter.ConvertFromString("#87CEEB")  // AltText - Sky Blue
                     );
-                    ChangeLogo("/Assets/Bobgrel.png", (Color)ColorConverter.ConvertFromString("#00BFFF"));
+                    ChangeLogo("/Assets/BOBGREL.png", (Color)ColorConverter.ConvertFromString("#00BFFF"));
                     break;
                 case 16: // Feezy
                     UpdateThemeColors(
@@ -343,13 +343,43 @@ namespace AutoTrackR2
                     break;
                 case 21: // IronPoint
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#C83300"), // Accent/Border
-                        (Color)ColorConverter.ConvertFromString("#2D2D2D"), // Button
-                        (Color)ColorConverter.ConvertFromString("#161515"), // Background
-                        (Color)ColorConverter.ConvertFromString("#ffffff"), // Text
-                        (Color)ColorConverter.ConvertFromString("#aaaaaa")  // AltText
+                        (Color)ColorConverter.ConvertFromString("#FF0000"), // Accent/Border
+                        (Color)ColorConverter.ConvertFromString("#1C1C1C"), // Button
+                        (Color)ColorConverter.ConvertFromString("#000000"), // Background
+                        (Color)ColorConverter.ConvertFromString("#FFFFFF"), // Text
+                        (Color)ColorConverter.ConvertFromString("#A88F2C")  // AltText
                     );
-                    ChangeLogo("/Assets/IP.png", (Color)ColorConverter.ConvertFromString("#3F1210"));
+                    ChangeLogo("/Assets/IP.png", (Color)ColorConverter.ConvertFromString("#FF0000"));
+                    break;
+                case 22: // Shadow Guardian Theme
+                    UpdateThemeColors(
+                        (Color)ColorConverter.ConvertFromString("#8B0000"), // Accent/Border - Dark blood red
+                        (Color)ColorConverter.ConvertFromString("#1A0000"), // Button - Deep black-red
+                        (Color)ColorConverter.ConvertFromString("#0A0000"), // Background - Near black
+                        (Color)ColorConverter.ConvertFromString("#D3D3D3"), // Text - Light silver
+                        (Color)ColorConverter.ConvertFromString("#B22222")  // AltText - Firebrick red
+                    );
+                    ChangeLogo("/Assets/shadowguard.png", (Color)ColorConverter.ConvertFromString("#8B0000"));
+                    break;
+                case 23: // VOX Theme
+                    UpdateThemeColors(
+                        (Color)ColorConverter.ConvertFromString("#C0C0C0"), // Accent/Border
+                        (Color)ColorConverter.ConvertFromString("#1C1C1C"), // Button
+                        (Color)ColorConverter.ConvertFromString("#424242"), // Background
+                        (Color)ColorConverter.ConvertFromString("#FFD700"), // Text
+                        (Color)ColorConverter.ConvertFromString("#817E79")  // AltText
+                    );
+                    ChangeLogo("/Assets/VOX.png", (Color)ColorConverter.ConvertFromString("#FFD700"));
+                    break;
+                case 24: // Zap Theme
+                    UpdateThemeColors(
+                        (Color)ColorConverter.ConvertFromString("#FFD700"), // Accent/Border - Electric Yellow
+                        (Color)ColorConverter.ConvertFromString("#1A1A1A"), // Button - Deep Black
+                        (Color)ColorConverter.ConvertFromString("#0A0A0A"), // Background - Near Black
+                        (Color)ColorConverter.ConvertFromString("#FFFFFF"), // Text - Pure White
+                        (Color)ColorConverter.ConvertFromString("#FFA500")  // AltText - Electric Orange
+                    );
+                    ChangeLogo("/Assets/ZAP.png", (Color)ColorConverter.ConvertFromString("#FFD700"));
                     break;
             }
         }

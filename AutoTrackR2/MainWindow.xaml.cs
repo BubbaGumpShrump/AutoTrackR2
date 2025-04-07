@@ -25,7 +25,24 @@ namespace AutoTrackR2
 
         public void ChangeLogoImage(string imagePath)
         {
-            Logo.Source = new BitmapImage(new Uri(imagePath, UriKind.RelativeOrAbsolute));
+            try
+            {
+                // Ensure the path starts with a forward slash for WPF resource paths
+                if (!imagePath.StartsWith("/"))
+                {
+                    imagePath = "/" + imagePath;
+                }
+
+                // Create a pack URI for the resource
+                Uri uri = new Uri($"pack://application:,,,/AutoTrackR2;component{imagePath}", UriKind.Absolute);
+                Logo.Source = new BitmapImage(uri);
+            }
+            catch (Exception ex)
+            {
+                // Log the error or handle it appropriately
+                Debug.WriteLine($"Error loading logo image: {ex.Message}");
+                // Optionally set a default logo or handle the error
+            }
         }
 
         public MainWindow()
@@ -181,11 +198,11 @@ namespace AutoTrackR2
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
         public static int Theme { get; set; }
-        
+
         static ConfigManager()
-        {   
+        {
             LoadConfig();
-            
+
             // Set default values
             // AppData\Local\AutoTrackR2\Kill-log.csv
             KillHistoryFile = Path.Combine(
@@ -193,12 +210,12 @@ namespace AutoTrackR2
                 "AutoTrackR2",
                 "Kill-log.csv"
             );
-            
+
             AHKScriptFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "AutoTrackR2"
             );
-            
+
             VisorWipeScript = "visorwipe.ahk";
             VideoRecordScript = "videorecord.ahk";
         }
