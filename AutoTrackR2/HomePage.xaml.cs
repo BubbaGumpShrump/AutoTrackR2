@@ -9,15 +9,18 @@ using System.IO;
 using System.Text;
 using System.Windows.Media.Imaging;
 using AutoTrackR2.LogEventHandlers;
+using System.Timers;
+using System.Linq;
 
 namespace AutoTrackR2;
 
 public partial class HomePage : UserControl
 {
-    private Process runningProcess; // Field to store the running process
     private LogHandler? _logHandler;
     private KillHistoryManager _killHistoryManager;
     private bool _UIEventsRegistered = false;
+    private System.Timers.Timer _statusCheckTimer;
+    private bool _isLogHandlerRunning = false;
 
     public HomePage()
     {
@@ -31,59 +34,71 @@ public partial class HomePage : UserControl
         AdjustFontSize(KillTallyTextBox);
         AddKillHistoryKillsToUI();
 
-    }
-    //
-    public void UpdateButtonState(bool isRunning)
-    {
-        var accentColor = (Color)Application.Current.Resources["AccentColor"];
+        // Initialize and start the status check timer
+        _statusCheckTimer = new System.Timers.Timer(1000); // Check every second
+        _statusCheckTimer.Elapsed += CheckStarCitizenStatus;
+        _statusCheckTimer.Start();
 
+        // Check if Star Citizen is already running and initialize accordingly
+        if (IsStarCitizenRunning())
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UpdateStatusIndicator(true);
+                ReadInitialStates(); // Read states first
+                InitializeLogHandler(); // Then initialize the log handler
+            });
+        }
+    }
+
+    private void CheckStarCitizenStatus(object sender, ElapsedEventArgs e)
+    {
+        bool isRunning = IsStarCitizenRunning();
+        Dispatcher.Invoke(() =>
+        {
+            UpdateStatusIndicator(isRunning);
+
+            if (isRunning)
+            {
+                if (!_isLogHandlerRunning)
+                {
+                    // Game is running, start log monitoring and read initial states
+                    InitializeLogHandler();
+                    ReadInitialStates();
+                }
+            }
+            else
+            {
+                // Game is not running, set everything to Unknown
+                GameModeTextBox.Text = "Unknown";
+                PlayerShipTextBox.Text = "Unknown";
+                PilotNameTextBox.Text = "Unknown";
+                LocalPlayerData.CurrentGameMode = GameMode.Unknown;
+                LocalPlayerData.PlayerShip = string.Empty;
+                LocalPlayerData.Username = string.Empty;
+
+                // Stop log monitoring if it's running
+                if (_isLogHandlerRunning)
+                {
+                    _logHandler?.StopMonitoring();
+                    _isLogHandlerRunning = false;
+                }
+            }
+        });
+    }
+
+    private void UpdateStatusIndicator(bool isRunning)
+    {
         if (isRunning)
         {
-            // Set Start button to "Running..." and apply glow effect
-            StartButton.Content = "Running...";
-            StartButton.IsEnabled = false; // Disable Start button
-            StartButton.Style = (Style)FindResource("DisabledButtonStyle");
-
-            // Add glow effect to the Start button
-            StartButton.Effect = new DropShadowEffect
-            {
-                Color = accentColor,
-                BlurRadius = 30,       // Adjust blur radius for desired glow intensity
-                ShadowDepth = 0,       // Set shadow depth to 0 for a pure glow effect
-                Opacity = 1,           // Set opacity for glow visibility
-                Direction = 0          // Direction doesn't matter for glow
-            };
-
-            StopButton.Style = (Style)FindResource("ButtonStyle");
-            StopButton.IsEnabled = true;  // Enable Stop button
+            StatusLight.Fill = new SolidColorBrush(Colors.Green);
+            StatusText.Text = "TrackR\nActive";
         }
         else
         {
-            // Reset Start button back to its original state
-            StartButton.Content = "Start";
-            StartButton.IsEnabled = true;  // Enable Start button
-
-            // Remove the glow effect from Start button
-            StartButton.Effect = null;
-
-            StopButton.Style = (Style)FindResource("DisabledButtonStyle");
-            StartButton.Style = (Style)FindResource("ButtonStyle");
-            StopButton.IsEnabled = false; // Disable Stop button
+            StatusLight.Fill = new SolidColorBrush(Colors.Red);
+            StatusText.Text = "TrackR\nStandby";
         }
-
-        RegisterUIEventHandlers();
-    }
-
-    public void StartButton_Click(object sender, RoutedEventArgs e)
-    {
-        UpdateButtonState(true);
-        //string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "KillTrackR_MainScript.ps1");
-        // TailFileAsync(scriptPath);
-
-        // _logHandler = new LogHandler(@"U:\\StarCitizen\\StarCitizen\\LIVE\\Game.log");
-        _logHandler = new LogHandler(ConfigManager.LogFile);
-        _logHandler.Initialize();
-
     }
 
     private void AddKillHistoryKillsToUI()
@@ -116,7 +131,7 @@ public partial class HomePage : UserControl
         {
             Dispatcher.Invoke(() =>
             {
-                PlayerShipTextBox.Text = shipName;
+                PlayerShipTextBox.Text = LocalPlayerData.CurrentGameMode == GameMode.PersistentUniverse ? "Player" : shipName;
                 AdjustFontSize(PlayerShipTextBox);
                 LocalPlayerData.PlayerShip = shipName;
             });
@@ -127,7 +142,7 @@ public partial class HomePage : UserControl
         {
             Dispatcher.Invoke(() =>
             {
-                GameModeTextBox.Text = mode == GameMode.PersistentUniverse ? "PU" : mode.ToString();
+                GameModeTextBox.Text = mode == GameMode.PersistentUniverse ? "Player" : mode.ToString();
                 AdjustFontSize(GameModeTextBox);
                 LocalPlayerData.CurrentGameMode = mode;
             });
@@ -327,7 +342,7 @@ public partial class HomePage : UserControl
 
     public void StopButton_Click(object sender, RoutedEventArgs e)
     {
-        _logHandler?.Stop();
+        _logHandler?.StopMonitoring();
 
         // Clear the text boxes
         // System.Threading.Thread.Sleep(200);
@@ -410,5 +425,160 @@ public partial class HomePage : UserControl
         {
             RunAHKScript(ConfigManager.VideoRecordScript);
         }
+    }
+
+    public void InitializeLogHandler()
+    {
+        if (_logHandler == null)
+        {
+            _logHandler = new LogHandler(ConfigManager.LogFile);
+            _logHandler.Initialize();
+            RegisterUIEventHandlers();
+            _isLogHandlerRunning = true;
+
+            // Read initial states after initializing log handler
+            ReadInitialStates();
+        }
+        else if (!_isLogHandlerRunning)
+        {
+            _logHandler.Initialize();
+            _isLogHandlerRunning = true;
+            ReadInitialStates();
+        }
+    }
+
+    private void ReadInitialStates()
+    {
+        if (string.IsNullOrEmpty(ConfigManager.LogFile) || !File.Exists(ConfigManager.LogFile))
+        {
+            Debug.WriteLine("Log file not found or path is empty");
+            return;
+        }
+
+        try
+        {
+            Debug.WriteLine("Reading initial states from log file...");
+            // Read the entire log file
+            var lines = File.ReadAllLines(ConfigManager.LogFile);
+            string username = "";
+            string shipName = "";
+            GameMode gameMode = GameMode.Unknown;
+
+            // Read from the end of the file to get the most recent states
+            for (int i = lines.Length - 1; i >= 0; i--)
+            {
+                var line = lines[i];
+
+                // Check for username (login)
+                if (line.Contains("'s Character"))
+                {
+                    int startIndex = line.IndexOf("'s Character");
+                    if (startIndex > 0)
+                    {
+                        username = line.Substring(0, startIndex).Trim();
+                        Debug.WriteLine($"Found username: {username}");
+                    }
+                }
+                // Check for ship name
+                else if (line.Contains("Entering quantum travel from"))
+                {
+                    int startIndex = line.IndexOf("in ship") + 8;
+                    int endIndex = line.IndexOf(" to ", startIndex);
+                    if (startIndex > 8 && endIndex > startIndex)
+                    {
+                        shipName = line.Substring(startIndex, endIndex - startIndex).Trim();
+                        Debug.WriteLine($"Found ship: {shipName}");
+                    }
+                }
+                // Check for game mode
+                else if (line.Contains("Loading level"))
+                {
+                    if (line.Contains("Persistent_Universe"))
+                    {
+                        gameMode = GameMode.PersistentUniverse;
+                        Debug.WriteLine("Found game mode: PU");
+                    }
+                    else if (line.Contains("Arena_Commander"))
+                    {
+                        gameMode = GameMode.ArenaCommander;
+                        Debug.WriteLine("Found game mode: AC");
+                    }
+                }
+
+                // If we've found all the information we need, we can stop reading
+                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(shipName) && gameMode != GameMode.Unknown)
+                {
+                    break;
+                }
+            }
+
+            // Update UI with found states
+            Dispatcher.Invoke(() =>
+            {
+                if (!string.IsNullOrEmpty(username))
+                {
+                    PilotNameTextBox.Text = username;
+                    LocalPlayerData.Username = username;
+                    AdjustFontSize(PilotNameTextBox);
+                    Debug.WriteLine($"Set username in UI: {username}");
+                }
+                else
+                {
+                    PilotNameTextBox.Text = "Unknown";
+                    LocalPlayerData.Username = string.Empty;
+                    AdjustFontSize(PilotNameTextBox);
+                    Debug.WriteLine("Username not found, set to Unknown");
+                }
+
+                if (!string.IsNullOrEmpty(shipName))
+                {
+                    PlayerShipTextBox.Text = gameMode == GameMode.PersistentUniverse ? "Player" : shipName;
+                    LocalPlayerData.PlayerShip = shipName;
+                    AdjustFontSize(PlayerShipTextBox);
+                    Debug.WriteLine($"Set ship in UI: {PlayerShipTextBox.Text}");
+                }
+                else
+                {
+                    PlayerShipTextBox.Text = "Unknown";
+                    LocalPlayerData.PlayerShip = string.Empty;
+                    AdjustFontSize(PlayerShipTextBox);
+                    Debug.WriteLine("Ship not found, set to Unknown");
+                }
+
+                if (gameMode != GameMode.Unknown)
+                {
+                    GameModeTextBox.Text = gameMode == GameMode.PersistentUniverse ? "Player" : gameMode.ToString();
+                    LocalPlayerData.CurrentGameMode = gameMode;
+                    AdjustFontSize(GameModeTextBox);
+                    Debug.WriteLine($"Set game mode in UI: {GameModeTextBox.Text}");
+                }
+                else
+                {
+                    GameModeTextBox.Text = "Unknown";
+                    LocalPlayerData.CurrentGameMode = GameMode.Unknown;
+                    AdjustFontSize(GameModeTextBox);
+                    Debug.WriteLine("Game mode not found, set to Unknown");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error reading initial states: {ex.Message}");
+        }
+    }
+
+    public void Cleanup()
+    {
+        // Stop and dispose the status check timer
+        _statusCheckTimer?.Stop();
+        _statusCheckTimer?.Dispose();
+
+        // Stop the log handler if it's running
+        _logHandler?.StopMonitoring();
+    }
+
+    private bool IsStarCitizenRunning()
+    {
+        return Process.GetProcessesByName("StarCitizen").Length > 0;
     }
 }

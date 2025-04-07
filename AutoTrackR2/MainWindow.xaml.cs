@@ -13,7 +13,6 @@ namespace AutoTrackR2
 {
     public partial class MainWindow : Window
     {
-
         private Dictionary<string, bool> tabStates = new Dictionary<string, bool>
         {
             { "HomeTab", true }, // HomeTab is selected by default
@@ -23,9 +22,7 @@ namespace AutoTrackR2
         };
 
         private HomePage homePage; // Persistent HomePage instance
-        private bool isRunning = false; // Single source of truth for the running state
 
-        // Ensure this method is not static
         public void ChangeLogoImage(string imagePath)
         {
             Logo.Source = new BitmapImage(new Uri(imagePath, UriKind.RelativeOrAbsolute));
@@ -38,10 +35,6 @@ namespace AutoTrackR2
             homePage = new HomePage(); // Create a single instance of HomePage
             ContentControl.Content = homePage; // Default to HomePage
 
-            // Attach event handlers for the HomePage buttons
-            homePage.StartButton.Click += StartButton_Click;
-            homePage.StopButton.Click += StopButton_Click;
-
             // Create ConfigPage and pass the MainWindow reference to it
             var configPage = new ConfigPage(this);
 
@@ -51,6 +44,7 @@ namespace AutoTrackR2
             UpdateTabVisuals();
 
             Loaded += MainWindow_Loaded; // Handle Loaded event
+            Closing += MainWindow_Closing; // Handle Closing event
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -59,16 +53,23 @@ namespace AutoTrackR2
             var args = Environment.GetCommandLineArgs();
             if (args.Contains("-start", StringComparer.OrdinalIgnoreCase))
             {
-                homePage.StartButton_Click(null, null);
+                // Initialize log handler if needed
+                homePage.InitializeLogHandler();
             }
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Clean up resources
+            homePage?.Cleanup();
+
+            // Make sure the application exits completely
+            Application.Current.Shutdown();
         }
 
         private void CloseWindow(object sender, RoutedEventArgs e)
         {
-            // If runningProcess is not null and still active, terminate it
-            homePage.StopButton_Click(sender, e);
-
-            // Close the main window
+            // This will trigger the Closing event
             this.Close();
         }
 
@@ -91,9 +92,6 @@ namespace AutoTrackR2
             {
                 // Reuse the existing HomePage instance
                 ContentControl.Content = homePage;
-
-                // Update the button state on the HomePage
-                homePage.UpdateButtonState(isRunning);
             }
             else if (clickedTabName == "StatsTab")
             {
@@ -158,20 +156,6 @@ namespace AutoTrackR2
             }
         }
 
-        private void StartButton_Click(object sender, RoutedEventArgs e)
-        {
-            isRunning = true; // Update the running state
-            homePage.UpdateButtonState(isRunning); // Update HomePage button visuals
-            // Start your logic here
-        }
-
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            isRunning = false; // Update the running state
-            homePage.UpdateButtonState(isRunning); // Update HomePage button visuals
-            // Stop your logic here
-        }
-
         private void InitializeConfigPage()
         {
             // Set the values from the loaded config
@@ -195,12 +179,12 @@ namespace AutoTrackR2
     {
         public static string LogFile { get; set; }
         public static string KillHistoryFile { get; set; }
-        
+
         public static string AHKScriptFolder { get; set; }
-        
+
         public static string VisorWipeScript { get; set; }
         public static string VideoRecordScript { get; set; }
-        
+
         public static string ApiUrl { get; set; }
         public static string ApiKey { get; set; }
         public static string VideoPath { get; set; }
@@ -208,11 +192,11 @@ namespace AutoTrackR2
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
         public static int Theme { get; set; }
-        
+
         static ConfigManager()
-        {   
+        {
             LoadConfig();
-            
+
             // Set default values
             // AppData\Local\AutoTrackR2\Kill-log.csv
             KillHistoryFile = Path.Combine(
@@ -220,12 +204,12 @@ namespace AutoTrackR2
                 "AutoTrackR2",
                 "Kill-log.csv"
             );
-            
+
             AHKScriptFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "AutoTrackR2"
             );
-            
+
             VisorWipeScript = "visorwipe.ahk";
             VideoRecordScript = "videorecord.ahk";
         }
