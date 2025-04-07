@@ -13,26 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\AVSQN.png" />
-    <None Remove="Assets\BlightVeil.png" />
-    <None Remove="Assets\BOBGREL.png" />
-    <None Remove="Assets\chibifox.png" />
-    <None Remove="Assets\D3VL.png" />
-    <None Remove="Assets\EMP.png" />
-    <None Remove="Assets\Gankhub.png" />
-    <None Remove="Assets\HEX.png" />
-    <None Remove="Assets\HIT.png" />
-    <None Remove="Assets\MAMMON.png" />
-    <None Remove="Assets\NMOS.png" />
-    <None Remove="Assets\NW.png" />
-    <None Remove="Assets\RACKETEERS.png" />
-    <None Remove="Assets\SHADOWMOSES.png" />
-    <None Remove="Assets\VOX.png" />
-    <None Remove="Assets\WRITH.png" />
-    <None Remove="Assets\ZAP.png" />
-    <None Remove="Assets\DMC.png" />
-    <None Remove="Assets\BRTE.png" />
-    <None Remove="Assets\FCU.png" />
     <None Remove="config.ini" />
     <None Remove="Fonts\Orbitron-Bold.ttf" />
     <None Remove="Fonts\Roboto-Regular.ttf" />
@@ -46,79 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\BlightVeil.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\Gankhub.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\HEX.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\IP.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\NMOS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Assets\AVSQN.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\BOBGREL.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\chibifox.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\D3VL.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\EMP.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\GN.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\AutoTrackR.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\HIT.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\MAMMON.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\NW.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\RACKETEERS.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\SHADOWMOSES.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\VOX.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\cinderborn.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\shadowguard.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\ZAP.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\DMC.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\BRTE.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\FCU.png">
+    <Resource Include="Assets\*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="config.ini" />

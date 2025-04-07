@@ -35,25 +35,11 @@ namespace AutoTrackR2
 
                 // Create a pack URI for the resource
                 Uri uri = new Uri($"pack://application:,,,/AutoTrackR2;component{imagePath}", UriKind.Absolute);
-                Debug.WriteLine($"Attempting to load logo from: {uri}");
-
-                // Check if the resource exists
-                var resourceInfo = Application.GetResourceStream(uri);
-                if (resourceInfo == null)
-                {
-                    Debug.WriteLine($"Resource not found: {uri}");
-                    return;
-                }
-
                 Logo.Source = new BitmapImage(uri);
-                Debug.WriteLine($"Successfully loaded logo: {uri}");
             }
             catch (Exception ex)
             {
-                // Log the error or handle it appropriately
                 Debug.WriteLine($"Error loading logo image: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                // Optionally set a default logo or handle the error
             }
         }
 

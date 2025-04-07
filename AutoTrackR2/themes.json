@@ -8,7 +8,8 @@
       "AltText": "#A88F2C"
     },
     "Logo": {
-      "Path": "/Assets/AutoTrackR.png"
+      "Path": "/Assets/AutoTrackR.png",
+      "Primary": "#00A9E0"
     }
   },
   "Green": {
@@ -20,7 +21,8 @@
       "AltText": "#DCD6C4"
     },
     "Logo": {
-      "Path": "/Assets/AutoTrackR.png"
+      "Path": "/Assets/AutoTrackR.png",
+      "Primary": "#1D9F00"
     }
   },
   "Red": {
@@ -32,7 +34,8 @@
       "AltText": "#A88F2C"
     },
     "Logo": {
-      "Path": "/Assets/AutoTrackR.png"
+      "Path": "/Assets/AutoTrackR.png",
+      "Primary": "#D32F2F"
     }
   },
   "Purple": {
@@ -44,7 +47,8 @@
       "AltText": "#B3976E"
     },
     "Logo": {
-      "Path": "/Assets/AutoTrackR.png"
+      "Path": "/Assets/AutoTrackR.png",
+      "Primary": "#32CD32"
     }
   },
   "GN": {
@@ -95,7 +99,8 @@
       "AltText": "#A88F2C"
     },
     "Logo": {
-      "Path": "/Assets/HIT.png"
+      "Path": "/Assets/HIT.png",
+      "Primary": "#B92D2D"
     }
   },
   "WRAITH": {
@@ -107,7 +112,7 @@
       "AltText": "#8B0000"
     },
     "Logo": {
-      "Path": "/Assets/WRITH.png",
+      "Path": "/Assets/WRAITH.png",
       "Primary": "#ff0000"
     }
   },
@@ -127,14 +132,14 @@
   "EMP": {
     "Colors": {
       "Accent": "#F5721C",
-      "Button": "#535353",
+      "Button": "#1A1A1A",
       "Background": "#080000",
       "Text": "#FFFFFF",
-      "AltText": "#CEA75B"
+      "AltText": "#F3BD9B"
     },
     "Logo": {
       "Path": "/Assets/EMP.png",
-      "Primary": "#F3BD9B"
+      "Primary": "#F5721C"
     }
   },
   "AVS": {
@@ -256,14 +261,15 @@
   },
   "Gankhub": {
     "Colors": {
-      "Accent": "#ffa500",
-      "Button": "#2C2C2C",
-      "Background": "#1b1b1b",
-      "Text": "#FFFFFF",
-      "AltText": "#ffa500"
+      "Accent": "#FF8C00",
+      "Button": "#331400",
+      "Background": "#1A0A00",
+      "Text": "#FFB366",
+      "AltText": "#FF8C00"
     },
     "Logo": {
-      "Path": "/Assets/Gankhub.png"
+      "Path": "/Assets/Gankhub.png",
+      "Primary": "#FF8C00"
     }
   },
   "IronPoint": {
