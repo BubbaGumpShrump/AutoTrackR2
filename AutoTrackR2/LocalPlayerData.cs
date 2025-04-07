@@ -3,8 +3,9 @@
 
 public enum GameMode
 {
-    ArenaCommander,
-    PersistentUniverse
+    Unknown,
+    PersistentUniverse,
+    ArenaCommander
 }
 
 public static class LocalPlayerData

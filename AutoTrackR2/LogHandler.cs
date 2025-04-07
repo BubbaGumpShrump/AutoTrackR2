@@ -12,7 +12,6 @@ public class LogEntry
 {
     public DateTime Timestamp { get; set; }
     public required string? Message { get; set; }
-    
 }
 
 enum GameProcessState
@@ -22,16 +21,18 @@ enum GameProcessState
     Unknown
 }
 
-public class LogHandler(string logPath)
+public class LogHandler
 {
-    private readonly string? _logPath = logPath;
+    private string _logPath;
     private FileStream? _fileStream;
     private StreamReader? _reader;
-    private GameProcessState _gameProcessState = GameProcessState.Unknown;
+    private Thread? _monitorThread;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private GameProcessState _gameProcessState = GameProcessState.NotRunning;
+    private bool _isMonitoring = false;
 
-    private CancellationTokenSource cancellationToken = new CancellationTokenSource(); 
-    Thread? monitorThread;
-    
+    public bool IsMonitoring => _isMonitoring;
+
     // Handlers that should be run on every log entry
     // Overlap with _startupEventHandlers is fine
     private readonly List<ILogEventHandler> _eventHandlers = [
@@ -43,18 +44,26 @@ public class LogHandler(string logPath)
         new JumpDriveStateChangedEvent(),
         new RequestJumpFailedEvent()
     ];
+  
+    public LogHandler(string? logPath)
+    {
+        if (string.IsNullOrEmpty(logPath))
+        {
+            throw new ArgumentNullException(nameof(logPath), "Log path cannot be null or empty");
+        }
+        _logPath = logPath;
+    }
 
-    // Initialize the LogHandler and run all startup handlers
     public void Initialize()
     {
         if (!File.Exists(_logPath))
         {
             throw new FileNotFoundException("Log file not found", _logPath);
         }
-        
+
         _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         _reader = new StreamReader(_fileStream);
-        
+
         while (_reader.ReadLine() is { } line)
         {
             HandleLogEntry(line);
@@ -62,19 +71,30 @@ public class LogHandler(string logPath)
 
         // Ensures that any deaths already in log aren't sent to the APIs until the monitor thread is running
         _eventHandlers.Add(new ActorDeathEvent());
-        
-        monitorThread = new Thread(() => MonitorLog(cancellationToken.Token));
-        monitorThread.Start();
+        StartMonitoring();
     }
 
-    public void Stop()
+    public void StartMonitoring()
     {
-        // Stop the monitor thread
-        cancellationToken?.Cancel();
+        if (_isMonitoring) return;
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        _monitorThread = new Thread(() => MonitorLog(_cancellationTokenSource.Token));
+        _monitorThread.Start();
+        _isMonitoring = true;
+    }
+
+    public void StopMonitoring()
+    {
+        if (!_isMonitoring) return;
+
+        _cancellationTokenSource?.Cancel();
+        _monitorThread?.Join();
         _reader?.Close();
         _fileStream?.Close();
+        _isMonitoring = false;
     }
-    
+
     // Parse a single line of the log file and run matching handlers
     private void HandleLogEntry(string line)
     {
@@ -83,7 +103,7 @@ public class LogHandler(string logPath)
         {
             var match = handler.Pattern.Match(line);
             if (!match.Success) continue;
-            
+
             var entry = new LogEntry
             {
                 Timestamp = DateTime.Now,
@@ -93,7 +113,7 @@ public class LogHandler(string logPath)
             break;
         }
     }
-    
+
     private void MonitorLog(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -102,9 +122,9 @@ public class LogHandler(string logPath)
             {
                 break;
             }
-            
+
             CheckGameProcessState();
-            
+
             List<string> lines = new List<string>();
             while (_reader.ReadLine() is { } line)
             {
@@ -131,21 +151,19 @@ public class LogHandler(string logPath)
     {
         // Check if the game process is running by window name
         var process = Process.GetProcesses().FirstOrDefault(p => p.MainWindowTitle == "Star Citizen");
-        
+
         GameProcessState newGameProcessState = process != null ? GameProcessState.Running : GameProcessState.NotRunning;
-        
         if (newGameProcessState == GameProcessState.Running && _gameProcessState == GameProcessState.NotRunning)
         {
             // Game process went from NotRunning to Running, so reload the Game.log file
             Console.WriteLine("Game process started, reloading log file");
-                
+
             _reader?.Close();
             _fileStream?.Close();
-            
+
             _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _reader = new StreamReader(_fileStream);
         }
-        
         _gameProcessState = newGameProcessState;
     }
 }
