@@ -121,7 +121,7 @@
       "Accent": "#FF4500",
       "Button": "#2A0A0A",
       "Background": "#1A0000",
-      "Text": "#FF8C42",
+      "Text": "#FFFFFF",
       "AltText": "#FF6B35"
     },
     "Logo": {
@@ -361,6 +361,19 @@
     "Logo": {
       "Path": "/Assets/FCU.png",
       "Primary": "#9CAF88"
+    }
+  },
+  "THEENCLAVE": {
+    "Colors": {
+      "Accent": "#FF0000",
+      "Button": "#1A0000",
+      "Background": "#0A0000",
+      "Text": "#FFFFFF",
+      "AltText": "#FF3333"
+    },
+    "Logo": {
+      "Path": "/Assets/THEENCLAVE.png",
+      "Primary": "#FF0000"
     }
   }
 }
