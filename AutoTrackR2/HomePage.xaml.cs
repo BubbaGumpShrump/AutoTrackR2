@@ -178,7 +178,7 @@ public partial class HomePage : UserControl
                         Method = actorDeathData.DamageType,
                         RecordNumber = playerData?.UEERecord,
                         GameVersion = LocalPlayerData.GameVersion ?? "Unknown",
-                        TrackRver = LocalPlayerData.GameVersion?.Replace("v", "") ?? "Unknown",
+                        TrackRver = "2.10",
                         Enlisted = playerData?.JoinDate,
                         KillTime = DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"),
                         PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
