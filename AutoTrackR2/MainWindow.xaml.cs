@@ -211,27 +211,6 @@ namespace AutoTrackR2
             VideoRecordScript = "videorecord.ahk";
         }
 
-        static ConfigManager()
-        {
-            LoadConfig();
-
-            // Set default values
-            // AppData\Local\AutoTrackR2\Kill-log.csv
-            KillHistoryFile = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2",
-                "Kill-log.csv"
-            );
-
-            AHKScriptFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2"
-            );
-
-            VisorWipeScript = "visorwipe.ahk";
-            VideoRecordScript = "videorecord.ahk";
-        }
-
         public static void LoadConfig()
         {
             // Define the config file path in a writable location
