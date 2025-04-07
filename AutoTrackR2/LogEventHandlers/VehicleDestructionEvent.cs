@@ -19,7 +19,6 @@ public struct VehicleDestructionData
 public class VehicleDestructionEvent : ILogEventHandler
 {
     public Regex Pattern { get; }
-
     public VehicleDestructionEvent()
     {
         Pattern = new Regex("""

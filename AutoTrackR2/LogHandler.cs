@@ -12,7 +12,6 @@ public class LogEntry
 {
     public DateTime Timestamp { get; set; }
     public required string? Message { get; set; }
-
 }
 
 enum GameProcessState
@@ -45,7 +44,7 @@ public class LogHandler
         new JumpDriveStateChangedEvent(),
         new RequestJumpFailedEvent()
     ];
-
+  
     public LogHandler(string? logPath)
     {
         if (string.IsNullOrEmpty(logPath))
@@ -72,7 +71,6 @@ public class LogHandler
 
         // Ensures that any deaths already in log aren't sent to the APIs until the monitor thread is running
         _eventHandlers.Add(new ActorDeathEvent());
-
         StartMonitoring();
     }
 
@@ -155,7 +153,6 @@ public class LogHandler
         var process = Process.GetProcesses().FirstOrDefault(p => p.MainWindowTitle == "Star Citizen");
 
         GameProcessState newGameProcessState = process != null ? GameProcessState.Running : GameProcessState.NotRunning;
-
         if (newGameProcessState == GameProcessState.Running && _gameProcessState == GameProcessState.NotRunning)
         {
             // Game process went from NotRunning to Running, so reload the Game.log file
@@ -167,7 +164,6 @@ public class LogHandler
             _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _reader = new StreamReader(_fileStream);
         }
-
         _gameProcessState = newGameProcessState;
     }
 }

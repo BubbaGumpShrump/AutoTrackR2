@@ -515,6 +515,7 @@ namespace AutoTrackR2
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+
             ConfigManager.ApiKey = ApiKey.Password;
             ConfigManager.ApiUrl = ApiUrl.Text;
             ConfigManager.LogFile = LogFilePath.Text;
@@ -523,7 +524,6 @@ namespace AutoTrackR2
             ConfigManager.VideoRecord = (int)VideoRecordSlider.Value;
             ConfigManager.OfflineMode = (int)OfflineModeSlider.Value;
             ConfigManager.Theme = (int)ThemeSlider.Value;
-
             // Save the current config values
             ConfigManager.SaveConfig();
             // Start the flashing effect

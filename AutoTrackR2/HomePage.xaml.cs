@@ -12,10 +12,12 @@ using AutoTrackR2.LogEventHandlers;
 using System.Timers;
 using System.Linq;
 
+
 namespace AutoTrackR2;
 
 public partial class HomePage : UserControl
 {
+
     private LogHandler? _logHandler;
     private KillHistoryManager _killHistoryManager;
     private bool _UIEventsRegistered = false;
@@ -164,7 +166,6 @@ public partial class HomePage : UserControl
             if (actorDeathData.VictimPilot != LocalPlayerData.Username)
             {
                 var playerData = await WebHandler.GetPlayerData(actorDeathData.VictimPilot);
-
                 if (playerData != null)
                 {
                     var killData = new KillData
@@ -391,7 +392,6 @@ public partial class HomePage : UserControl
                 VisualTreeHelper.GetDpi(this).PixelsPerDip
             );
         }
-
         // Apply the adjusted font size
         textBlock.FontSize = fontSize;
     }

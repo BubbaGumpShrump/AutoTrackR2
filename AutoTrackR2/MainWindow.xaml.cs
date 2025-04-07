@@ -189,6 +189,27 @@ namespace AutoTrackR2
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
         public static int Theme { get; set; }
+        
+        static ConfigManager()
+        {   
+            LoadConfig();
+            
+            // Set default values
+            // AppData\Local\AutoTrackR2\Kill-log.csv
+            KillHistoryFile = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2",
+                "Kill-log.csv"
+            );
+            
+            AHKScriptFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2"
+            );
+            
+            VisorWipeScript = "visorwipe.ahk";
+            VideoRecordScript = "videorecord.ahk";
+        }
 
         static ConfigManager()
         {
