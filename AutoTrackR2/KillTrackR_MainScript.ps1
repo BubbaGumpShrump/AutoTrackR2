@@ -1,4 +1,4 @@
-﻿$TrackRver = "2.07"
+﻿$TrackRver = "2.09"
 
 # Path to the config file
 $appName = "AutoTrackR2"
@@ -363,6 +363,7 @@ function Read-LogEntry {
 
 				# Create an object to hold the data
 				$killData = [PSCustomObject]@{
+					Kill			 = "Kill"
 					KillTime         = $killTime
 					EnemyPilot       = $enemyPilot
 					EnemyShip        = $enemyShip

@@ -221,15 +221,15 @@ namespace AutoTrackR2
                     );
                     ChangeLogo("/Assets/WRITH.png", (Color)ColorConverter.ConvertFromString("#ff0000"));
                     break;
-                case 9: // VOX Theme
+                case 9: // Cinderborn Theme
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#C0C0C0"), // Accent/Border
+                        (Color)ColorConverter.ConvertFromString("#E4080A"), // Accent/Border
                         (Color)ColorConverter.ConvertFromString("#1C1C1C"), // Button
-                        (Color)ColorConverter.ConvertFromString("#424242"), // Background
-                        (Color)ColorConverter.ConvertFromString("#FFD700"), // Text
-                        (Color)ColorConverter.ConvertFromString("#817E79")  // AltText
+                        (Color)ColorConverter.ConvertFromString("#000000"), // Background
+                        (Color)ColorConverter.ConvertFromString("#FE934C"), // Text
+                        (Color)ColorConverter.ConvertFromString("#FE934C")  // AltText
                     );
-                    ChangeLogo("/Assets/VOX.png", (Color)ColorConverter.ConvertFromString("#FFD700"));
+                    ChangeLogo("/Assets/cinderborn.png", (Color)ColorConverter.ConvertFromString("#DE5900"));
                     break;
                 case 10: // EMP Theme
                     UpdateThemeColors(
@@ -281,15 +281,15 @@ namespace AutoTrackR2
                     );
                     ChangeLogo("/Assets/ShadowMoses.png", (Color)ColorConverter.ConvertFromString("#FF69B4"));
                     break;
-                case 15: // Mongrel Squad
+                case 15: // Shadow Guardian
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#00416A"), // Accent/Border - NyQuil Dark Blue
-                        (Color)ColorConverter.ConvertFromString("#1B3F5C"), // Button - Midnight Blue
-                        (Color)ColorConverter.ConvertFromString("#002E4D"), // Background - Deep NyQuil Blue
-                        (Color)ColorConverter.ConvertFromString("#B0C4DE"), // Text - Light Steel Blue
-                        (Color)ColorConverter.ConvertFromString("#4F94CD")  // AltText - Steel Blue
+                        (Color)ColorConverter.ConvertFromString("#AC9248"), // Accent/Border - NyQuil Dark Blue
+                        (Color)ColorConverter.ConvertFromString("#000920"), // Button - Midnight Blue
+                        (Color)ColorConverter.ConvertFromString("#000000"), // Background - Deep NyQuil Blue
+                        (Color)ColorConverter.ConvertFromString("#B9B9B9"), // Text - Light Steel Blue
+                        (Color)ColorConverter.ConvertFromString("#D20103")  // AltText - Steel Blue
                     );
-                    ChangeLogo("/Assets/Bobgrel.png", (Color)ColorConverter.ConvertFromString("#00BFFF"));
+                    ChangeLogo("/Assets/shadowguard.png", (Color)ColorConverter.ConvertFromString("#E4080A"));
                     break;
                 case 16: // Feezy
                     UpdateThemeColors(

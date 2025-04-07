@@ -17,6 +17,7 @@
     <None Remove="Assets\BlightVeil.png" />
     <None Remove="Assets\BOBGREL.png" />
     <None Remove="Assets\chibifox.png" />
+    <None Remove="Assets\cinderborn.png" />
     <None Remove="Assets\D3VL.png" />
     <None Remove="Assets\EMP.png" />
     <None Remove="Assets\Gankhub.png" />
@@ -26,6 +27,7 @@
     <None Remove="Assets\NMOS.png" />
     <None Remove="Assets\NW.png" />
     <None Remove="Assets\RACKETEERS.png" />
+    <None Remove="Assets\shadowguard.png" />
     <None Remove="Assets\SHADOWMOSES.png" />
     <None Remove="Assets\VOX.png" />
     <None Remove="Assets\WRITH.png" />
@@ -40,6 +42,9 @@
 
   <ItemGroup>
     <Resource Include="Assets\BlightVeil.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\cinderborn.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\Gankhub.png">
@@ -88,6 +93,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\RACKETEERS.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\shadowguard.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\SHADOWMOSES.png">
