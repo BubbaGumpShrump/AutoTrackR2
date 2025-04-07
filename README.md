@@ -1,3 +1,7 @@
+# Testimonials
+
+https://www.youtube.com/watch?v=bE6_MYY7ARU
+
 # AutoTrackR2 - Star Citizen Kill-Tracking Tool
 
 AutoTrackR2 is a powerful and customizable kill-tracking tool for Star Citizen. Designed with gankers and combat enthusiasts in mind, it integrates seamlessly with the game to log, display, and manage your kills, providing detailed information and optional API integration for advanced tracking.
