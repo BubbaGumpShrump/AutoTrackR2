@@ -168,6 +168,19 @@
       "Primary": "#00FF00"
     }
   },
+  "AXP": {
+    "Colors": {
+      "Accent": "#E61E00",
+      "Button": "#250B0B",
+      "Background": "#150404",
+      "Text": "#FFFFFF",
+      "AltText": "#FF3333"
+    },
+    "Logo": {
+      "Path": "/Assets/axp.png",
+      "Primary": "#E61E00"
+    }
+  },
   "Mammon": {
     "Colors": {
       "Accent": "#FFD700",
