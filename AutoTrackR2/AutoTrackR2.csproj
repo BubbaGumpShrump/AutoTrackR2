@@ -108,10 +108,4 @@
     </Resource>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="update.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
