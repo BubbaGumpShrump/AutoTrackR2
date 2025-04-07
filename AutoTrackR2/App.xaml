@@ -15,20 +15,30 @@
         <Color x:Key="TextColor">#FFFFFF</Color>
         <Color x:Key="AltTextColor">#A88F2C</Color>
 
-        <SolidColorBrush x:Key="TextBrush" Color="{DynamicResource TextColor}" />
-        <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}" />
-        <SolidColorBrush x:Key="BackgroundDarkBrush" Color="{DynamicResource BackgroundDarkColor}" />
-        <SolidColorBrush x:Key="BackgroundLightBrush" Color="{DynamicResource BackgroundLightColor}" />
-        <SolidColorBrush x:Key="AltTextBrush" Color="{DynamicResource AltTextColor}" />
+        <SolidColorBrush x:Key="TextBrush"
+                Color="{DynamicResource TextColor}"/>
+        <SolidColorBrush x:Key="AccentBrush"
+                Color="{DynamicResource AccentColor}"/>
+        <SolidColorBrush x:Key="BackgroundDarkBrush"
+                Color="{DynamicResource BackgroundDarkColor}"/>
+        <SolidColorBrush x:Key="BackgroundLightBrush"
+                Color="{DynamicResource BackgroundLightColor}"/>
+        <SolidColorBrush x:Key="AltTextBrush"
+                Color="{DynamicResource AltTextColor}"/>
 
         <!-- Define the Style for Window -->
-        <Style TargetType="Window" x:Key="CustomWindowStyle">
+        <Style TargetType="Window"
+                x:Key="CustomWindowStyle">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Window">
-                        <Border BorderBrush="{DynamicResource AccentBrush}" BorderThickness="2" CornerRadius="10" Background="{DynamicResource BackgroundLightBrush}">
+                        <Border BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="2"
+                                CornerRadius="10"
+                                Background="{DynamicResource BackgroundLightBrush}">
                             <Grid>
-                                <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                <ContentPresenter HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"/>
                             </Grid>
                         </Border>
                     </ControlTemplate>
@@ -37,62 +47,99 @@
         </Style>
 
         <!-- Tab Button Style -->
-        <Style x:Key="TabButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="FontFamily" Value="{StaticResource Orbitron}"/>
+        <Style x:Key="TabButtonStyle"
+                TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Padding"
+                    Value="10"/>
+            <Setter Property="Margin"
+                    Value="5"/>
+            <Setter Property="FontFamily"
+                    Value="{StaticResource Orbitron}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                        <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
                             <!-- ContentPresenter will automatically inherit Foreground from Button -->
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            
+
         </Style>
 
 
         <!-- General Button Style -->
-        <Style x:Key="DisabledButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="Gray"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}"/>
-            <Setter Property="BorderBrush" Value="Gray"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="5"/>
+        <Style x:Key="DisabledButtonStyle"
+                TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="Gray"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="Gray"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Padding"
+                    Value="5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style x:Key="ButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="5"/>
+        <Style x:Key="ButtonStyle"
+                TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Padding"
+                    Value="5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -100,69 +147,141 @@
         </Style>
 
         <!-- Title Bar Button Style -->
-        <Style x:Key="TitleButtonStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <Style x:Key="TitleButtonStyle"
+                TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{DynamicResource BackgroundDarkBrush}" 
-                        BorderBrush="{DynamicResource AccentBrush}" 
-                        BorderThickness="2" 
-                        CornerRadius="5" 
-                        Margin="0,1,4,1">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="2"
+                                CornerRadius="5"
+                                Margin="0,1,4,1">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- Custom style for text blocks -->
-        <Style x:Key="RoundedTextBlock" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-            <Setter Property="FontFamily" Value="{StaticResource Roboto}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Padding" Value="10,0,10,0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Style x:Key="RoundedTextBlock"
+                TargetType="TextBlock">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="FontFamily"
+                    Value="{StaticResource Roboto}"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="Padding"
+                    Value="10,0,10,0"/>
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
         </Style>
 
         <!-- Wrap TextBlock in Border to apply rounded corners -->
-        <Style x:Key="RoundedTextBlockWithBorder" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource BackgroundLightBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,10,0,0"/>
+        <Style x:Key="RoundedTextBlockWithBorder"
+                TargetType="Border">
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundLightBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <Setter Property="CornerRadius"
+                    Value="5"/>
+            <Setter Property="Padding"
+                    Value="0"/>
+            <Setter Property="Margin"
+                    Value="0,10,0,0"/>
         </Style>
 
         <!-- Custom Style for Rounded TextBox -->
-        <Style x:Key="RoundedTextBox" TargetType="TextBox">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="FontFamily" Value="{StaticResource Roboto}"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+        <Style x:Key="RoundedTextBox"
+                TargetType="TextBox">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="FontFamily"
+                    Value="{StaticResource Roboto}"/>
+            <Setter Property="Height"
+                    Value="30"/>
+            <Setter Property="Padding"
+                    Value="5"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
             <!-- The actual border with rounded corners -->
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border Background="{DynamicResource BackgroundDarkBrush}"
-                        BorderBrush="{DynamicResource AccentBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="5">
+                                BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Custom Style for Rounded PasswordBox -->
+        <Style x:Key="RoundedPasswordBox"
+                TargetType="PasswordBox">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="FontFamily"
+                    Value="{StaticResource Roboto}"/>
+            <Setter Property="Height"
+                    Value="30"/>
+            <Setter Property="Padding"
+                    Value="5"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
+            <!-- The actual border with rounded corners -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                BorderBrush="{DynamicResource AccentBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
                             <ScrollViewer x:Name="PART_ContentHost"/>
                         </Border>
                     </ControlTemplate>
@@ -171,39 +290,57 @@
         </Style>
 
         <!-- Custom Style for Slider -->
-        <Style x:Key="ThreePositionSlider" TargetType="Slider">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Width" Value="160" />
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-            <Setter Property="BorderThickness" Value="2" />
+        <Style x:Key="ThreePositionSlider"
+                TargetType="Slider">
+            <Setter Property="Height"
+                    Value="40"/>
+            <Setter Property="Width"
+                    Value="160"/>
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
-                        <Grid Width="200" Height="30" HorizontalAlignment="Left" Margin="58,-6,0,0">
+                        <Grid Width="200"
+                                Height="30"
+                                HorizontalAlignment="Left"
+                                Margin="58,-6,0,0">
                             <!-- Track Background -->
-                            <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="2" CornerRadius="15" Margin="0,0,-5,-4" />
+                            <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="15"
+                                    Margin="0,0,-5,-4"/>
 
                             <!-- Track -->
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb x:Name="PART_Thumb"
-                                   Width="22" 
-                                   Height="22"
-                                   Margin="6,4,1,0">
+                                           Width="22"
+                                           Height="22"
+                                           Margin="6,4,1,0">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="{DynamicResource AccentBrush}" />
+                                                <Ellipse Fill="{DynamicResource AccentBrush}"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
                                 </Track.Thumb>
                                 <Track.DecreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="Transparent" IsHitTestVisible="False"/>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
                                 </Track.DecreaseRepeatButton>
                                 <Track.IncreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="Transparent" IsHitTestVisible="False"/>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
                                 </Track.IncreaseRepeatButton>
                             </Track>
                         </Grid>
@@ -213,39 +350,56 @@
         </Style>
 
         <!-- Toggle Slider Style -->
-        <Style x:Key="ToggleSliderStyle" TargetType="Slider">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Width" Value="160" />
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-            <Setter Property="BorderThickness" Value="2" />
+        <Style x:Key="ToggleSliderStyle"
+                TargetType="Slider">
+            <Setter Property="Height"
+                    Value="40"/>
+            <Setter Property="Width"
+                    Value="160"/>
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
-                        <Grid Width="50" Height="30" HorizontalAlignment="Left" >
+                        <Grid Width="50"
+                                Height="30"
+                                HorizontalAlignment="Left">
                             <!-- Track Background -->
-                            <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="2" CornerRadius="15" Margin="0,0,-5,-4" />
+                            <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="15"
+                                    Margin="0,0,-5,-4"/>
 
                             <!-- Track -->
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb x:Name="PART_Thumb"
-                                        Width="22" 
-                                        Height="22"
-                                        Margin="6,4,1,0">
+                                           Width="22"
+                                           Height="22"
+                                           Margin="6,4,1,0">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="{DynamicResource AccentBrush}" />
+                                                <Ellipse Fill="{DynamicResource AccentBrush}"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
                                 </Track.Thumb>
                                 <Track.DecreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="Transparent" IsHitTestVisible="False"/>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
                                 </Track.DecreaseRepeatButton>
                                 <Track.IncreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="Transparent" IsHitTestVisible="False"/>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
                                 </Track.IncreaseRepeatButton>
                             </Track>
                         </Grid>
@@ -255,39 +409,56 @@
         </Style>
 
         <!-- False toggle theme -->
-        <Style x:Key="FalseToggleStyle" TargetType="Slider">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Width" Value="160" />
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}" />
-            <Setter Property="BorderBrush" Value="Gray" />
-            <Setter Property="BorderThickness" Value="2" />
+        <Style x:Key="FalseToggleStyle"
+                TargetType="Slider">
+            <Setter Property="Height"
+                    Value="40"/>
+            <Setter Property="Width"
+                    Value="160"/>
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background"
+                    Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush"
+                    Value="Gray"/>
+            <Setter Property="BorderThickness"
+                    Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
-                        <Grid Width="50" Height="30" HorizontalAlignment="Left" >
+                        <Grid Width="50"
+                                Height="30"
+                                HorizontalAlignment="Left">
                             <!-- Track Background -->
-                            <Border Background="{DynamicResource BackgroundDarkBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="2" CornerRadius="15" Margin="0,0,-5,-4" />
+                            <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="15"
+                                    Margin="0,0,-5,-4"/>
 
                             <!-- Track -->
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
                                     <Thumb x:Name="PART_Thumb"
-                                Width="22" 
-                                Height="22"
-                                Margin="6,4,1,0">
+                                           Width="22"
+                                           Height="22"
+                                           Margin="6,4,1,0">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="Gray" />
+                                                <Ellipse Fill="Gray"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
                                 </Track.Thumb>
                                 <Track.DecreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="Transparent" IsHitTestVisible="False"/>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
                                 </Track.DecreaseRepeatButton>
                                 <Track.IncreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="Transparent" IsHitTestVisible="False"/>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
                                 </Track.IncreaseRepeatButton>
                             </Track>
                         </Grid>
@@ -298,15 +469,21 @@
 
         <!-- Modern Rounded ScrollBar Style -->
         <Style TargetType="ScrollBar">
-            <Setter Property="Width" Value="6" />
+            <Setter Property="Width"
+                    Value="6"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Grid>
-                            <Track Name="PART_Track" IsDirectionReversed="true" Width="6" Margin="0,0,0,0">
+                            <Track Name="PART_Track"
+                                    IsDirectionReversed="true"
+                                    Width="6"
+                                    Margin="0,0,0,0">
                                 <!-- Decrease Repeat Button -->
                                 <Track.DecreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="0">
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="{DynamicResource AccentBrush}"
+                                            BorderThickness="0">
                                         <RepeatButton.Template>
                                             <ControlTemplate TargetType="RepeatButton">
                                                 <Grid x:Name="RepeatButtonGrid">
@@ -314,12 +491,18 @@
                                                         <VisualStateGroup Name="CommonStates">
                                                             <VisualState Name="Normal">
                                                                 <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="RepeatButtonGrid" To="1" Duration="0:0:0"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                            Storyboard.TargetName="RepeatButtonGrid"
+                                                                            To="1"
+                                                                            Duration="0:0:0"/>
                                                                 </Storyboard>
                                                             </VisualState>
                                                             <VisualState Name="MouseOver">
                                                                 <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="RepeatButtonGrid" To="0" Duration="0:0:0.1"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                            Storyboard.TargetName="RepeatButtonGrid"
+                                                                            To="0"
+                                                                            Duration="0:0:0.1"/>
                                                                 </Storyboard>
                                                             </VisualState>
                                                         </VisualStateGroup>
@@ -338,10 +521,10 @@
                                             <ControlTemplate TargetType="Thumb">
                                                 <Grid>
                                                     <Border
-                                                Background="{DynamicResource AccentBrush}"
-                                                BorderBrush="{DynamicResource AccentBrush}"
-                                                BorderThickness="0"
-                                                CornerRadius="3" />
+                                                        Background="{DynamicResource AccentBrush}"
+                                                        BorderBrush="{DynamicResource AccentBrush}"
+                                                        BorderThickness="0"
+                                                        CornerRadius="3"/>
                                                 </Grid>
                                             </ControlTemplate>
                                         </Thumb.Template>
@@ -350,7 +533,9 @@
 
                                 <!-- Increase Repeat Button -->
                                 <Track.IncreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="0">
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="{DynamicResource AccentBrush}"
+                                            BorderThickness="0">
                                         <RepeatButton.Template>
                                             <ControlTemplate TargetType="RepeatButton">
                                                 <Grid x:Name="RepeatButtonGrid">
@@ -358,12 +543,18 @@
                                                         <VisualStateGroup Name="CommonStates">
                                                             <VisualState Name="Normal">
                                                                 <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="RepeatButtonGrid" To="1" Duration="0:0:0"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                            Storyboard.TargetName="RepeatButtonGrid"
+                                                                            To="1"
+                                                                            Duration="0:0:0"/>
                                                                 </Storyboard>
                                                             </VisualState>
                                                             <VisualState Name="MouseOver">
                                                                 <Storyboard>
-                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="RepeatButtonGrid" To="0" Duration="0:0:0.1"/>
+                                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                            Storyboard.TargetName="RepeatButtonGrid"
+                                                                            To="0"
+                                                                            Duration="0:0:0.1"/>
                                                                 </Storyboard>
                                                             </VisualState>
                                                         </VisualStateGroup>

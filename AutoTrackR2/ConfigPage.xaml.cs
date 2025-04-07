@@ -24,10 +24,10 @@ namespace AutoTrackR2
         {
             InitializeComponent();
             this.mainWindow = mainWindow;
-         
+
             LogFilePath.Text = ConfigManager.LogFile;
             ApiUrl.Text = ConfigManager.ApiUrl;
-            ApiKey.Text = ConfigManager.ApiKey;
+            ApiKey.Password = ConfigManager.ApiKey;
             VideoPath.Text = ConfigManager.VideoPath;
             VisorWipeSlider.Value = ConfigManager.VisorWipe;
             VideoRecordSlider.Value = ConfigManager.VideoRecord;
@@ -70,7 +70,7 @@ namespace AutoTrackR2
             // Set the textboxes with the loaded values
             LogFilePath.Text = logFile;
             ApiUrl.Text = apiUrl;
-            ApiKey.Text = apiKey;
+            ApiKey.Password = apiKey;
             VideoPath.Text = videoPath;
 
             // Set the sliders with the loaded values
@@ -123,7 +123,7 @@ namespace AutoTrackR2
 
             // Apply the selected theme
             ApplyTheme(themeIndex);
-            
+
             mainWindow.UpdateTabVisuals();
         }
 
@@ -293,11 +293,11 @@ namespace AutoTrackR2
                     break;
                 case 16: // Feezy
                     UpdateThemeColors(
-                        (Color)ColorConverter.ConvertFromString("#FFA500"), // Accent/Border - Orange
-                        (Color)ColorConverter.ConvertFromString("#FFE4B5"), // Button - Moccasin
-                        (Color)ColorConverter.ConvertFromString("#FFF8DC"), // Background - Cornsilk
-                        (Color)ColorConverter.ConvertFromString("#8B4513"), // Text - Saddle Brown
-                        (Color)ColorConverter.ConvertFromString("#FF7F50")  // AltText - Coral
+                        (Color)ColorConverter.ConvertFromString("#FFA500"), // Accent/Border
+                        (Color)ColorConverter.ConvertFromString("#1B0C04"), // Button
+                        (Color)ColorConverter.ConvertFromString("#1B0C04"), // Background
+                        (Color)ColorConverter.ConvertFromString("#FFE4B5"), // Text
+                        (Color)ColorConverter.ConvertFromString("#FFE4B5")  // AltText 
                     );
                     ChangeLogo("/Assets/chibifox.png", (Color)ColorConverter.ConvertFromString("#FFA500"));
                     break;
@@ -399,11 +399,14 @@ namespace AutoTrackR2
             dialog.ValidateNames = false;
             dialog.Filter = "All files|*.*";
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true && dialog.FileName != null)
             {
                 // Extract only the directory path from the file
-                string selectedFolder = Path.GetDirectoryName(dialog.FileName);
-                VideoPath.Text = selectedFolder; // Set the folder path
+                string? selectedFolder = Path.GetDirectoryName(dialog.FileName);
+                if (selectedFolder != null)
+                {
+                    VideoPath.Text = selectedFolder; // Set the folder path
+                }
             }
         }
 
@@ -412,9 +415,13 @@ namespace AutoTrackR2
             Slider slider = (Slider)sender;
 
             // Build the dynamic file path for the current user
+            if (string.IsNullOrEmpty(ConfigManager.AHKScriptFolder))
+            {
+                MessageBox.Show("AHK script folder path is not configured.", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             string filePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2",
+                ConfigManager.AHKScriptFolder,
                 "visorwipe.ahk"
             );
 
@@ -508,41 +515,24 @@ namespace AutoTrackR2
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Get the directory for the user's local application data
-            string appDataDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AutoTrackR2"
-            );
 
-            // Ensure the directory exists
-            if (!Directory.Exists(appDataDirectory))
-            {
-                Directory.CreateDirectory(appDataDirectory);
-            }
-
-            // Combine the app data directory with the config file name
-            string configFilePath = Path.Combine(appDataDirectory, "config.ini");
-
-            using (StreamWriter writer = new StreamWriter(configFilePath))
-            {
-                writer.WriteLine($"LogFile={LogFilePath.Text}");
-                writer.WriteLine($"ApiUrl={ApiUrl.Text}");
-                writer.WriteLine($"ApiKey={ApiKey.Text}");
-                writer.WriteLine($"VideoPath={VideoPath.Text}");
-                writer.WriteLine($"VisorWipe={(int)VisorWipeSlider.Value}");
-                writer.WriteLine($"VideoRecord={(int)VideoRecordSlider.Value}");
-                writer.WriteLine($"OfflineMode={(int)OfflineModeSlider.Value}");
-                writer.WriteLine($"Theme={(int)ThemeSlider.Value}"); // Assumes you are saving the theme slider value (0, 1, or 2)
-            }
-
+            ConfigManager.ApiKey = ApiKey.Password;
+            ConfigManager.ApiUrl = ApiUrl.Text;
+            ConfigManager.LogFile = LogFilePath.Text;
+            ConfigManager.VideoPath = VideoPath.Text;
+            ConfigManager.VisorWipe = (int)VisorWipeSlider.Value;
+            ConfigManager.VideoRecord = (int)VideoRecordSlider.Value;
+            ConfigManager.OfflineMode = (int)OfflineModeSlider.Value;
+            ConfigManager.Theme = (int)ThemeSlider.Value;
+            // Save the current config values
+            ConfigManager.SaveConfig();
             // Start the flashing effect
             FlashSaveButton();
-            ConfigManager.LoadConfig();
         }
 
         private void FlashSaveButton()
         {
-            string originalText = SaveButton.Content.ToString();
+            string? originalText = SaveButton.Content?.ToString() ?? string.Empty;
             SaveButton.Content = "Saved";
 
             // Save button color change effect
@@ -591,7 +581,7 @@ namespace AutoTrackR2
         {
             string apiUrl = ApiUrl.Text;
             string modifiedUrl = Regex.Replace(apiUrl, @"(https?://[^/]+)/?.*", "$1/test");
-            string apiKey = ApiKey.Text;
+            string apiKey = ApiKey.Password;
             Debug.WriteLine($"Sending to {modifiedUrl}");
 
             try
