@@ -343,5 +343,18 @@
       "Path": "/Assets/BRTE.png",
       "Primary": "#FF4500"
     }
+  },
+  "FCU": {
+    "Colors": {
+      "Accent": "#9CAF88",
+      "Button": "#2A3324",
+      "Background": "#1A1F15",
+      "Text": "#FFFFFF",
+      "AltText": "#B8C7A8"
+    },
+    "Logo": {
+      "Path": "/Assets/FCU.png",
+      "Primary": "#9CAF88"
+    }
   }
 }
