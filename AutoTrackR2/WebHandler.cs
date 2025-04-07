@@ -103,6 +103,16 @@ public static class WebHandler
             apiKillData.rsi = "-1";
         }
 
+        if (!apiKillData.enlisted.Contains(","))
+        {
+            //Get second whitespace in string
+            var index = apiKillData.enlisted.IndexOf(" ", apiKillData.enlisted.IndexOf(" ", StringComparison.Ordinal) + 1, StringComparison.Ordinal);
+            if (index != -1)
+            {
+                apiKillData.enlisted = apiKillData.enlisted.Insert(index, ",");
+            }
+        }
+
         var httpClient = new HttpClient();
         string jsonData = JsonSerializer.Serialize(apiKillData);
         httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + ConfigManager.ApiKey);

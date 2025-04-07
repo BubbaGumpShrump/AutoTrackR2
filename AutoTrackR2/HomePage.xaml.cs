@@ -51,7 +51,6 @@ public partial class HomePage : UserControl
             Dispatcher.Invoke(() =>
             {
                 UpdateStatusIndicator(true);
-                ReadInitialStates(); // Read states first
                 InitializeLogHandler(); // Then initialize the log handler
             });
         }
@@ -70,7 +69,6 @@ public partial class HomePage : UserControl
                 {
                     // Game is running, start log monitoring and read initial states
                     InitializeLogHandler();
-                    ReadInitialStates();
                 }
             }
             else
@@ -137,7 +135,7 @@ public partial class HomePage : UserControl
         {
             Dispatcher.Invoke(() =>
             {
-                PlayerShipTextBox.Text = LocalPlayerData.CurrentGameMode == GameMode.PersistentUniverse ? "Player" : shipName;
+                PlayerShipTextBox.Text = LocalPlayerData.CurrentGameMode == GameMode.PersistentUniverse ? shipName : "Unknown";
                 AdjustFontSize(PlayerShipTextBox);
                 LocalPlayerData.PlayerShip = shipName;
             });
@@ -148,7 +146,7 @@ public partial class HomePage : UserControl
         {
             Dispatcher.Invoke(() =>
             {
-                GameModeTextBox.Text = mode == GameMode.PersistentUniverse ? "Player" : mode.ToString();
+                GameModeTextBox.Text = mode == GameMode.PersistentUniverse ? mode.ToString() : GameMode.Unknown.ToString();
                 AdjustFontSize(GameModeTextBox);
                 LocalPlayerData.CurrentGameMode = mode;
             });
@@ -348,14 +346,6 @@ public partial class HomePage : UserControl
     public void StopButton_Click(object sender, RoutedEventArgs e)
     {
         _logHandler?.StopMonitoring();
-
-        // Clear the text boxes
-        // System.Threading.Thread.Sleep(200);
-        // PilotNameTextBox.Text = string.Empty;
-        // PlayerShipTextBox.Text = string.Empty;
-        // GameModeTextBox.Text = string.Empty;
-        // KillTallyTextBox.Text = string.Empty;
-        // KillFeedStackPanel.Children.Clear();
     }
 
     private void AdjustFontSize(TextBlock textBlock)
@@ -440,141 +430,18 @@ public partial class HomePage : UserControl
     {
         if (_logHandler == null)
         {
+            RegisterUIEventHandlers();
             _logHandler = new LogHandler(ConfigManager.LogFile);
             _logHandler.Initialize();
-            RegisterUIEventHandlers();
             _isLogHandlerRunning = true;
-
-            // Read initial states after initializing log handler
-            ReadInitialStates();
         }
         else if (!_isLogHandlerRunning)
         {
             _logHandler.Initialize();
             _isLogHandlerRunning = true;
-            ReadInitialStates();
         }
     }
-
-    private void ReadInitialStates()
-    {
-        if (string.IsNullOrEmpty(ConfigManager.LogFile) || !File.Exists(ConfigManager.LogFile))
-        {
-            Debug.WriteLine("Log file not found or path is empty");
-            return;
-        }
-
-        try
-        {
-            Debug.WriteLine("Reading initial states from log file...");
-            // Read the entire log file
-            var lines = File.ReadAllLines(ConfigManager.LogFile);
-            string username = "";
-            string shipName = "";
-            GameMode gameMode = GameMode.Unknown;
-
-            // Read from the end of the file to get the most recent states
-            for (int i = lines.Length - 1; i >= 0; i--)
-            {
-                var line = lines[i];
-
-                // Check for username (login)
-                if (line.Contains("'s Character"))
-                {
-                    int startIndex = line.IndexOf("'s Character");
-                    if (startIndex > 0)
-                    {
-                        username = line.Substring(0, startIndex).Trim();
-                        Debug.WriteLine($"Found username: {username}");
-                    }
-                }
-                // Check for ship name
-                else if (line.Contains("Entering quantum travel from"))
-                {
-                    int startIndex = line.IndexOf("in ship") + 8;
-                    int endIndex = line.IndexOf(" to ", startIndex);
-                    if (startIndex > 8 && endIndex > startIndex)
-                    {
-                        shipName = line.Substring(startIndex, endIndex - startIndex).Trim();
-                        Debug.WriteLine($"Found ship: {shipName}");
-                    }
-                }
-                // Check for game mode
-                else if (line.Contains("Loading level"))
-                {
-                    if (line.Contains("Persistent_Universe"))
-                    {
-                        gameMode = GameMode.PersistentUniverse;
-                        Debug.WriteLine("Found game mode: PU");
-                    }
-                    else if (line.Contains("Arena_Commander"))
-                    {
-                        gameMode = GameMode.ArenaCommander;
-                        Debug.WriteLine("Found game mode: AC");
-                    }
-                }
-
-                // If we've found all the information we need, we can stop reading
-                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(shipName) && gameMode != GameMode.Unknown)
-                {
-                    break;
-                }
-            }
-
-            // Update UI with found states
-            Dispatcher.Invoke(() =>
-            {
-                if (!string.IsNullOrEmpty(username))
-                {
-                    PilotNameTextBox.Text = username;
-                    LocalPlayerData.Username = username;
-                    AdjustFontSize(PilotNameTextBox);
-                    Debug.WriteLine($"Set username in UI: {username}");
-                }
-                else
-                {
-                    PilotNameTextBox.Text = "Unknown";
-                    LocalPlayerData.Username = string.Empty;
-                    AdjustFontSize(PilotNameTextBox);
-                    Debug.WriteLine("Username not found, set to Unknown");
-                }
-
-                if (!string.IsNullOrEmpty(shipName))
-                {
-                    PlayerShipTextBox.Text = gameMode == GameMode.PersistentUniverse ? "Player" : shipName;
-                    LocalPlayerData.PlayerShip = shipName;
-                    AdjustFontSize(PlayerShipTextBox);
-                    Debug.WriteLine($"Set ship in UI: {PlayerShipTextBox.Text}");
-                }
-                else
-                {
-                    PlayerShipTextBox.Text = "Unknown";
-                    LocalPlayerData.PlayerShip = string.Empty;
-                    AdjustFontSize(PlayerShipTextBox);
-                    Debug.WriteLine("Ship not found, set to Unknown");
-                }
-
-                if (gameMode != GameMode.Unknown)
-                {
-                    GameModeTextBox.Text = gameMode == GameMode.PersistentUniverse ? "Player" : gameMode.ToString();
-                    LocalPlayerData.CurrentGameMode = gameMode;
-                    AdjustFontSize(GameModeTextBox);
-                    Debug.WriteLine($"Set game mode in UI: {GameModeTextBox.Text}");
-                }
-                else
-                {
-                    GameModeTextBox.Text = "Unknown";
-                    LocalPlayerData.CurrentGameMode = GameMode.Unknown;
-                    AdjustFontSize(GameModeTextBox);
-                    Debug.WriteLine("Game mode not found, set to Unknown");
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error reading initial states: {ex.Message}");
-        }
-    }
+    
 
     public void Cleanup()
     {
