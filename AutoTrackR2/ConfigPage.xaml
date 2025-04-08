@@ -26,7 +26,7 @@
                                     VerticalAlignment="Center"
                                     Height="389">
                                 <!-- Log File -->
-                                <StackPanel Margin="0,10,0,15"
+                                <StackPanel Margin="0,5,0,10"
                                             Orientation="Horizontal">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="Set this to the Game.log file in your StarCitizen\LIVE directory."
@@ -55,7 +55,7 @@
                                 </StackPanel>
 
                                 <!-- API URL -->
-                                <StackPanel Margin="0,0,0,15"
+                                <StackPanel Margin="0,0,0,10"
                                             Orientation="Horizontal">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="Need a URL? No idea what to do? Contact heavy_bob on Discord!"
@@ -83,7 +83,7 @@
                                 </StackPanel>
 
                                 <!-- API Key -->
-                                <StackPanel Margin="0,0,0,15"
+                                <StackPanel Margin="0,0,0,10"
                                             Orientation="Horizontal">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="Need a key? No idea what to do? Contact heavy_bob on Discord!"
@@ -102,7 +102,7 @@
                                 </StackPanel>
 
                                 <!-- Video Path -->
-                                <StackPanel Margin="0,0,0,15"
+                                <StackPanel Margin="0,0,0,10"
                                             Orientation="Horizontal">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="The directory where your clipping software saves kills. Check the README."
@@ -129,18 +129,31 @@
                                         </StackPanel>
                                 </StackPanel>
 
-                                <!-- Visor Wipe Toggle Slider -->
-                                <StackPanel Margin="0,0,0,15"
-                                            Orientation="Horizontal">
+                                <!-- Toggle Settings Grid -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Visor Wipe Toggle -->
+                                    <StackPanel Grid.Column="0" Grid.Row="0"
+                                              Orientation="Horizontal" 
+                                              Margin="0,0,5,5">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="Perform a Visor Wipe animation on player kill. Requires AHKv2."
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="20"
-                                                   Margin="0,4,3,5"/>
+                                                   Margin="0,4,3,0"/>
                                         <TextBlock Text="Visor Wipe:"
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="16"
-                                                   Margin="0,7,0,5"/>
+                                                   Margin="0,7,0,0"/>
                                         <Slider Name="VisorWipeSlider"
                                                 Minimum="0"
                                                 Maximum="1"
@@ -148,22 +161,24 @@
                                                 IsSnapToTickEnabled="True"
                                                 Value="0"
                                                 Style="{StaticResource ToggleSliderStyle}"
-                                                Margin="27,-4,0,0"
+                                                Margin="10,-4,0,0"
+                                                Width="100"
                                                 ValueChanged="VisorWipeSlider_ValueChanged"/>
-                                </StackPanel>
+                                    </StackPanel>
 
-                                <!-- Video Record Toggle Slider -->
-                                <StackPanel Margin="0,0,0,15"
-                                            Orientation="Horizontal">
+                                    <!-- Video Record Toggle -->
+                                    <StackPanel Grid.Column="1" Grid.Row="0"
+                                              Orientation="Horizontal"
+                                              Margin="5,0,0,5">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="Automatically clip your last kill. Check the README for more info."
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="20"
-                                                   Margin="0,4,3,5"/>
+                                                   Margin="0,4,3,0"/>
                                         <TextBlock Text="Video Record:"
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="16"
-                                                   Margin="0,7,0,5"/>
+                                                   Margin="0,7,0,0"/>
                                         <Slider Name="VideoRecordSlider"
                                                 Minimum="0"
                                                 Maximum="1"
@@ -172,21 +187,23 @@
                                                 Value="0"
                                                 Style="{StaticResource ToggleSliderStyle}"
                                                 Margin="10,-4,0,0"
+                                                Width="100"
                                                 ValueChanged="VideoRecordSlider_ValueChanged"/>
-                                </StackPanel>
+                                    </StackPanel>
 
-                                <!-- Offline Mode Toggle Slider -->
-                                <StackPanel Margin="0,0,0,10"
-                                            Orientation="Horizontal">
+                                    <!-- Offline Mode Toggle -->
+                                    <StackPanel Grid.Column="0" Grid.Row="1"
+                                              Orientation="Horizontal"
+                                              Margin="0,0,5,5">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="With Offline Mode enabled, kills will not be submitted to the configured API."
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="20"
-                                                   Margin="0,4,3,5"/>
+                                                   Margin="0,4,3,0"/>
                                         <TextBlock Text="Offline Mode:"
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="16"
-                                                   Margin="0,7,0,5"/>
+                                                   Margin="0,7,0,0"/>
                                         <Slider Name="OfflineModeSlider"
                                                 Minimum="0"
                                                 Maximum="1"
@@ -194,17 +211,20 @@
                                                 IsSnapToTickEnabled="True"
                                                 Value="0"
                                                 Style="{StaticResource ToggleSliderStyle}"
-                                                Margin="12,-4,0,0"
+                                                Margin="10,-4,0,0"
+                                                Width="100"
                                                 ValueChanged="OfflineModeSlider_ValueChanged"/>
-                                </StackPanel>
+                                    </StackPanel>
 
-                                <!-- 3-Position Toggle Slider -->
-                                <StackPanel Margin="0,0,0,15"
-                                            Orientation="Horizontal">
+                                    <!-- Theme Slider -->
+                                    <StackPanel Grid.Column="0" Grid.Row="2"
+                                              Grid.ColumnSpan="2"
+                                              Orientation="Horizontal"
+                                              Margin="0,0,0,5">
                                         <TextBlock Text="Theme:"
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="16"
-                                                   Margin="0,7,0,5"/>
+                                                   Margin="0,7,10,0"/>
                                         <Slider x:Name="ThemeSlider"
                                                 Minimum="0"
                                                 Value="0"
@@ -213,8 +233,8 @@
                                                 ValueChanged="ThemeSlider_ValueChanged"
                                                 Width="447"
                                                 Style="{StaticResource ThreePositionSlider}"/>
-                                </StackPanel>
-
+                                    </StackPanel>
+                                </Grid>
                         </StackPanel>
 
                         <!-- Save Button -->

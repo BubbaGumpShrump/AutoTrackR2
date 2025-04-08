@@ -39,7 +39,6 @@ public partial class ConfigPage : UserControl
 
         ApplyToggleModeStyle(OfflineModeSlider.Value, VisorWipeSlider.Value, VideoRecordSlider.Value);
 
-
         const string themeJsonPath = "themes.json";
         var themeJson = File.ReadAllText(themeJsonPath);
         _themes = JsonSerializer.Deserialize<Dictionary<string, Theme>>(themeJson);
@@ -78,23 +77,19 @@ public partial class ConfigPage : UserControl
     }
 
     // This method will set the loaded config values to the UI controls
-    public void SetConfigValues(string logFile, string apiUrl, string apiKey, string videoPath,
-                                 int visorWipe, int videoRecord, int offlineMode, int theme)
+    public void SetConfigValues(string logFile, string apiUrl, string apiKey, string videoPath, int visorWipe, int videoRecord, int offlineMode, int theme)
     {
-        // Set the textboxes with the loaded values
         LogFilePath.Text = logFile;
         ApiUrl.Text = apiUrl;
         ApiKey.Password = apiKey;
         VideoPath.Text = videoPath;
-
-        // Set the sliders with the loaded values
-        VideoRecordSlider.Value = videoRecord;
         VisorWipeSlider.Value = visorWipe;
+        VideoRecordSlider.Value = videoRecord;
         OfflineModeSlider.Value = offlineMode;
+        ThemeSlider.Value = theme;
 
         // Handle themes
         ApplyTheme(theme);
-
     }
 
     private void ApplyToggleModeStyle(double offlineModeValue, double visorWipeValue, double videoRecordValue)
@@ -202,18 +197,18 @@ public partial class ConfigPage : UserControl
     // Video Path Browse Button Handler
     private void VideoPathBrowseButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog();
-        dialog.CheckFileExists = false;
+        var dialog = new Microsoft.Win32.OpenFileDialog();
         dialog.ValidateNames = false;
-        dialog.Filter = "All files|*.*";
-
-        if (dialog.ShowDialog() == true && dialog.FileName != null)
+        dialog.CheckFileExists = false;
+        dialog.CheckPathExists = true;
+        dialog.FileName = "Folder Selection";
+        
+        if (dialog.ShowDialog() == true)
         {
-            // Extract only the directory path from the file
             string? selectedFolder = Path.GetDirectoryName(dialog.FileName);
             if (selectedFolder != null)
             {
-                VideoPath.Text = selectedFolder; // Set the folder path
+                VideoPath.Text = selectedFolder;
             }
         }
     }
@@ -320,10 +315,8 @@ public partial class ConfigPage : UserControl
         }
     }
 
-
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-
         ConfigManager.ApiKey = ApiKey.Password;
         ConfigManager.ApiUrl = ApiUrl.Text;
         ConfigManager.LogFile = LogFilePath.Text;
@@ -332,6 +325,7 @@ public partial class ConfigPage : UserControl
         ConfigManager.VideoRecord = (int)VideoRecordSlider.Value;
         ConfigManager.OfflineMode = (int)OfflineModeSlider.Value;
         ConfigManager.Theme = (int)ThemeSlider.Value;
+        
         // Save the current config values
         ConfigManager.SaveConfig();
         // Start the flashing effect
