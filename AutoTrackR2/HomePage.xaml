@@ -42,19 +42,20 @@
                                 </ScrollViewer>
                         </Border>
 
-                        <!-- StackPanel for Start and Stop buttons -->
+                        <!-- Border and StackPanel for player info -->
                         <Border Background="{DynamicResource BackgroundDarkBrush}"
                                 BorderBrush="{DynamicResource AccentBrush}"
                                 Grid.Row="0"
                                 Grid.Column="1"
                                 BorderThickness="2"
                                 CornerRadius="5"
-                                Margin="0,0,0,82"/>
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Center"
+                                Margin="0,0,0,10"
+                                VerticalAlignment="Top">
+                                <StackPanel
+                                    VerticalAlignment="Top"
                                     HorizontalAlignment="Center"
-                                    Height="269"
-                                    Width="152">
+                                    Width="152"
+                                    Margin="10,5,10,5">
                                 <TextBlock Name="PilotNameTitle"
                                            Text="Pilot"
                                            Width="152"
@@ -112,6 +113,25 @@
                                            Foreground="{DynamicResource TextBrush}"
                                            FontSize="10"
                                            TextAlignment="Center"/>
+                                <TextBlock Name="LocationTitle"
+                                           Text="Location"
+                                           Width="152"
+                                           Height="20"
+                                           Background="Transparent"
+                                           FontFamily="{StaticResource Orbitron}"
+                                           Margin="0,5,0,0"
+                                           Foreground="{DynamicResource AltTextBrush}"
+                                           FontSize="14"/>
+                                <TextBlock Name="LocationTextBox"
+                                           Text="Unknown"
+                                           Width="152"
+                                           Height="20"
+                                           Background="Transparent"
+                                           FontFamily="{StaticResource Orbitron}"
+                                           Margin="0,0,0,0"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="10"
+                                           TextAlignment="Center"/>
                                 <TextBlock Name="KillTallyTitle"
                                            Text="Kill Tally"
                                            Width="152"
@@ -141,7 +161,8 @@
                                          FontSize="8"
                                          BorderThickness="0"
                                          Margin="0,9,0,0"/>
-                        </StackPanel>
+                                </StackPanel>
+                        </Border>
                         <StackPanel Grid.Row="1"
                                     Grid.Column="1"
                                     VerticalAlignment="Center"

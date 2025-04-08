@@ -77,9 +77,11 @@ public partial class HomePage : UserControl
                 GameModeTextBox.Text = "Unknown";
                 PlayerShipTextBox.Text = "Unknown";
                 PilotNameTextBox.Text = "Unknown";
+                LocationTextBox.Text = "Unknown";
                 LocalPlayerData.CurrentGameMode = GameMode.Unknown;
                 LocalPlayerData.PlayerShip = string.Empty;
                 LocalPlayerData.Username = string.Empty;
+                LocalPlayerData.LastSeenVehicleLocation = "Unknown";
 
                 // Stop log monitoring if it's running
                 if (_isLogHandlerRunning)
@@ -139,6 +141,8 @@ public partial class HomePage : UserControl
                 AdjustFontSize(PlayerShipTextBox);
                 LocalPlayerData.PlayerShip = data.ShipName;
                 LocalPlayerData.LastSeenVehicleLocation = data.Location;
+                LocationTextBox.Text = data.Location;
+                AdjustFontSize(LocationTextBox);
             });
         };
 
@@ -216,7 +220,12 @@ public partial class HomePage : UserControl
         // Vehicle Destruction
         TrackREventDispatcher.VehicleDestructionEvent += (data) =>
         {
-            LocalPlayerData.LastSeenVehicleLocation = data.VehicleZone;
+            Dispatcher.Invoke(() =>
+            {
+                LocalPlayerData.LastSeenVehicleLocation = data.VehicleZone;
+                LocationTextBox.Text = data.VehicleZone;
+                AdjustFontSize(LocationTextBox);
+            });
         };
 
         _UIEventsRegistered = true;
