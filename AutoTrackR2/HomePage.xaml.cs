@@ -233,67 +233,51 @@ public partial class HomePage : UserControl
 
     private void AddKillToScreen(KillData killData)
     {
-        // Fetch the dynamic resource for AltTextColor
-        var altTextColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AltTextColor"]);
-        var accentColorBrush = new SolidColorBrush((Color)Application.Current.Resources["AccentColor"]);
-
-        // Fetch the Orbitron FontFamily from resources
-        var orbitronFontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
-        var gemunuFontFamily = (FontFamily)Application.Current.Resources["Gemunu"];
-
-        // Create a new TextBlock for each kill
+        // Use resource references instead of creating new brushes
         var killTextBlock = new TextBlock
         {
             Margin = new Thickness(0, 10, 0, 10),
-            Style = (Style)Application.Current.Resources["RoundedTextBlock"], // Apply style for text
+            Style = (Style)Application.Current.Resources["RoundedTextBlock"],
             FontSize = 14,
             FontWeight = FontWeights.Bold,
-            FontFamily = gemunuFontFamily,
+            FontFamily = (FontFamily)Application.Current.Resources["Gemunu"],
         };
 
-        // Add styled content using Run elements
-        killTextBlock.Inlines.Add(new Run("Victim Name: ")
-        {
-            Foreground = altTextColorBrush,
-            FontFamily = orbitronFontFamily,
-        });
+        // Add styled content using Run elements with resource references
+        var titleRun = new Run("Victim Name: ");
+        titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
+        titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+        killTextBlock.Inlines.Add(titleRun);
         killTextBlock.Inlines.Add(new Run($"{killData.EnemyPilot}\n"));
 
-        // Repeat for other lines
-        killTextBlock.Inlines.Add(new Run("Victim Ship: ")
-        {
-            Foreground = altTextColorBrush,
-            FontFamily = orbitronFontFamily,
-        });
+        titleRun = new Run("Victim Ship: ");
+        titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
+        titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+        killTextBlock.Inlines.Add(titleRun);
         killTextBlock.Inlines.Add(new Run($"{killData.EnemyShip}\n"));
 
-        killTextBlock.Inlines.Add(new Run("Victim Org: ")
-        {
-            Foreground = altTextColorBrush,
-            FontFamily = orbitronFontFamily,
-        });
+        titleRun = new Run("Victim Org: ");
+        titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
+        titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+        killTextBlock.Inlines.Add(titleRun);
         killTextBlock.Inlines.Add(new Run($"{killData.OrgAffiliation}\n"));
 
-        killTextBlock.Inlines.Add(new Run("Join Date: ")
-        {
-            Foreground = altTextColorBrush,
-            FontFamily = orbitronFontFamily,
-        });
+        titleRun = new Run("Join Date: ");
+        titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
+        titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+        killTextBlock.Inlines.Add(titleRun);
         killTextBlock.Inlines.Add(new Run($"{killData.Enlisted}\n"));
 
-        killTextBlock.Inlines.Add(new Run("UEE Record: ")
-        {
-            Foreground = altTextColorBrush,
-            FontFamily = orbitronFontFamily,
-        });
-
+        titleRun = new Run("UEE Record: ");
+        titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
+        titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+        killTextBlock.Inlines.Add(titleRun);
         killTextBlock.Inlines.Add(new Run($"{killData.RecordNumber}\n"));
 
-        killTextBlock.Inlines.Add(new Run("Kill Time: ")
-        {
-            Foreground = altTextColorBrush,
-            FontFamily = orbitronFontFamily,
-        });
+        titleRun = new Run("Kill Time: ");
+        titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
+        titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
+        killTextBlock.Inlines.Add(titleRun);
         killTextBlock.Inlines.Add(new Run($"{killData.KillTime}"));
 
         // Create a Border and apply the RoundedTextBlockWithBorder style
