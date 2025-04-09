@@ -175,23 +175,47 @@ public static class WebHandler
             var responseContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Response: {responseContent}");
 
-            // Check if the response contains a streamer field
-            try
+            // Only process streamer data if streamlink is enabled
+            if (ConfigManager.StreamlinkEnabled == 1)
             {
-                var responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseContent);
-                if (responseData != null && responseData.TryGetValue("streamer", out JsonElement streamerElement))
+                ProcessStreamerResponse(responseContent);
+            }
+        }
+    }
+
+    private static void ProcessStreamerResponse(string responseContent)
+    {
+        try
+        {
+            var responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseContent);
+            if (responseData != null && responseData.TryGetValue("streamer", out JsonElement streamerElement))
+            {
+                string streamerHandle = streamerElement.GetString() ?? string.Empty;
+                if (!string.IsNullOrEmpty(streamerHandle))
                 {
-                    string streamerHandle = streamerElement.GetString() ?? string.Empty;
-                    if (!string.IsNullOrEmpty(streamerHandle))
+                    // Sanitize the streamer handle before using it, this is to prevent any malicious instructions. 
+                    string sanitizedHandle = SanitizeStreamerHandle(streamerHandle);
+                    if (!string.IsNullOrEmpty(sanitizedHandle))
                     {
-                        TrackREventDispatcher.OnStreamlinkRecordEvent(streamerHandle);
+                        TrackREventDispatcher.OnStreamlinkRecordEvent(sanitizedHandle);
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error parsing streamer from response: {ex.Message}");
-            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error parsing streamer from response: {ex.Message}");
+        }
+    }
+
+    private static string SanitizeStreamerHandle(string handle)
+    {
+        // Twitch usernames 4-25 characters, letters, numbers and underscores.
+        if (Regex.IsMatch(handle, @"^[a-zA-Z0-9_]{4,25}$"))
+        {
+            return handle.ToLower(); // Api won't return anything other than lowercase but just in case. 
+        }
+
+        return string.Empty; // Reject invalid handles
     }
 }
