@@ -155,7 +155,12 @@ public static class WebHandler
         Console.WriteLine($"Time (UTC): {DateTimeOffset.UtcNow}");
         Console.WriteLine("=== End Debug Info ===\n");
 
-        var response = await httpClient.PostAsync(ConfigManager.ApiUrl + "register-kill", new StringContent(jsonData, Encoding.UTF8, "application/json"));
+        // Ensure proper URL formatting
+        string baseUrl = Regex.Replace(ConfigManager.ApiUrl ?? "", @"(https?://[^/]+)/?.*", "$1");
+        string endpoint = "register-kill";
+        string fullUrl = $"{baseUrl}/{endpoint}";
+
+        var response = await httpClient.PostAsync(fullUrl, new StringContent(jsonData, Encoding.UTF8, "application/json"));
         if (response.StatusCode != HttpStatusCode.OK)
         {
             Console.WriteLine("Failed to submit kill data:");

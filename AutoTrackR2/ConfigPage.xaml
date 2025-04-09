@@ -139,11 +139,15 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
+                                    <!-- Left Column Controls -->
+                                    
                                     <!-- Visor Wipe Toggle -->
                                     <StackPanel Grid.Column="0" Grid.Row="0"
-                                              Orientation="Horizontal" 
+                                              Orientation="Horizontal"
                                               Margin="0,0,5,5">
                                         <TextBlock Text="ⓘ"
                                                    ToolTip="Perform a Visor Wipe animation on player kill. Requires AHKv2."
@@ -167,11 +171,11 @@
                                     </StackPanel>
 
                                     <!-- Video Record Toggle -->
-                                    <StackPanel Grid.Column="1" Grid.Row="0"
+                                    <StackPanel Grid.Column="0" Grid.Row="1"
                                               Orientation="Horizontal"
-                                              Margin="5,0,0,5">
+                                              Margin="0,0,5,5">
                                         <TextBlock Text="ⓘ"
-                                                   ToolTip="Automatically clip your last kill. Check the README for more info."
+                                                   ToolTip="Record video on player kill. Requires AHKv2."
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="20"
                                                    Margin="0,4,3,0"/>
@@ -192,7 +196,7 @@
                                     </StackPanel>
 
                                     <!-- Offline Mode Toggle -->
-                                    <StackPanel Grid.Column="0" Grid.Row="1"
+                                    <StackPanel Grid.Column="0" Grid.Row="2"
                                               Orientation="Horizontal"
                                               Margin="0,0,5,5">
                                         <TextBlock Text="ⓘ"
@@ -216,11 +220,78 @@
                                                 ValueChanged="OfflineModeSlider_ValueChanged"/>
                                     </StackPanel>
 
+                                    <!-- Right Column Controls -->
+                                    
+                                    <!-- Streamlink Toggle -->
+                                    <StackPanel Grid.Column="1" Grid.Row="0"
+                                              Orientation="Horizontal"
+                                              Margin="5,0,0,5">
+                                        <TextBlock Text="ⓘ"
+                                                   ToolTip="Use Streamlink for video recording."
+                                                   Foreground="{DynamicResource TextBrush}"
+                                                   FontSize="20"
+                                                   Margin="0,4,3,0"/>
+                                        <TextBlock Text="Streamlink:"
+                                                   Foreground="{DynamicResource TextBrush}"
+                                                   FontSize="16"
+                                                   Margin="0,7,0,0"/>
+                                        <Slider Name="StreamlinkSlider"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                TickFrequency="1"
+                                                IsSnapToTickEnabled="True"
+                                                Value="0"
+                                                Style="{StaticResource ToggleSliderStyle}"
+                                                Margin="10,-4,0,0"
+                                                Width="100"
+                                                ValueChanged="StreamlinkSlider_ValueChanged"/>
+                                    </StackPanel>
+
+                                    <!-- Streamlink Duration -->
+                                    <StackPanel Grid.Column="1" Grid.Row="1"
+                                              Orientation="Horizontal"
+                                              Margin="5,0,0,5">
+                                        <TextBlock Text="ⓘ"
+                                                   ToolTip="Duration of Streamlink recordings in seconds."
+                                                   Foreground="{DynamicResource TextBrush}"
+                                                   FontSize="20"
+                                                   Margin="0,4,3,0"/>
+                                        <TextBlock Text="Duration:"
+                                                   Foreground="{DynamicResource TextBrush}"
+                                                   FontSize="16"
+                                                   Margin="0,7,0,0"/>
+                                        <Slider Name="StreamlinkDurationSlider"
+                                                Minimum="10"
+                                                Maximum="300"
+                                                TickFrequency="10"
+                                                IsSnapToTickEnabled="True"
+                                                Value="30"
+                                                Style="{StaticResource SliderStyle}"
+                                                Margin="10,-4,0,0"
+                                                Width="100"
+                                                ValueChanged="StreamlinkDurationSlider_ValueChanged"/>
+                                        <TextBlock Name="StreamlinkDurationText"
+                                                   Text="30s"
+                                                   Foreground="{DynamicResource TextBrush}"
+                                                   FontSize="16"
+                                                   Margin="5,7,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Test Streamlink Button -->
+                                    <Button Grid.Column="1" Grid.Row="2"
+                                            Content="Test Streamlink"
+                                            Width="120"
+                                            Height="30"
+                                            FontFamily="{StaticResource Orbitron}"
+                                            Margin="5,0,0,5"
+                                            Style="{StaticResource ButtonStyle}"
+                                            Click="TestStreamlinkButton_Click"/>
+
                                     <!-- Theme Slider -->
-                                    <StackPanel Grid.Column="0" Grid.Row="2"
+                                    <StackPanel Grid.Column="0" Grid.Row="4"
                                               Grid.ColumnSpan="2"
                                               Orientation="Horizontal"
-                                              Margin="0,0,0,5">
+                                              Margin="0,10,0,5">
                                         <TextBlock Text="Theme:"
                                                    Foreground="{DynamicResource TextBrush}"
                                                    FontSize="16"

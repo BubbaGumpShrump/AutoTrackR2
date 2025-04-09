@@ -196,6 +196,8 @@ namespace AutoTrackR2
         public static int VideoRecord { get; set; }
         public static int OfflineMode { get; set; }
         public static int Theme { get; set; }
+        public static int StreamlinkEnabled { get; set; }
+        public static int StreamlinkDuration { get; set; } = 30;
 
         static ConfigManager()
         {
@@ -247,6 +249,10 @@ namespace AutoTrackR2
                         OfflineMode = int.Parse(line.Substring("OfflineMode=".Length).Trim());
                     else if (line.StartsWith("Theme="))
                         Theme = int.Parse(line.Substring("Theme=".Length).Trim());
+                    else if (line.StartsWith("StreamlinkEnabled="))
+                        StreamlinkEnabled = int.Parse(line.Substring("StreamlinkEnabled=".Length).Trim());
+                    else if (line.StartsWith("StreamlinkDuration="))
+                        StreamlinkDuration = int.Parse(line.Substring("StreamlinkDuration=".Length).Trim());
                 }
             }
         }
@@ -278,6 +284,8 @@ namespace AutoTrackR2
                 writer.WriteLine($"VideoRecord={VideoRecord}");
                 writer.WriteLine($"OfflineMode={OfflineMode}");
                 writer.WriteLine($"Theme={Theme}");
+                writer.WriteLine($"StreamlinkEnabled={StreamlinkEnabled}");
+                writer.WriteLine($"StreamlinkDuration={StreamlinkDuration}");
             }
         }
     }

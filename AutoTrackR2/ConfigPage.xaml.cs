@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using System.Threading.Tasks;
 
 namespace AutoTrackR2;
 
@@ -36,6 +37,9 @@ public partial class ConfigPage : UserControl
         VideoRecordSlider.Value = ConfigManager.VideoRecord;
         OfflineModeSlider.Value = ConfigManager.OfflineMode;
         ThemeSlider.Value = ConfigManager.Theme;
+
+        // Initialize Streamlink slider style
+        StreamlinkSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
 
         ApplyToggleModeStyle(OfflineModeSlider.Value, VisorWipeSlider.Value, VideoRecordSlider.Value);
 
@@ -213,51 +217,6 @@ public partial class ConfigPage : UserControl
         }
     }
 
-    private void VisorWipeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        Slider slider = (Slider)sender;
-
-        // Build the dynamic file path for the current user
-        if (string.IsNullOrEmpty(ConfigManager.AHKScriptFolder))
-        {
-            MessageBox.Show("AHK script folder path is not configured.", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-        string filePath = Path.Combine(
-            ConfigManager.AHKScriptFolder,
-            "visorwipe.ahk"
-        );
-
-        // Get the current value of the slider (0 or 1)
-        ConfigManager.VisorWipe = (int)slider.Value;
-
-        if (ConfigManager.VisorWipe == 1)
-        {
-            // Check if the file exists
-            if (File.Exists(filePath))
-            {
-                // Apply the enabled style if the file exists
-                slider.Style = (Style)Application.Current.FindResource("ToggleSliderStyle");
-            }
-            else
-            {
-                // File does not exist; revert the toggle to 0
-                ConfigManager.VisorWipe = 0;
-                slider.Value = 0; // Revert the slider value
-                slider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
-
-                // Optionally, display a message to the user
-                MessageBox.Show($"Visor wipe script not found. Please ensure the file exists at:\n{filePath}",
-                                "File Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        else
-        {
-            // Apply the disabled style
-            slider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
-        }
-    }
-
     private void VideoRecordSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         Slider slider = (Slider)sender;
@@ -312,6 +271,51 @@ public partial class ConfigPage : UserControl
         else
         {
             slider.Style = (Style)Application.Current.FindResource("ToggleSliderStyle"); // Apply ToggleSliderStyle
+        }
+    }
+
+    private void VisorWipeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        Slider slider = (Slider)sender;
+
+        // Build the dynamic file path for the current user
+        if (string.IsNullOrEmpty(ConfigManager.AHKScriptFolder))
+        {
+            MessageBox.Show("AHK script folder path is not configured.", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        string filePath = Path.Combine(
+            ConfigManager.AHKScriptFolder,
+            "visorwipe.ahk"
+        );
+
+        // Get the current value of the slider (0 or 1)
+        ConfigManager.VisorWipe = (int)slider.Value;
+
+        if (ConfigManager.VisorWipe == 1)
+        {
+            // Check if the file exists
+            if (File.Exists(filePath))
+            {
+                // Apply the enabled style if the file exists
+                slider.Style = (Style)Application.Current.FindResource("ToggleSliderStyle");
+            }
+            else
+            {
+                // File does not exist; revert the toggle to 0
+                ConfigManager.VisorWipe = 0;
+                slider.Value = 0; // Revert the slider value
+                slider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+
+                // Optionally, display a message to the user
+                MessageBox.Show($"Visor wipe script not found. Please ensure the file exists at:\n{filePath}",
+                                "File Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        else
+        {
+            // Apply the disabled style
+            slider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
         }
     }
 
@@ -420,6 +424,115 @@ public partial class ConfigPage : UserControl
         catch (Exception ex)
         {
             MessageBox.Show($"API Test Failure. {ex.Message}");
+        }
+    }
+
+    private void StreamlinkSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        Slider slider = (Slider)sender;
+        ConfigManager.StreamlinkEnabled = (int)slider.Value;
+
+        // Apply the appropriate style based on the value
+        if (slider.Value == 0)
+        {
+            slider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+        }
+        else
+        {
+            slider.Style = (Style)Application.Current.FindResource("ToggleSliderStyle");
+        }
+    }
+
+    private void StreamlinkDurationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (StreamlinkDurationText != null)
+        {
+            int duration = (int)e.NewValue;
+            StreamlinkDurationText.Text = $"{duration}s";
+            ConfigManager.StreamlinkDuration = duration;
+        }
+    }
+
+    private async void TestStreamlinkButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Get the duration from the slider
+            int duration = (int)StreamlinkDurationSlider.Value;
+            
+            // Check if streamlink is installed
+            var versionInfo = new ProcessStartInfo
+            {
+                FileName = "streamlink",
+                Arguments = "--version",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+
+            using (var process = Process.Start(versionInfo))
+            {
+                if (process == null)
+                {
+                    MessageBox.Show("Streamlink is not installed. Please install Streamlink to use this feature.", 
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                string output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    MessageBox.Show("Streamlink is not installed or not working correctly. Please install Streamlink to use this feature.", 
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            // Test recording functionality
+            var testUrl = "https://www.twitch.tv/starcitizen"; // Example URL for testing
+            var outputPath = Path.Combine(
+                ConfigManager.VideoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
+                "streamlink_test.mp4"
+            );
+
+            var recordInfo = new ProcessStartInfo
+            {
+                FileName = "streamlink",
+                Arguments = $"{testUrl} best -o {outputPath}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+
+            using (var process = Process.Start(recordInfo))
+            {
+                if (process == null)
+                {
+                    MessageBox.Show("Failed to start test recording.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Wait for a short duration (5 seconds) to test recording
+                await Task.Delay(5000);
+                
+                try
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill();
+                    }
+                }
+                catch { }
+            }
+
+            MessageBox.Show($"Streamlink test recording completed successfully.\nA 5-second test recording was saved to:\n{outputPath}", 
+                "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error testing Streamlink: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }

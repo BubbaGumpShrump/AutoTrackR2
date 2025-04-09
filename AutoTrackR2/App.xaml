@@ -571,5 +571,55 @@
             </Setter>
         </Style>
 
+        <!-- Standard Slider Style -->
+        <Style x:Key="SliderStyle" TargetType="Slider">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="160"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundDarkBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Width="100" Height="30" HorizontalAlignment="Left">
+                            <!-- Track Background -->
+                            <Border Background="{DynamicResource BackgroundDarkBrush}"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="15"
+                                    Margin="0,0,-5,-4"/>
+
+                            <!-- Track -->
+                            <Track x:Name="PART_Track">
+                                <Track.Thumb>
+                                    <Thumb x:Name="PART_Thumb"
+                                           Width="22"
+                                           Height="22"
+                                           Margin="6,4,1,0">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Fill="{DynamicResource AccentBrush}"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Background="Transparent"
+                                            BorderBrush="Transparent"
+                                            IsHitTestVisible="False"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Application.Resources>
 </Application>
