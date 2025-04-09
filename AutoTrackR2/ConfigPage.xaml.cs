@@ -37,9 +37,18 @@ public partial class ConfigPage : UserControl
         VideoRecordSlider.Value = ConfigManager.VideoRecord;
         OfflineModeSlider.Value = ConfigManager.OfflineMode;
         ThemeSlider.Value = ConfigManager.Theme;
+        StreamlinkSlider.Value = ConfigManager.StreamlinkEnabled;
+        StreamlinkDurationSlider.Value = ConfigManager.StreamlinkDuration;
 
         // Initialize Streamlink slider style
-        StreamlinkSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+        if (StreamlinkSlider.Value == 0)
+        {
+            StreamlinkSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+        }
+        else
+        {
+            StreamlinkSlider.Style = (Style)Application.Current.FindResource("ToggleSliderStyle");
+        }
 
         ApplyToggleModeStyle(OfflineModeSlider.Value, VisorWipeSlider.Value, VideoRecordSlider.Value);
 
@@ -430,6 +439,19 @@ public partial class ConfigPage : UserControl
     private void StreamlinkSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         Slider slider = (Slider)sender;
+
+        // Only allow enabling if streamlink is installed
+        if (slider.Value == 1)
+        {
+            if (!StreamlinkHandler.IsStreamlinkInstalled())
+            {
+                MessageBox.Show("Streamlink is not installed. Please install Streamlink to use this feature.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                slider.Value = 0;
+                return;
+            }
+        }
+
         ConfigManager.StreamlinkEnabled = (int)slider.Value;
 
         // Apply the appropriate style based on the value
@@ -459,80 +481,44 @@ public partial class ConfigPage : UserControl
         {
             // Get the duration from the slider
             int duration = (int)StreamlinkDurationSlider.Value;
-            
-            // Check if streamlink is installed
-            var versionInfo = new ProcessStartInfo
-            {
-                FileName = "streamlink",
-                Arguments = "--version",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
 
-            using (var process = Process.Start(versionInfo))
-            {
-                if (process == null)
-                {
-                    MessageBox.Show("Streamlink is not installed. Please install Streamlink to use this feature.", 
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+            // Calculate the total duration (30 seconds before + configured duration)
+            int totalDuration = 30 + duration;
 
-                string output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    MessageBox.Show("Streamlink is not installed or not working correctly. Please install Streamlink to use this feature.", 
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-            }
-
-            // Test recording functionality
-            var testUrl = "https://www.twitch.tv/starcitizen"; // Example URL for testing
-            var outputPath = Path.Combine(
-                ConfigManager.VideoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
-                "streamlink_test.mp4"
-            );
-
-            var recordInfo = new ProcessStartInfo
-            {
-                FileName = "streamlink",
-                Arguments = $"{testUrl} best -o {outputPath}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-
-            using (var process = Process.Start(recordInfo))
-            {
-                if (process == null)
-                {
-                    MessageBox.Show("Failed to start test recording.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                // Wait for a short duration (5 seconds) to test recording
-                await Task.Delay(5000);
-                
-                try
-                {
-                    if (!process.HasExited)
-                    {
-                        process.Kill();
-                    }
-                }
-                catch { }
-            }
-
-            MessageBox.Show($"Streamlink test recording completed successfully.\nA 5-second test recording was saved to:\n{outputPath}", 
-                "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Test recording functionality, we're using spacecutlet cause need a good tester.
+            TrackREventDispatcher.OnStreamlinkRecordEvent("spacecutlet");
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Error testing Streamlink: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void LogFileOpenButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(LogFilePath.Text))
+        {
+            string directory = Path.GetDirectoryName(LogFilePath.Text) ?? string.Empty;
+            if (Directory.Exists(directory))
+            {
+                Process.Start("explorer.exe", directory);
+            }
+            else
+            {
+                MessageBox.Show("Directory does not exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void VideoPathOpenButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(VideoPath.Text) && Directory.Exists(VideoPath.Text))
+        {
+            Process.Start("explorer.exe", VideoPath.Text);
+        }
+        else
+        {
+            MessageBox.Show("Directory does not exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }

@@ -172,7 +172,26 @@ public static class WebHandler
         else if (response.StatusCode == HttpStatusCode.OK)
         {
             Console.WriteLine("Successfully submitted kill data");
-            Console.WriteLine($"Response: {await response.Content.ReadAsStringAsync()}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Response: {responseContent}");
+
+            // Check if the response contains a streamer field
+            try
+            {
+                var responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseContent);
+                if (responseData != null && responseData.TryGetValue("streamer", out JsonElement streamerElement))
+                {
+                    string streamerHandle = streamerElement.GetString() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(streamerHandle))
+                    {
+                        TrackREventDispatcher.OnStreamlinkRecordEvent(streamerHandle);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing streamer from response: {ex.Message}");
+            }
         }
     }
 }

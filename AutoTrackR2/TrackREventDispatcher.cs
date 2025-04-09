@@ -54,4 +54,11 @@ public static class TrackREventDispatcher
     {
         JumpDriveStateChangedEvent?.Invoke(data);
     }
+
+    public static event Action<string>? StreamlinkRecordEvent;
+
+    public static void OnStreamlinkRecordEvent(string streamerHandle)
+    {
+        StreamlinkRecordEvent?.Invoke(streamerHandle);
+    }
 }

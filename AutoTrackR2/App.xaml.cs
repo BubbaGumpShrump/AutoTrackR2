@@ -19,6 +19,7 @@ namespace AutoTrackR2
             "AutoTrackR2",
             "crash.log"
         );
+        private StreamlinkHandler? _streamlinkHandler;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -43,6 +44,7 @@ namespace AutoTrackR2
             }
 
             base.OnStartup(e);
+            _streamlinkHandler = new StreamlinkHandler();
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
