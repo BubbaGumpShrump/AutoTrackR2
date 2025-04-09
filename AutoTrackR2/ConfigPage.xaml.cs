@@ -477,20 +477,61 @@ public partial class ConfigPage : UserControl
 
     private async void TestStreamlinkButton_Click(object sender, RoutedEventArgs e)
     {
+        Debug.WriteLine("TestStreamlinkButton_Click: Starting streamlink test");
+
+        if (ConfigManager.StreamlinkEnabled != 1)
+        {
+            Debug.WriteLine("TestStreamlinkButton_Click: Streamlink is not enabled");
+            MessageBox.Show("Streamlink is not enabled. Please enable Streamlink to test.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         try
         {
-            // Get the duration from the slider
-            int duration = (int)StreamlinkDurationSlider.Value;
+            Debug.WriteLine("TestStreamlinkButton_Click: Configuring HTTP client");
+            // Configure HttpClient with TLS 1.2
+            var handler = new HttpClientHandler
+            {
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+            };
 
-            // Calculate the total duration (30 seconds before + configured duration)
-            int totalDuration = 30 + duration;
+            using (var client = new HttpClient(handler))
+            {
+                // Set headers
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ConfigManager.ApiKey);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("AutoTrackR2");
 
-            // Test recording functionality, we're using spacecutlet cause need a good tester.
-            TrackREventDispatcher.OnStreamlinkRecordEvent("spacecutlet");
+                // Create JSON body with version
+                var jsonBody = new { version = "2.10" };
+                var content = new StringContent(JsonSerializer.Serialize(jsonBody), Encoding.UTF8, "application/json");
+
+                // Send POST to test endpoint
+                string baseUrl = Regex.Replace(ConfigManager.ApiUrl ?? "", @"(https?://[^/]+)/?.*", "$1");
+                string endpoint = "test";
+                string fullUrl = $"{baseUrl}/{endpoint}";
+                Debug.WriteLine($"TestStreamlinkButton_Click: Sending request to {fullUrl}");
+
+                var response = await client.PostAsync(fullUrl, content);
+                Debug.WriteLine($"TestStreamlinkButton_Click: Response status code: {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine($"TestStreamlinkButton_Click: Response content: {responseContent}");
+                    WebHandler.ProcessStreamerResponse(responseContent);
+                    MessageBox.Show("Streamlink Test Success.");
+                }
+                else
+                {
+                    Debug.WriteLine($"TestStreamlinkButton_Click: Error response: {response.StatusCode} - {response.ReasonPhrase}");
+                    MessageBox.Show($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error testing Streamlink: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Debug.WriteLine($"TestStreamlinkButton_Click: Exception: {ex.Message}");
+            MessageBox.Show($"Streamlink Test Failure. {ex.Message}");
         }
     }
 

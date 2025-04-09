@@ -183,7 +183,7 @@ public static class WebHandler
         }
     }
 
-    private static void ProcessStreamerResponse(string responseContent)
+    public static void ProcessStreamerResponse(string responseContent)
     {
         try
         {
