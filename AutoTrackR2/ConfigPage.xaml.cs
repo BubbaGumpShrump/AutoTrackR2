@@ -398,10 +398,11 @@ public partial class ConfigPage : UserControl
             {
                 // Set headers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("AutoTrackR");
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("AutoTrackR2");
 
-                // Empty JSON body
-                var content = new StringContent("{}", Encoding.UTF8, "application/json");
+                // Create JSON body with version
+                var jsonBody = new { version = "2.10" };
+                var content = new StringContent(JsonSerializer.Serialize(jsonBody), Encoding.UTF8, "application/json");
 
                 // Send POST
                 var response = await client.PostAsync(modifiedUrl, content);
