@@ -23,6 +23,8 @@ public partial class HomePage : UserControl
     private bool _UIEventsRegistered = false;
     private System.Timers.Timer _statusCheckTimer;
     private bool _isLogHandlerRunning = false;
+    private int _counter = 1;
+    private System.Timers.Timer _counterTimer;
 
     public HomePage()
     {
@@ -44,6 +46,11 @@ public partial class HomePage : UserControl
         _statusCheckTimer = new System.Timers.Timer(1000); // Check every second
         _statusCheckTimer.Elapsed += CheckStarCitizenStatus;
         _statusCheckTimer.Start();
+
+        // Initialize and start the counter timer
+        _counterTimer = new System.Timers.Timer(1000); // Update every second
+        _counterTimer.Elapsed += UpdateCounter;
+        _counterTimer.Start();
 
         // Check if Star Citizen is already running and initialize accordingly
         if (IsStarCitizenRunning())
@@ -184,7 +191,7 @@ public partial class HomePage : UserControl
                         GameVersion = LocalPlayerData.GameVersion ?? "Unknown",
                         TrackRver = "2.10",
                         Enlisted = playerData?.JoinDate,
-                        KillTime = ((DateTimeOffset)DateTime.Parse(actorDeathData.Timestamp)).ToUnixTimeSeconds().ToString(),
+                        KillTime = ((DateTimeOffset)DateTime.ParseExact(actorDeathData.Timestamp, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)).ToUnixTimeSeconds().ToString(),
                         PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
                     };
 
@@ -213,6 +220,13 @@ public partial class HomePage : UserControl
                     _killHistoryManager.AddKill(killData);
                     VisorWipe();
                     VideoRecord();
+
+                    // Update kill tally
+                    Dispatcher.Invoke(() =>
+                    {
+                        KillTallyTextBox.Text = _killHistoryManager.GetKillsInCurrentMonth().Count.ToString();
+                        AdjustFontSize(KillTallyTextBox);
+                    });
                 }
             }
         };
@@ -446,7 +460,7 @@ public partial class HomePage : UserControl
             _isLogHandlerRunning = true;
         }
     }
-    
+
 
     public void Cleanup()
     {
@@ -461,5 +475,14 @@ public partial class HomePage : UserControl
     private bool IsStarCitizenRunning()
     {
         return Process.GetProcessesByName("StarCitizen").Length > 0;
+    }
+
+    private void UpdateCounter(object? sender, ElapsedEventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            DebugPanel.Text = _counter.ToString();
+            _counter = (_counter % 10) + 1; // Count from 1 to 10 and loop
+        });
     }
 }
