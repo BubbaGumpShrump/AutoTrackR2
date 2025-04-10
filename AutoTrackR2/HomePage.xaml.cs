@@ -184,7 +184,7 @@ public partial class HomePage : UserControl
                         GameVersion = LocalPlayerData.GameVersion ?? "Unknown",
                         TrackRver = "2.10",
                         Enlisted = playerData?.JoinDate,
-                        KillTime = DateTime.UtcNow.ToString("dd MMM yyyy HH:mm"),
+                        KillTime = ((DateTimeOffset)DateTime.Parse(actorDeathData.Timestamp)).ToUnixTimeSeconds().ToString(),
                         PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
                     };
 
@@ -278,7 +278,17 @@ public partial class HomePage : UserControl
         titleRun.SetResourceReference(TextElement.ForegroundProperty, "AltTextBrush");
         titleRun.FontFamily = (FontFamily)Application.Current.Resources["Orbitron"];
         killTextBlock.Inlines.Add(titleRun);
-        killTextBlock.Inlines.Add(new Run($"{killData.KillTime}"));
+
+        string displayTime;
+        if (long.TryParse(killData.KillTime, out long unixTime))
+        {
+            displayTime = DateTimeOffset.FromUnixTimeSeconds(unixTime).ToString("dd MMM yyyy HH:mm");
+        }
+        else
+        {
+            displayTime = killData.KillTime ?? "Unknown";
+        }
+        killTextBlock.Inlines.Add(new Run(displayTime));
 
         // Create a Border and apply the RoundedTextBlockWithBorder style
         var killBorder = new Border

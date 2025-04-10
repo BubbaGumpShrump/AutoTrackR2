@@ -104,7 +104,7 @@ public static class WebHandler
 
     public static async Task SubmitKill(KillData killData)
     {
-        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var timestamp = long.Parse(killData.KillTime!);
         var apiKillData = new APIKillData
         {
             victim_ship = killData.EnemyShip,

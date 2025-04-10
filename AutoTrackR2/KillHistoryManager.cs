@@ -93,6 +93,21 @@ public class KillHistoryManager
     {
         string currentMonth = DateTime.Now.ToString("MMM", CultureInfo.InvariantCulture);
         var kills = GetKills();
-        return kills.Where(kill => kill.KillTime?.Contains(currentMonth) == true).ToList();
+
+        // Because we are not using UTCNOW anymore and users already have kills saved, we need to make sure both formats are compatable. Otherwise people gonna delete their csv.
+        return kills.Where(kill =>
+        {
+            if (string.IsNullOrEmpty(kill.KillTime)) return false;
+
+            // Try to parse as Unix timestamp first
+            if (long.TryParse(kill.KillTime, out long unixTime))
+            {
+                var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+                return date.ToString("MMM", CultureInfo.InvariantCulture) == currentMonth;
+            }
+
+            // Fall back to checking if it contains the month name (old format)
+            return kill.KillTime.Contains(currentMonth);
+        }).ToList();
     }
 }

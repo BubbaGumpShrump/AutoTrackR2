@@ -18,7 +18,7 @@ public class ActorDeathEvent : ILogEventHandler
     public Regex Pattern { get; }
     public ActorDeathEvent()
     {
-        Pattern = new Regex(@"<Actor Death> CActor::Kill: '(?<EnemyPilot>[^']+)' \[\d+\] in zone '(?<EnemyShip>[^']+)' killed by '(?<Player>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)");
+        Pattern = new Regex(@"<(?<Timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)> \[Notice\] <Actor Death> CActor::Kill: '(?<EnemyPilot>[^']+)' \[\d+\] in zone '(?<EnemyShip>[^']+)' killed by '(?<Player>[^']+)' \[[^']+\] using '(?<Weapon>[^']+)' \[Class (?<Class>[^\]]+)\] with damage type '(?<DamageType>[^']+)");
     }
     
     Regex cleanUpPattern = new Regex(@"^(.+?)_\d+$");
@@ -29,15 +29,16 @@ public class ActorDeathEvent : ILogEventHandler
         
         var match = Pattern.Match(entry.Message);
         if (!match.Success) return;
-        
-        var data = new ActorDeathData {
+
+        var data = new ActorDeathData
+        {
             VictimPilot = match.Groups["EnemyPilot"].Value,
             VictimShip = match.Groups["EnemyShip"].Value,
             Player = match.Groups["Player"].Value,
             Weapon = match.Groups["Weapon"].Value,
             Class = match.Groups["Class"].Value,
             DamageType = match.Groups["DamageType"].Value,
-            Timestamp = entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+            Timestamp = match.Groups["Timestamp"].Value
         };
         
         if (cleanUpPattern.IsMatch(data.VictimShip))
