@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using AutoTrackR2.Constants;
+using AutoTrackR2;
 
 namespace AutoTrackR2.LogEventHandlers;
 
@@ -17,9 +18,9 @@ public struct ActorDeathData
 public class ActorDeathEvent : ILogEventHandler
 {
     public Regex Pattern { get; }
-    private Regex _cleanUpPattern = new Regex(@"^(.+?)_\d+$");
     private Regex _shipManufacturerPattern;
     private string _lastKillShip = string.Empty;
+    private Regex cleanUpPattern = new Regex(@"^(.+?)_\d+$");
 
     public ActorDeathEvent()
     {
@@ -29,12 +30,6 @@ public class ActorDeathEvent : ILogEventHandler
 
     private bool IsValidShip(string shipName)
     {
-        // Clean up the ship name first
-        if (_cleanUpPattern.IsMatch(shipName))
-        {
-            shipName = _cleanUpPattern.Match(shipName).Groups[1].Value;
-        }
-
         // A valid ship must start with a known manufacturer
         return _shipManufacturerPattern.IsMatch(shipName);
     }
@@ -57,10 +52,10 @@ public class ActorDeathEvent : ILogEventHandler
             Timestamp = match.Groups["Timestamp"].Value
         };
 
-        // Clean up weapon name
-        if (_cleanUpPattern.IsMatch(data.Weapon))
+        // Check if the damage type is TakeDown or Melee
+        if (data.DamageType == "TakeDown" || data.DamageType == "Melee")
         {
-            data.Weapon = _cleanUpPattern.Match(data.Weapon).Groups[1].Value;
+            LocalPlayerData.PlayerShip = "Player";
         }
 
         // First check if this is a valid ship
@@ -80,8 +75,18 @@ public class ActorDeathEvent : ILogEventHandler
                 _lastKillShip = data.VictimShip;
             }
         }
-        
-        
+
+        // Clean up ship and weapon names (only if not set to Player or Passenger)
+        if (data.VictimShip != "Player" && data.VictimShip != "Passenger" && cleanUpPattern.IsMatch(data.VictimShip))
+        {
+            data.VictimShip = cleanUpPattern.Match(data.VictimShip).Groups[1].Value;
+        }
+
+        if (cleanUpPattern.IsMatch(data.Weapon))
+        {
+            data.Weapon = cleanUpPattern.Match(data.Weapon).Groups[1].Value;
+        }
+
         TrackREventDispatcher.OnActorDeathEvent(data);
     }
 }
