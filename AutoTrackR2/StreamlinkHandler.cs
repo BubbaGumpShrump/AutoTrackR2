@@ -62,7 +62,7 @@ public class StreamlinkHandler
       var recordInfo = new ProcessStartInfo
       {
         FileName = "streamlink",
-        Arguments = $"https://www.twitch.tv/{streamerHandle} best --hls-live-edge 30 --hls-duration {totalDuration} -o {outputPath}",
+        Arguments = $"https://www.twitch.tv/{streamerHandle} best --twitch-disable-ads --hls-live-edge 30 --hls-duration {totalDuration} -o {outputPath}",
         UseShellExecute = false,
         RedirectStandardOutput = true,
         CreateNoWindow = true
