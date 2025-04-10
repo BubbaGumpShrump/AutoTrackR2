@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AutoTrackR2.Constants;
 
 namespace AutoTrackR2.LogEventHandlers;
 
@@ -18,33 +19,11 @@ public class InstancedInteriorEvent : ILogEventHandler
 
     private Regex _shipManufacturerPattern;
     private Regex _cleanUpPattern = new Regex(@"(.+?)_\d+$");
-    
-    private List<string> _shipManufacturers = new List<string>
-    {
-        "ORIG",
-        "CRUS",
-        "RSI",
-        "AEGS",
-        "VNCL",
-        "DRAK",
-        "ANVL",
-        "BANU",
-        "MISC",
-        "CNOU",
-        "XIAN",
-        "GAMA",
-        "TMBL",
-        "ESPR",
-        "KRIG",
-        "GRIN",
-        "XNAA",
-        "MRAI"
-    };
-    
+
     public InstancedInteriorEvent()
     {
         Pattern = new Regex(@"\[InstancedInterior\] OnEntityLeaveZone - InstancedInterior \[(?<InstancedInterior>[^\]]+)\] \[\d+\] -> Entity \[(?<Entity>[^\]]+)\] \[\d+\] -- m_openDoors\[\d+\], m_managerGEID\[(?<ManagerGEID>\d+)\], m_ownerGEID\[(?<OwnerGEID>[^\[]+)\]");
-        _shipManufacturerPattern = new Regex($"^({string.Join("|", _shipManufacturers)})");
+        _shipManufacturerPattern = new Regex($"^({string.Join("|", ShipManufacturers.List)})");
     }
 
     public void Handle(LogEntry entry)
@@ -52,8 +31,9 @@ public class InstancedInteriorEvent : ILogEventHandler
         if (entry.Message is null) return;
         var match = Pattern.Match(entry.Message);
         if (!match.Success) return;
-        
-        var data = new InstancedInteriorData {
+
+        var data = new InstancedInteriorData
+        {
             Entity = match.Groups["Entity"].Value,
             OwnerGEID = match.Groups["OwnerGEID"].Value,
             ManagerGEID = match.Groups["ManagerGEID"].Value,
