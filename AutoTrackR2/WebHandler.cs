@@ -6,11 +6,19 @@ using System.Text.RegularExpressions;
 using AutoTrackR2.LogEventHandlers;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Collections.Generic;
 
 namespace AutoTrackR2;
 
 public static class WebHandler
 {
+    private static HashSet<string> _recordedKillHashes = new HashSet<string>();
+
+    public static bool IsDuplicateKill(string hash)
+    {
+        return _recordedKillHashes.Contains(hash);
+    }
+
     class APIKillData
     {
         public string? victim_ship { get; set; }
@@ -28,7 +36,7 @@ public static class WebHandler
         public string hash { get; set; } = string.Empty;
     }
 
-    private static string GenerateKillHash(string victimName, long timestamp)
+    public static string GenerateKillHash(string victimName, long timestamp)
     {
         // Combine victim name and timestamp
         string combined = $"{victimName}_{timestamp}";
@@ -105,6 +113,15 @@ public static class WebHandler
     public static async Task SubmitKill(KillData killData)
     {
         var timestamp = long.Parse(killData.KillTime!);
+        var hash = GenerateKillHash(killData.EnemyPilot!, timestamp);
+
+        // Check if this kill has already been recorded
+        if (_recordedKillHashes.Contains(hash))
+        {
+            Console.WriteLine("Duplicate kill detected, skipping...");
+            return;
+        }
+
         var apiKillData = new APIKillData
         {
             victim_ship = killData.EnemyShip,
@@ -119,7 +136,7 @@ public static class WebHandler
             trackr_version = killData.TrackRver,
             location = killData.Location,
             time = timestamp,
-            hash = GenerateKillHash(killData.EnemyPilot!, timestamp)
+            hash = hash
         };
 
         if (string.IsNullOrEmpty(apiKillData.rsi))
@@ -174,6 +191,9 @@ public static class WebHandler
             Console.WriteLine("Successfully submitted kill data");
             var responseContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Response: {responseContent}");
+
+            // Add the hash to our recorded hashes
+            _recordedKillHashes.Add(hash);
 
             // Only process streamer data if streamlink is enabled
             if (ConfigManager.StreamlinkEnabled == 1)

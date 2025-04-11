@@ -7,8 +7,8 @@ namespace AutoTrackR2;
 public class KillHistoryManager
 {
     private string _killHistoryPath;
-    private readonly string _headers = "KillTime,EnemyPilot,EnemyShip,Enlisted,RecordNumber,OrgAffiliation,Player,Weapon,Ship,Method,Mode,GameVersion,TrackRver,Logged,PFP\n";
-    
+    private readonly string _headers = "KillTime,EnemyPilot,EnemyShip,Enlisted,RecordNumber,OrgAffiliation,Player,Weapon,Ship,Method,Mode,GameVersion,TrackRver,Logged,PFP,Hash\n";
+
     public KillHistoryManager(string logPath)
     {
         _killHistoryPath = logPath;
@@ -89,8 +89,8 @@ public class KillHistoryManager
         
         // Append the new kill data to the CSV file
         var csv = new StringBuilder();
-        csv.AppendLine($"\"{killData.KillTime}\",\"{killData.EnemyPilot}\",\"{killData.EnemyShip}\",\"{killData.Enlisted}\",\"{killData.RecordNumber}\",\"{killData.OrgAffiliation}\",\"{killData.Player}\",\"{killData.Weapon}\",\"{killData.Ship}\",\"{killData.Method}\",\"{killData.Mode}\",\"{killData.GameVersion}\",\"{killData.TrackRver}\",\"{killData.Logged}\",\"{killData.PFP}\"");
-        
+        csv.AppendLine($"\"{killData.KillTime}\",\"{killData.EnemyPilot}\",\"{killData.EnemyShip}\",\"{killData.Enlisted}\",\"{killData.RecordNumber}\",\"{killData.OrgAffiliation}\",\"{killData.Player}\",\"{killData.Weapon}\",\"{killData.Ship}\",\"{killData.Method}\",\"{killData.Mode}\",\"{killData.GameVersion}\",\"{killData.TrackRver}\",\"{killData.Logged}\",\"{killData.PFP}\",\"{killData.Hash}\"");
+
         // Check file can be written to
         try
         {
@@ -138,7 +138,8 @@ public class KillHistoryManager
                 GameVersion = data?[11],
                 TrackRver = data?[12],
                 Logged = data?[13],
-                PFP = data?[14]
+                PFP = data?[14],
+                Hash = data?[15]
             });
         }
 

@@ -29,4 +29,5 @@ public struct KillData
     public string? TrackRver;
     public string? Logged;
     public string? PFP;
+    public string? Hash;
 }

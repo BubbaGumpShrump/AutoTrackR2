@@ -192,7 +192,8 @@ public partial class HomePage : UserControl
                         TrackRver = "2.10",
                         Enlisted = playerData?.JoinDate,
                         KillTime = ((DateTimeOffset)DateTime.ParseExact(actorDeathData.Timestamp, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)).ToUnixTimeSeconds().ToString(),
-                        PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg"
+                        PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg",
+                        Hash = WebHandler.GenerateKillHash(actorDeathData.VictimPilot, ((DateTimeOffset)DateTime.ParseExact(actorDeathData.Timestamp, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)).ToUnixTimeSeconds())
                     };
 
                     switch (LocalPlayerData.CurrentGameMode)
@@ -203,6 +204,13 @@ public partial class HomePage : UserControl
                         case GameMode.ArenaCommander:
                             killData.Mode = "ac";
                             break;
+                    }
+
+                    // Check if this is a duplicate kill
+                    if (WebHandler.IsDuplicateKill(killData.Hash))
+                    {
+                        Console.WriteLine("Duplicate kill detected, skipping...");
+                        return;
                     }
 
                     // Add kill to UI
