@@ -20,7 +20,7 @@ public class ActorDeathEvent : ILogEventHandler
     public Regex Pattern { get; }
     private Regex _shipManufacturerPattern;
     private string _lastKillShip = string.Empty;
-    private Regex cleanUpPattern = new Regex(@"^(.+?)(?:_\d+)*$");
+    private Regex cleanUpPattern = new Regex(@"^(.+?)_\d+$");
 
     public ActorDeathEvent()
     {

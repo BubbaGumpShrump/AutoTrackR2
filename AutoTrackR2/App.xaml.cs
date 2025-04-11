@@ -23,28 +23,43 @@ namespace AutoTrackR2
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            // Ensure crash log directory exists
-            Directory.CreateDirectory(Path.GetDirectoryName(CrashLogPath));
-
-            // Set up unhandled exception handlers
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-            DispatcherUnhandledException += App_DispatcherUnhandledException;
-
-            const string appName = "AutoTrackR2";
-            bool createdNew;
-
-            _mutex = new Mutex(true, appName, out createdNew);
-            _mutexOwned = createdNew;
-
-            if (!createdNew)
+            try
             {
-                // App is already running, silently exit
-                Current.Shutdown();
-                return;
-            }
+                // Ensure crash log directory exists
+                Directory.CreateDirectory(Path.GetDirectoryName(CrashLogPath));
 
-            base.OnStartup(e);
-            _streamlinkHandler = new StreamlinkHandler();
+                // Set up unhandled exception handlers
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+                DispatcherUnhandledException += App_DispatcherUnhandledException;
+
+                const string appName = "AutoTrackR2";
+                bool createdNew;
+
+                _mutex = new Mutex(true, appName, out createdNew);
+                _mutexOwned = createdNew;
+
+                if (!createdNew)
+                {
+                    // App is already running, show message and exit
+                    MessageBox.Show("AutoTrackR2 is already running.", "AutoTrackR2", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Current.Shutdown();
+                    return;
+                }
+
+                // Initialize StreamlinkHandler before creating the main window
+                _streamlinkHandler = new StreamlinkHandler();
+
+                // Create and show the main window
+                var mainWindow = new MainWindow();
+                mainWindow.Show();
+
+                base.OnStartup(e);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to start AutoTrackR2: {ex.Message}", "AutoTrackR2 Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Current.Shutdown();
+            }
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -95,20 +110,24 @@ namespace AutoTrackR2
 
         protected override void OnExit(ExitEventArgs e)
         {
-            if (_mutex != null && _mutexOwned)
+            try
             {
-                try
+                if (_mutex != null && _mutexOwned)
                 {
                     _mutex.ReleaseMutex();
+                    _mutex.Close();
+                    _mutex = null;
                 }
-                catch (Exception ex)
-                {
-                    // Log the mutex release error but don't throw
-                    LogCrash(ex);
-                }
-                _mutex.Dispose();
             }
-            base.OnExit(e);
+            catch (Exception ex)
+            {
+                // Log the error but don't prevent shutdown
+                File.AppendAllText(CrashLogPath, $"[{DateTime.Now}] Error during shutdown: {ex.Message}\n");
+            }
+            finally
+            {
+                base.OnExit(e);
+            }
         }
     }
 }
