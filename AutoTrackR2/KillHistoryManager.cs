@@ -17,8 +17,64 @@ public class KillHistoryManager
         {
             File.WriteAllText(_killHistoryPath, _headers);
         }
+        else
+        {
+            CheckAndFixMalformedCsv();
+        }
     }
-    
+
+    private void CheckAndFixMalformedCsv()
+    {
+        try
+        {
+            // Try to read the file to check if it's malformed
+            using var reader = new StreamReader(_killHistoryPath);
+            var firstLine = reader.ReadLine();
+
+            // If the file is empty or doesn't start with the correct headers, it's malformed
+            if (string.IsNullOrEmpty(firstLine) || firstLine != _headers.TrimEnd('\n'))
+            {
+                // Create a backup of the malformed file
+                string backupPath = Path.Combine(
+                    Path.GetDirectoryName(_killHistoryPath)!,
+                    "Kill-log.old"
+                );
+
+                // If Kill-log.old already exists, delete it
+                if (File.Exists(backupPath))
+                {
+                    File.Delete(backupPath);
+                }
+
+                // Rename the malformed file
+                File.Move(_killHistoryPath, backupPath);
+
+                // Create a new file with correct headers
+                File.WriteAllText(_killHistoryPath, _headers);
+            }
+        }
+        catch (Exception ex)
+        {
+            // If there's any error reading the file, consider it malformed
+            string backupPath = Path.Combine(
+                Path.GetDirectoryName(_killHistoryPath)!,
+                "Kill-log.old"
+            );
+
+            // If Kill-log.old already exists, delete it
+            if (File.Exists(backupPath))
+            {
+                File.Delete(backupPath);
+            }
+
+            // Rename the malformed file
+            File.Move(_killHistoryPath, backupPath);
+
+            // Create a new file with correct headers
+            File.WriteAllText(_killHistoryPath, _headers);
+        }
+    }
+
     public void AddKill(KillData killData)
     {
         // Ensure the CSV file exists
