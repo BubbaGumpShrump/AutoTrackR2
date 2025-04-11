@@ -53,7 +53,7 @@ public class StreamlinkHandler
     {
       var outputPath = Path.Combine(
           ConfigManager.VideoPath ?? Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
-          $"kill_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
+          $"{streamerHandle}_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
       );
 
       // Calculate the duration for recording (30 seconds before + configured duration after)
