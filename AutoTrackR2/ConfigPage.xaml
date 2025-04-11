@@ -54,7 +54,7 @@
                                                         Width="75"
                                                         Height="30"
                                                         FontFamily="{StaticResource Orbitron}"
-                                                        Margin="5,0"
+                                                        Margin="0,0"
                                                         Style="{StaticResource ButtonStyle}"
                                                         Click="LogFileOpenButton_Click"/>
                                         </StackPanel>
@@ -136,7 +136,7 @@
                                                         Width="75"
                                                         Height="30"
                                                         FontFamily="{StaticResource Orbitron}"
-                                                        Margin="5,0"
+                                                        Margin="0,0"
                                                         Style="{StaticResource ButtonStyle}"
                                                         Click="VideoPathOpenButton_Click"/>
                                         </StackPanel>
