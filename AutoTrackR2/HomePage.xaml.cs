@@ -25,6 +25,9 @@ public partial class HomePage : UserControl
     private bool _isLogHandlerRunning = false;
     private int _counter = 1;
     private System.Timers.Timer _counterTimer;
+    private bool _isInitializing = false;
+    private System.Timers.Timer? _initializationTimer;
+    private bool _wasStarCitizenRunningOnStart = false;
 
     public HomePage()
     {
@@ -42,6 +45,18 @@ public partial class HomePage : UserControl
         AdjustFontSize(KillTallyTextBox);
         AddKillHistoryKillsToUI();
 
+        // Check if Star Citizen is already running
+        _wasStarCitizenRunningOnStart = IsStarCitizenRunning();
+        if (_wasStarCitizenRunningOnStart)
+        {
+            UpdateStatusIndicator(true);
+            InitializeLogHandler();
+        }
+        else
+        {
+            UpdateStatusIndicator(false);
+        }
+
         // Initialize and start the status check timer
         _statusCheckTimer = new System.Timers.Timer(1000); // Check every second
         _statusCheckTimer.Elapsed += CheckStarCitizenStatus;
@@ -51,16 +66,6 @@ public partial class HomePage : UserControl
         _counterTimer = new System.Timers.Timer(1000); // Update every second
         _counterTimer.Elapsed += UpdateCounter;
         _counterTimer.Start();
-
-        // Check if Star Citizen is already running and initialize accordingly
-        if (IsStarCitizenRunning())
-        {
-            Dispatcher.Invoke(() =>
-            {
-                UpdateStatusIndicator(true);
-                InitializeLogHandler(); // Then initialize the log handler
-            });
-        }
     }
 
     private void CheckStarCitizenStatus(object? sender, ElapsedEventArgs e)
@@ -68,14 +73,44 @@ public partial class HomePage : UserControl
         bool isRunning = IsStarCitizenRunning();
         Dispatcher.Invoke(() =>
         {
-            UpdateStatusIndicator(isRunning);
+            if (_isInitializing)
+            {
+                return; // Don't update status while initializing
+            }
 
             if (isRunning)
             {
                 if (!_isLogHandlerRunning)
                 {
-                    // Game is running, start log monitoring and read initial states
-                    InitializeLogHandler();
+                    if (_wasStarCitizenRunningOnStart)
+                    {
+                        // Game was already running on start, initialize immediately
+                        UpdateStatusIndicator(true);
+                        InitializeLogHandler();
+                    }
+                    else
+                    {
+                        // Game started after app launch, use initialization delay
+                        _isInitializing = true;
+                        UpdateStatusIndicator(false, true); // Set to yellow for initialization
+
+                        _initializationTimer = new System.Timers.Timer(20000); // 20 seconds
+                        _initializationTimer.Elapsed += (sender, e) =>
+                        {
+                            _isInitializing = false;
+                            _initializationTimer?.Stop();
+                            _initializationTimer?.Dispose();
+                            _initializationTimer = null;
+
+                            Dispatcher.Invoke(() =>
+                            {
+                                // Game is running, start log monitoring and read initial states
+                                UpdateStatusIndicator(true);
+                                InitializeLogHandler();
+                            });
+                        };
+                        _initializationTimer.Start();
+                    }
                 }
             }
             else
@@ -96,16 +131,23 @@ public partial class HomePage : UserControl
                     _logHandler?.StopMonitoring();
                     _isLogHandlerRunning = false;
                 }
+
+                UpdateStatusIndicator(false);
             }
         });
     }
 
-    private void UpdateStatusIndicator(bool isRunning)
+    private void UpdateStatusIndicator(bool isRunning, bool isInitializing = false)
     {
-        if (isRunning)
+        if (isInitializing)
+        {
+            StatusLight.Fill = new SolidColorBrush(Colors.Yellow);
+            StatusText.Text = "TrackR\nInitializing";
+        }
+        else if (isRunning)
         {
             StatusLight.Fill = new SolidColorBrush(Colors.Green);
-            StatusText.Text = "TrackR\nActive";
+            StatusText.Text = "TrackR\nRunning";
         }
         else
         {

@@ -30,8 +30,11 @@ public class LogHandler
     private CancellationTokenSource? _cancellationTokenSource;
     private GameProcessState _gameProcessState = GameProcessState.NotRunning;
     private bool _isMonitoring = false;
+    private bool _isInitializing = false;
+    private System.Timers.Timer? _initializationTimer;
 
     public bool IsMonitoring => _isMonitoring;
+    public bool IsInitializing => _isInitializing;
 
     // Handlers that should be run on every log entry
     // Overlap with _startupEventHandlers is fine
@@ -62,6 +65,37 @@ public class LogHandler
             throw new FileNotFoundException("Log file not found", _logPath);
         }
 
+        // Check if Star Citizen is running
+        if (!IsStarCitizenRunning())
+        {
+            StartInitializationDelay();
+            return;
+        }
+
+        InitializeLogHandler();
+    }
+
+    private void StartInitializationDelay()
+    {
+        _isInitializing = true;
+        _initializationTimer = new System.Timers.Timer(20000); // 20 seconds
+        _initializationTimer.Elapsed += (sender, e) =>
+        {
+            _isInitializing = false;
+            _initializationTimer?.Stop();
+            _initializationTimer?.Dispose();
+            _initializationTimer = null;
+
+            if (IsStarCitizenRunning())
+            {
+                InitializeLogHandler();
+            }
+        };
+        _initializationTimer.Start();
+    }
+
+    private void InitializeLogHandler()
+    {
         _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         _reader = new StreamReader(_fileStream);
 
@@ -73,6 +107,11 @@ public class LogHandler
         // Ensures that any deaths already in log aren't sent to the APIs until the monitor thread is running
         _eventHandlers.Add(new ActorDeathEvent());
         StartMonitoring();
+    }
+
+    private bool IsStarCitizenRunning()
+    {
+        return Process.GetProcessesByName("StarCitizen").Length > 0;
     }
 
     public void StartMonitoring()
@@ -156,14 +195,26 @@ public class LogHandler
         GameProcessState newGameProcessState = process != null ? GameProcessState.Running : GameProcessState.NotRunning;
         if (newGameProcessState == GameProcessState.Running && _gameProcessState == GameProcessState.NotRunning)
         {
-            // Game process went from NotRunning to Running, so reload the Game.log file
-            Console.WriteLine("Game process started, reloading log file");
+            // Game process went from NotRunning to Running, wait 20 seconds before reloading
+            Console.WriteLine("Game process started, waiting 20 seconds before initializing...");
+            _isInitializing = true;
 
-            _reader?.Close();
-            _fileStream?.Close();
+            _initializationTimer = new System.Timers.Timer(20000); // 20 seconds
+            _initializationTimer.Elapsed += (sender, e) =>
+            {
+                _isInitializing = false;
+                _initializationTimer?.Stop();
+                _initializationTimer?.Dispose();
+                _initializationTimer = null;
 
-            _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            _reader = new StreamReader(_fileStream);
+                Console.WriteLine("Initialization delay complete, reloading log file");
+                _reader?.Close();
+                _fileStream?.Close();
+
+                _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                _reader = new StreamReader(_fileStream);
+            };
+            _initializationTimer.Start();
         }
         _gameProcessState = newGameProcessState;
     }
