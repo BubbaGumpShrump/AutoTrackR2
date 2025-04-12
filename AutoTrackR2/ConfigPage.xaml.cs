@@ -12,6 +12,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using System.Threading.Tasks;
+using AutoTrackR2.Constants;
 
 namespace AutoTrackR2;
 
@@ -418,7 +419,7 @@ public partial class ConfigPage : UserControl
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("AutoTrackR2");
 
                 // Create JSON body with version
-                var jsonBody = new { version = "2.10" };
+                var jsonBody = new { version = AppConstants.Version };
                 var content = new StringContent(JsonSerializer.Serialize(jsonBody), Encoding.UTF8, "application/json");
 
                 // Send POST
@@ -506,7 +507,7 @@ public partial class ConfigPage : UserControl
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("AutoTrackR2");
 
                 // Create JSON body with version
-                var jsonBody = new { version = "2.10" };
+                var jsonBody = new { version = AppConstants.Version };
                 var content = new StringContent(JsonSerializer.Serialize(jsonBody), Encoding.UTF8, "application/json");
 
                 // Send POST to test endpoint

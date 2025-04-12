@@ -105,6 +105,17 @@ public class KillStreakManager
     }
   }
 
+  public void Cleanup()
+  {
+    lock (_lock)
+    {
+      _killStreakTimer.Stop();
+      _killStreakTimer.Dispose();
+      _waveOut?.Dispose();
+      _waveOut = null;
+    }
+  }
+
   private void PlayNextSound()
   {
     if (_soundQueue.Count > 0)

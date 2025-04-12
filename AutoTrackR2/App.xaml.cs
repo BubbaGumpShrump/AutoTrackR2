@@ -20,6 +20,13 @@ namespace AutoTrackR2
             "crash.log"
         );
         private StreamlinkHandler? _streamlinkHandler;
+        private KillStreakManager? _killStreakManager;
+
+        private void HandleException(Exception ex)
+        {
+            MessageBox.Show($"Failed to start AutoTrackR2: {ex.Message}", "AutoTrackR2 Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Current.Shutdown();
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -49,6 +56,10 @@ namespace AutoTrackR2
                 // Initialize StreamlinkHandler before creating the main window
                 _streamlinkHandler = new StreamlinkHandler();
 
+                // Initialize KillStreakManager
+                var soundsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sounds");
+                _killStreakManager = new KillStreakManager(soundsPath);
+
                 // Create and show the main window
                 var mainWindow = new MainWindow();
                 mainWindow.Show();
@@ -57,8 +68,7 @@ namespace AutoTrackR2
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to start AutoTrackR2: {ex.Message}", "AutoTrackR2 Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Current.Shutdown();
+                HandleException(ex);
             }
         }
 
@@ -110,24 +120,10 @@ namespace AutoTrackR2
 
         protected override void OnExit(ExitEventArgs e)
         {
-            try
-            {
-                if (_mutex != null && _mutexOwned)
-                {
-                    _mutex.ReleaseMutex();
-                    _mutex.Close();
-                    _mutex = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log the error but don't prevent shutdown
-                File.AppendAllText(CrashLogPath, $"[{DateTime.Now}] Error during shutdown: {ex.Message}\n");
-            }
-            finally
-            {
-                base.OnExit(e);
-            }
+            // Clean up resources
+            _killStreakManager?.Cleanup();
+            _mutex?.Dispose();
+            base.OnExit(e);
         }
     }
 }

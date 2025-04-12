@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using AutoTrackR2.LogEventHandlers;
 using System.Timers;
 using System.Linq;
-
+using AutoTrackR2.Constants;
 
 namespace AutoTrackR2;
 
@@ -231,7 +231,7 @@ public partial class HomePage : UserControl
                         Method = actorDeathData.DamageType,
                         RecordNumber = playerData?.UEERecord,
                         GameVersion = LocalPlayerData.GameVersion ?? "Unknown",
-                        TrackRver = "2.10",
+                        TrackRver = AppConstants.Version,
                         Enlisted = playerData?.JoinDate,
                         KillTime = ((DateTimeOffset)DateTime.ParseExact(actorDeathData.Timestamp, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)).ToUnixTimeSeconds().ToString(),
                         PFP = playerData?.PFPURL ?? "https://cdn.robertsspaceindustries.com/static/images/account/avatar_default_big.jpg",

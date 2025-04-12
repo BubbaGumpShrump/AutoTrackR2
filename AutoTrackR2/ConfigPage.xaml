@@ -154,10 +154,10 @@
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
                                         <!-- Kill Streak Test Button -->
+                                        <!--
                                         <Button Grid.Column="0"
                                                 Grid.Row="0"
                                                 Grid.ColumnSpan="2"
@@ -167,12 +167,13 @@
                                                 Margin="0,0,0,10"
                                                 Style="{StaticResource ButtonStyle}"
                                                 Click="TestKillStreakButton_Click"/>
+                                        -->
 
                                         <!-- Left Column Controls -->
 
                                         <!-- Visor Wipe Toggle -->
                                         <StackPanel Grid.Column="0"
-                                                    Grid.Row="1"
+                                                    Grid.Row="0"
                                                     Orientation="Horizontal"
                                                     Margin="0,0,5,5">
                                                 <TextBlock Text="ⓘ"
@@ -198,7 +199,7 @@
 
                                         <!-- Video Record Toggle -->
                                         <StackPanel Grid.Column="0"
-                                                    Grid.Row="2"
+                                                    Grid.Row="1"
                                                     Orientation="Horizontal"
                                                     Margin="0,0,5,5">
                                                 <TextBlock Text="ⓘ"
@@ -224,7 +225,7 @@
 
                                         <!-- Offline Mode Toggle -->
                                         <StackPanel Grid.Column="0"
-                                                    Grid.Row="3"
+                                                    Grid.Row="2"
                                                     Orientation="Horizontal"
                                                     Margin="0,0,5,5">
                                                 <TextBlock Text="ⓘ"
@@ -252,7 +253,7 @@
 
                                         <!-- Streamlink Toggle -->
                                         <StackPanel Grid.Column="1"
-                                                    Grid.Row="1"
+                                                    Grid.Row="0"
                                                     Orientation="Horizontal"
                                                     Margin="5,0,0,5">
                                                 <TextBlock Text="ⓘ"
@@ -278,7 +279,7 @@
 
                                         <!-- Streamlink Duration -->
                                         <StackPanel Grid.Column="1"
-                                                    Grid.Row="2"
+                                                    Grid.Row="1"
                                                     Orientation="Horizontal"
                                                     Margin="5,0,0,5">
                                                 <TextBlock Text="ⓘ"
@@ -309,7 +310,7 @@
 
                                         <!-- Test Streamlink Button -->
                                         <Button Grid.Column="1"
-                                                Grid.Row="3"
+                                                Grid.Row="2"
                                                 Content="Test Streamlink"
                                                 Width="120"
                                                 Height="30"
@@ -320,7 +321,7 @@
 
                                         <!-- Theme Slider -->
                                         <StackPanel Grid.Column="0"
-                                                    Grid.Row="5"
+                                                    Grid.Row="3"
                                                     Grid.ColumnSpan="2"
                                                     Orientation="Horizontal"
                                                     Margin="0,0,0,5">
