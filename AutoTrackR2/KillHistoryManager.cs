@@ -8,11 +8,13 @@ public class KillHistoryManager
 {
     private string _killHistoryPath;
     private readonly string _headers = "KillTime,EnemyPilot,EnemyShip,Enlisted,RecordNumber,OrgAffiliation,Player,Weapon,Ship,Method,Mode,GameVersion,TrackRver,Logged,PFP,Hash\n";
+    private readonly KillStreakManager _killStreakManager;
 
-    public KillHistoryManager(string logPath)
+    public KillHistoryManager(string logPath, string soundsPath)
     {
         _killHistoryPath = logPath;
-        
+        _killStreakManager = new KillStreakManager(soundsPath);
+
         if (!File.Exists(_killHistoryPath))
         {
             File.WriteAllText(_killHistoryPath, _headers);
@@ -97,6 +99,9 @@ public class KillHistoryManager
             using var fileStream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.None);
             using var writer = new StreamWriter(fileStream);
             writer.Write(csv.ToString());
+
+            // Trigger kill streak sound
+            _killStreakManager.OnKill();
         }
         catch (IOException ex)
         {
@@ -104,7 +109,12 @@ public class KillHistoryManager
             Console.WriteLine($"Error writing to file: {ex.Message}");
         }
     }
-    
+
+    public void ResetKillStreak()
+    {
+        _killStreakManager.OnDeath();
+    }
+
     public List<KillData> GetKills()
     {
         var kills = new List<KillData>();

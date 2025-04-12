@@ -24,6 +24,10 @@ public partial class ConfigPage : UserControl
 
     Dictionary<string, Theme>? _themes = null;
 
+    private KillStreakManager? _testKillStreakManager;
+    private bool _isTestRunning = false;
+    private int _currentTestStep = 0;
+
     public ConfigPage(MainWindow mainWindow)
     {
         InitializeComponent();
@@ -215,7 +219,7 @@ public partial class ConfigPage : UserControl
         dialog.CheckFileExists = false;
         dialog.CheckPathExists = true;
         dialog.FileName = "Folder Selection";
-        
+
         if (dialog.ShowDialog() == true)
         {
             string? selectedFolder = Path.GetDirectoryName(dialog.FileName);
@@ -338,7 +342,7 @@ public partial class ConfigPage : UserControl
         ConfigManager.VideoRecord = (int)VideoRecordSlider.Value;
         ConfigManager.OfflineMode = (int)OfflineModeSlider.Value;
         ConfigManager.Theme = (int)ThemeSlider.Value;
-        
+
         // Save the current config values
         ConfigManager.SaveConfig();
         // Start the flashing effect
@@ -561,6 +565,26 @@ public partial class ConfigPage : UserControl
         {
             MessageBox.Show("Directory does not exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private async void TestKillStreakButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Create a single KillStreakManager instance if it doesn't exist
+        if (_testKillStreakManager == null)
+        {
+            var soundsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sounds");
+            _testKillStreakManager = new KillStreakManager(soundsPath);
+        }
+
+        // Simulate 5 quick kills
+        for (int i = 0; i < 5; i++)
+        {
+            _testKillStreakManager.OnKill();
+        }
+
+        // Reset the streak after all sounds have played
+        await Task.Delay(1000);
+        _testKillStreakManager.OnDeath();
     }
 }
 

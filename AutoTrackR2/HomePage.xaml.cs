@@ -37,7 +37,7 @@ public partial class HomePage : UserControl
         {
             throw new InvalidOperationException("KillHistoryFile path is not configured.");
         }
-        _killHistoryManager = new KillHistoryManager(ConfigManager.KillHistoryFile);
+        _killHistoryManager = new KillHistoryManager(ConfigManager.KillHistoryFile, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sounds"));
 
         // Set the TextBlock text
         KillTallyTitle.Text = $"Kill Tally - {DateTime.Now.ToString("MMMM")}";
@@ -278,6 +278,11 @@ public partial class HomePage : UserControl
                         AdjustFontSize(KillTallyTextBox);
                     });
                 }
+            }
+            else
+            {
+                // Player died, reset kill streak
+                _killHistoryManager.ResetKillStreak();
             }
         };
 

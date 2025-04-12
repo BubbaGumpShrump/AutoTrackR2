@@ -181,7 +181,7 @@ public class LogHandler
 
             {
                 // Wait for new lines to be written to the log file
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }
         }
         Console.WriteLine("Monitor thread stopped");
