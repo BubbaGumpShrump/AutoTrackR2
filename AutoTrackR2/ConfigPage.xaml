@@ -1,181 +1,163 @@
 <UserControl x:Class="AutoTrackR2.ConfigPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Height="410"
+             Height="380"
              Width="700">
 
-
         <Grid Background="{DynamicResource BackgroundLightBrush}">
-                <!-- Main Layout Grid -->
-                <Grid>
-                        <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <Grid.ColumnDefinitions>
-                                <!-- Left column for the main content area -->
-                                <ColumnDefinition Width="*"/>
-                                <!-- Right column for the buttons -->
-                                <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Section for Config Fields -->
-                        <StackPanel Grid.Row="0"
-                                    VerticalAlignment="Top"
-                                    Margin="20,10,20,0">
-                                <!-- Log File -->
-                                <StackPanel Margin="0,5,0,10"
-                                            Orientation="Horizontal">
-                                        <TextBlock Text="ⓘ"
-                                                   ToolTip="Set this to the Game.log file in your StarCitizen\LIVE directory."
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="20"
-                                                   Margin="0,0,3,5"/>
-                                        <TextBlock Text="Log File:"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="16"
-                                                   Margin="0,5,0,5"
-                                                   FontFamily="{StaticResource Roboto}"/>
-                                        <StackPanel Orientation="Horizontal">
-                                                <TextBox Name="LogFilePath"
-                                                         Width="260"
-                                                         Height="30"
-                                                         Margin="10,0,0,0"
-                                                         Style="{StaticResource RoundedTextBox}"/>
-                                                <Button Content="Browse"
-                                                        Width="75"
-                                                        Height="30"
-                                                        FontFamily="{StaticResource Orbitron}"
-                                                        Margin="5,0"
-                                                        Style="{StaticResource ButtonStyle}"
-                                                        Click="LogFileBrowseButton_Click"/>
-                                                <Button Content="Open"
-                                                        Width="75"
-                                                        Height="30"
-                                                        FontFamily="{StaticResource Orbitron}"
-                                                        Margin="0,0"
-                                                        Style="{StaticResource ButtonStyle}"
-                                                        Click="LogFileOpenButton_Click"/>
-                                        </StackPanel>
-                                </StackPanel>
-
-                                <!-- API URL -->
-                                <StackPanel Margin="0,0,0,10"
-                                            Orientation="Horizontal">
-                                        <TextBlock Text="ⓘ"
-                                                   ToolTip="Need a URL? No idea what to do? Contact heavy_bob on Discord!"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="20"
-                                                   Margin="0,3,3,5"/>
-                                        <TextBlock Text="API URL:"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="16"
-                                                   Margin="0,5,0,5"/>
-                                        <StackPanel Orientation="Horizontal">
-                                                <TextBox Name="ApiUrl"
-                                                         Width="260"
-                                                         Height="30"
-                                                         Margin="10,0,0,0"
-                                                         Style="{StaticResource RoundedTextBox}"/>
-                                                <Button Content="Test"
-                                                        Width="75"
-                                                        Height="30"
-                                                        FontFamily="{StaticResource Orbitron}"
-                                                        Margin="5,0"
-                                                        Style="{StaticResource ButtonStyle}"
-                                                        Click="TestApiButton_Click"/>
-                                        </StackPanel>
-                                </StackPanel>
-
-                                <!-- API Key -->
-                                <StackPanel Margin="0,0,0,10"
-                                            Orientation="Horizontal">
-                                        <TextBlock Text="ⓘ"
-                                                   ToolTip="Need a key? No idea what to do? Contact heavy_bob on Discord!"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="20"
-                                                   Margin="0,3,3,5"/>
-                                        <TextBlock Text="API Key:"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="16"
-                                                   Margin="0,5,0,5"/>
-                                        <PasswordBox Name="ApiKey"
-                                                     Width="260"
-                                                     Height="30"
-                                                     Margin="10,0,0,0"
-                                                     Style="{StaticResource RoundedPasswordBox}"/>
-                                </StackPanel>
-
-                                <!-- Video Path -->
-                                <StackPanel Margin="0,0,0,10"
-                                            Orientation="Horizontal">
-                                        <TextBlock Text="ⓘ"
-                                                   ToolTip="The directory where your clipping software saves kills. Check the README."
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="20"
-                                                   Margin="0,3,3,5"/>
-                                        <TextBlock Text="Video Path:"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   FontSize="16"
-                                                   Margin="0,5,0,5"/>
-                                        <StackPanel Orientation="Horizontal">
-                                                <TextBox Name="VideoPath"
-                                                         Width="260"
-                                                         Height="30"
-                                                         Margin="10,0,0,0"
-                                                         Style="{StaticResource RoundedTextBox}"/>
-                                                <Button Content="Browse"
-                                                        Width="75"
-                                                        Height="30"
-                                                        FontFamily="{StaticResource Orbitron}"
-                                                        Margin="5,0"
-                                                        Style="{StaticResource ButtonStyle}"
-                                                        Click="VideoPathBrowseButton_Click"/>
-                                                <Button Content="Open"
-                                                        Width="75"
-                                                        Height="30"
-                                                        FontFamily="{StaticResource Orbitron}"
-                                                        Margin="0,0"
-                                                        Style="{StaticResource ButtonStyle}"
-                                                        Click="VideoPathOpenButton_Click"/>
-                                        </StackPanel>
-                                </StackPanel>
-
-                                <!-- Toggle Settings Grid -->
-                                <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-
-                                        <!-- Kill Streak Test Button -->
-                                        <!--
-                                        <Button Grid.Column="0"
-                                                Grid.Row="0"
-                                                Grid.ColumnSpan="2"
-                                                Content="Test Kill Streak Sounds"
+                <!-- Main Content -->
+                <StackPanel Margin="20,5,20,0">
+                        <!-- Log File -->
+                        <StackPanel Margin="0,0,0,5"
+                                        Orientation="Horizontal">
+                                <TextBlock Text="ⓘ"
+                                           ToolTip="Set this to the Game.log file in your StarCitizen\LIVE directory."
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="20"
+                                           Margin="0,0,3,5"/>
+                                <TextBlock Text="Log File:"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="16"
+                                           Margin="0,5,0,5"
+                                           FontFamily="{StaticResource Roboto}"/>
+                                <StackPanel Orientation="Horizontal">
+                                        <TextBox Name="LogFilePath"
+                                                 Width="260"
+                                                 Height="30"
+                                                 Margin="10,0,0,0"
+                                                 Style="{StaticResource RoundedTextBox}"/>
+                                        <Button Content="Browse"
+                                                Width="75"
                                                 Height="30"
                                                 FontFamily="{StaticResource Orbitron}"
-                                                Margin="0,0,0,10"
+                                                Margin="5,0"
                                                 Style="{StaticResource ButtonStyle}"
-                                                Click="TestKillStreakButton_Click"/>
-                                        -->
+                                                Click="LogFileBrowseButton_Click"/>
+                                        <Button Content="Open"
+                                                Width="75"
+                                                Height="30"
+                                                FontFamily="{StaticResource Orbitron}"
+                                                Margin="0,0"
+                                                Style="{StaticResource ButtonStyle}"
+                                                Click="LogFileOpenButton_Click"/>
+                                </StackPanel>
+                        </StackPanel>
 
-                                        <!-- Left Column Controls -->
+                        <!-- API URL -->
+                        <StackPanel Margin="0,0,0,5"
+                                        Orientation="Horizontal">
+                                <TextBlock Text="ⓘ"
+                                           ToolTip="Need a URL? No idea what to do? Contact heavy_bob on Discord!"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="20"
+                                           Margin="0,3,3,5"/>
+                                <TextBlock Text="API URL:"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="16"
+                                           Margin="0,5,0,5"/>
+                                <StackPanel Orientation="Horizontal">
+                                        <TextBox Name="ApiUrl"
+                                                 Width="260"
+                                                 Height="30"
+                                                 Margin="10,0,0,0"
+                                                 Style="{StaticResource RoundedTextBox}"/>
+                                        <Button Content="Test"
+                                                Width="75"
+                                                Height="30"
+                                                FontFamily="{StaticResource Orbitron}"
+                                                Margin="5,0"
+                                                Style="{StaticResource ButtonStyle}"
+                                                Click="TestApiButton_Click"/>
+                                </StackPanel>
+                        </StackPanel>
 
-                                        <!-- Visor Wipe Toggle -->
-                                        <StackPanel Grid.Column="0"
-                                                    Grid.Row="0"
-                                                    Orientation="Horizontal"
-                                                    Margin="0,0,5,5">
+                        <!-- API Key -->
+                        <StackPanel Margin="0,0,0,5"
+                                        Orientation="Horizontal">
+                                <TextBlock Text="ⓘ"
+                                           ToolTip="Need a key? No idea what to do? Contact heavy_bob on Discord!"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="20"
+                                           Margin="0,3,3,5"/>
+                                <TextBlock Text="API Key:"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="16"
+                                           Margin="0,5,0,5"/>
+                                <PasswordBox Name="ApiKey"
+                                             Width="260"
+                                             Height="30"
+                                             Margin="10,0,0,0"
+                                             Style="{StaticResource RoundedPasswordBox}"/>
+                        </StackPanel>
+
+                        <!-- Video Path -->
+                        <StackPanel Margin="0,0,0,5"
+                                        Orientation="Horizontal">
+                                <TextBlock Text="ⓘ"
+                                           ToolTip="The directory where your clipping software saves kills. Check the README."
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="20"
+                                           Margin="0,3,3,5"/>
+                                <TextBlock Text="Video Path:"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="16"
+                                           Margin="0,5,0,5"/>
+                                <StackPanel Orientation="Horizontal">
+                                        <TextBox Name="VideoPath"
+                                                 Width="260"
+                                                 Height="30"
+                                                 Margin="10,0,0,0"
+                                                 Style="{StaticResource RoundedTextBox}"/>
+                                        <Button Content="Browse"
+                                                Width="75"
+                                                Height="30"
+                                                FontFamily="{StaticResource Orbitron}"
+                                                Margin="5,0"
+                                                Style="{StaticResource ButtonStyle}"
+                                                Click="VideoPathBrowseButton_Click"/>
+                                        <Button Content="Open"
+                                                Width="75"
+                                                Height="30"
+                                                FontFamily="{StaticResource Orbitron}"
+                                                Margin="0,0"
+                                                Style="{StaticResource ButtonStyle}"
+                                                Click="VideoPathOpenButton_Click"/>
+                                </StackPanel>
+                        </StackPanel>
+
+                        <!-- Toggle Settings Grid -->
+                        <Grid>
+                                <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Left Column -->
+                                <StackPanel Grid.Column="0"
+                                                Margin="0,0,5,0">
+                                        <!-- Kill Streak -->
+                                        <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,3">
+                                                <TextBlock Text="ⓘ"
+                                                           ToolTip="Enable or disable kill streak sound effects."
+                                                           Foreground="{DynamicResource TextBrush}"
+                                                           FontSize="20"
+                                                           Margin="0,4,3,0"/>
+                                                <TextBlock Text="Kill Streak:"
+                                                           Foreground="{DynamicResource TextBrush}"
+                                                           FontSize="16"
+                                                           Margin="0,7,10,0"/>
+                                                <Slider x:Name="KillStreakSlider"
+                                                        Width="100"
+                                                        Minimum="0"
+                                                        Maximum="1"
+                                                        Style="{StaticResource ToggleSliderStyle}"
+                                                        ValueChanged="KillStreakSlider_ValueChanged"/>
+                                        </StackPanel>
+
+                                        <!-- Visor Wipe -->
+                                        <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Perform a Visor Wipe animation on player kill. Requires AHKv2."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -185,23 +167,17 @@
                                                            Foreground="{DynamicResource TextBrush}"
                                                            FontSize="16"
                                                            Margin="0,7,0,0"/>
-                                                <Slider Name="VisorWipeSlider"
+                                                <Slider x:Name="VisorWipeSlider"
+                                                        Width="100"
                                                         Minimum="0"
                                                         Maximum="1"
-                                                        TickFrequency="1"
-                                                        IsSnapToTickEnabled="True"
-                                                        Value="0"
                                                         Style="{StaticResource ToggleSliderStyle}"
-                                                        Margin="10,-4,0,0"
-                                                        Width="100"
                                                         ValueChanged="VisorWipeSlider_ValueChanged"/>
                                         </StackPanel>
 
-                                        <!-- Video Record Toggle -->
-                                        <StackPanel Grid.Column="0"
-                                                    Grid.Row="1"
-                                                    Orientation="Horizontal"
-                                                    Margin="0,0,5,5">
+                                        <!-- Video Record -->
+                                        <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Record video on player kill. Requires AHKv2."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -211,23 +187,17 @@
                                                            Foreground="{DynamicResource TextBrush}"
                                                            FontSize="16"
                                                            Margin="0,7,0,0"/>
-                                                <Slider Name="VideoRecordSlider"
+                                                <Slider x:Name="VideoRecordSlider"
+                                                        Width="100"
                                                         Minimum="0"
                                                         Maximum="1"
-                                                        TickFrequency="1"
-                                                        IsSnapToTickEnabled="True"
-                                                        Value="0"
                                                         Style="{StaticResource ToggleSliderStyle}"
-                                                        Margin="10,-4,0,0"
-                                                        Width="100"
                                                         ValueChanged="VideoRecordSlider_ValueChanged"/>
                                         </StackPanel>
 
-                                        <!-- Offline Mode Toggle -->
-                                        <StackPanel Grid.Column="0"
-                                                    Grid.Row="2"
-                                                    Orientation="Horizontal"
-                                                    Margin="0,0,5,5">
+                                        <!-- Offline Mode -->
+                                        <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="With Offline Mode enabled, kills will not be submitted to the configured API."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -237,25 +207,21 @@
                                                            Foreground="{DynamicResource TextBrush}"
                                                            FontSize="16"
                                                            Margin="0,7,0,0"/>
-                                                <Slider Name="OfflineModeSlider"
+                                                <Slider x:Name="OfflineModeSlider"
+                                                        Width="100"
                                                         Minimum="0"
                                                         Maximum="1"
-                                                        TickFrequency="1"
-                                                        IsSnapToTickEnabled="True"
-                                                        Value="0"
                                                         Style="{StaticResource ToggleSliderStyle}"
-                                                        Margin="10,-4,0,0"
-                                                        Width="100"
                                                         ValueChanged="OfflineModeSlider_ValueChanged"/>
                                         </StackPanel>
+                                </StackPanel>
 
-                                        <!-- Right Column Controls -->
-
-                                        <!-- Streamlink Toggle -->
-                                        <StackPanel Grid.Column="1"
-                                                    Grid.Row="0"
-                                                    Orientation="Horizontal"
-                                                    Margin="5,0,0,5">
+                                <!-- Right Column -->
+                                <StackPanel Grid.Column="1"
+                                                Margin="5,0,0,0">
+                                        <!-- Streamlink -->
+                                        <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Use Streamlink for video recording."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -265,23 +231,17 @@
                                                            Foreground="{DynamicResource TextBrush}"
                                                            FontSize="16"
                                                            Margin="0,7,0,0"/>
-                                                <Slider Name="StreamlinkSlider"
+                                                <Slider x:Name="StreamlinkSlider"
+                                                        Width="100"
                                                         Minimum="0"
                                                         Maximum="1"
-                                                        TickFrequency="1"
-                                                        IsSnapToTickEnabled="True"
-                                                        Value="0"
                                                         Style="{StaticResource ToggleSliderStyle}"
-                                                        Margin="10,-4,0,0"
-                                                        Width="100"
                                                         ValueChanged="StreamlinkSlider_ValueChanged"/>
                                         </StackPanel>
 
-                                        <!-- Streamlink Duration -->
-                                        <StackPanel Grid.Column="1"
-                                                    Grid.Row="1"
-                                                    Orientation="Horizontal"
-                                                    Margin="5,0,0,5">
+                                        <!-- Duration -->
+                                        <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Duration of Streamlink recordings in seconds."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -291,15 +251,11 @@
                                                            Foreground="{DynamicResource TextBrush}"
                                                            FontSize="16"
                                                            Margin="0,7,0,0"/>
-                                                <Slider Name="StreamlinkDurationSlider"
+                                                <Slider x:Name="StreamlinkDurationSlider"
+                                                        Width="100"
                                                         Minimum="10"
                                                         Maximum="600"
-                                                        TickFrequency="30"
-                                                        IsSnapToTickEnabled="True"
-                                                        Value="30"
                                                         Style="{StaticResource SliderStyle}"
-                                                        Margin="10,-4,0,0"
-                                                        Width="100"
                                                         ValueChanged="StreamlinkDurationSlider_ValueChanged"/>
                                                 <TextBlock Name="StreamlinkDurationText"
                                                            Text="30s"
@@ -309,50 +265,49 @@
                                         </StackPanel>
 
                                         <!-- Test Streamlink Button -->
-                                        <Button Grid.Column="1"
-                                                Grid.Row="2"
-                                                Content="Test Streamlink"
+                                        <Button Content="Test Streamlink"
                                                 Width="120"
                                                 Height="30"
                                                 FontFamily="{StaticResource Orbitron}"
-                                                Margin="5,0,0,5"
+                                                Margin="0,0,0,3"
                                                 Style="{StaticResource ButtonStyle}"
                                                 Click="TestStreamlinkButton_Click"/>
+                                </StackPanel>
+                        </Grid>
 
-                                        <!-- Theme Slider -->
-                                        <StackPanel Grid.Column="0"
-                                                    Grid.Row="3"
-                                                    Grid.ColumnSpan="2"
-                                                    Orientation="Horizontal"
-                                                    Margin="0,0,0,5">
-                                                <TextBlock Text="Theme:"
-                                                           Foreground="{DynamicResource TextBrush}"
-                                                           FontSize="16"
-                                                           Margin="0,7,10,0"/>
-                                                <Slider x:Name="ThemeSlider"
-                                                        Minimum="0"
-                                                        Value="0"
-                                                        TickFrequency="1"
-                                                        IsSnapToTickEnabled="True"
-                                                        ValueChanged="ThemeSlider_ValueChanged"
-                                                        Width="350"
-                                                        Style="{StaticResource ThreePositionSlider}"/>
-                                        </StackPanel>
-                                </Grid>
+                        <!-- Theme Slider -->
+                        <StackPanel Orientation="Horizontal"
+                                        Margin="0,5,0,0">
+                                <TextBlock Text="ⓘ"
+                                           ToolTip="Select theme for the application."
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="20"
+                                           Margin="0,4,3,0"/>
+                                <TextBlock Text="Theme:"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontSize="16"
+                                           Margin="0,7,10,0"/>
+                                <Slider x:Name="ThemeSlider"
+                                        Width="350"
+                                        Minimum="0"
+                                        Value="0"
+                                        TickFrequency="1"
+                                        IsSnapToTickEnabled="True"
+                                        ValueChanged="ThemeSlider_ValueChanged"
+                                        Style="{StaticResource SliderStyle}"/>
                         </StackPanel>
+                </StackPanel>
 
-                        <!-- Save Button -->
-                        <Button x:Name="SaveButton"
-                                Grid.Row="1"
-                                Content="Save"
-                                Width="100"
-                                Height="40"
-                                Style="{StaticResource ButtonStyle}"
-                                FontFamily="{StaticResource Orbitron}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Margin="0,0,80,20"
-                                Click="SaveButton_Click"/>
-                </Grid>
+                <!-- Save Button -->
+                <Button x:Name="SaveButton"
+                        Content="Save"
+                        Width="100"
+                        Height="40"
+                        Style="{StaticResource ButtonStyle}"
+                        FontFamily="{StaticResource Orbitron}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,80,10"
+                        Click="SaveButton_Click"/>
         </Grid>
 </UserControl>

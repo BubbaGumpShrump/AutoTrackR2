@@ -5,7 +5,7 @@ using NAudio.Wave;
 
 namespace AutoTrackR2;
 
-public class KillStreakManager
+public class KillStreakManager : IDisposable
 {
   private readonly Queue<string> _soundQueue = new();
   private readonly System.Timers.Timer _killStreakTimer = new(5000); // 5 seconds between kills for streak
@@ -15,6 +15,7 @@ public class KillStreakManager
   private readonly object _lock = new();
   private WaveOutEvent? _waveOut;
   private bool _isPlaying = false;
+  private bool _disposed = false;
 
   public KillStreakManager(string soundsPath)
   {
@@ -27,13 +28,15 @@ public class KillStreakManager
   {
     lock (_lock)
     {
+      if (_disposed) return;
+
       _currentKills++;
       _totalKills++;
       _killStreakTimer.Stop();
       _killStreakTimer.Start();
 
       // Handle multi-kill announcements
-      string multiKillSound = _currentKills switch
+      string? multiKillSound = _currentKills switch
       {
         2 => "double_kill.mp3",
         3 => "triple_kill.mp3",
@@ -48,7 +51,7 @@ public class KillStreakManager
       };
 
       // Handle spree announcements
-      string spreeSound = _totalKills switch
+      string? spreeSound = _totalKills switch
       {
         5 => "killing_spree.mp3",
         10 => "killing_frenzy.mp3",
@@ -88,6 +91,8 @@ public class KillStreakManager
   {
     lock (_lock)
     {
+      if (_disposed) return;
+
       _totalKills = 0;
       _currentKills = 0;
       _killStreakTimer.Stop();
@@ -99,77 +104,97 @@ public class KillStreakManager
   {
     lock (_lock)
     {
+      if (_disposed) return;
+
       _currentKills = 0;
       _killStreakTimer.Stop();
       Console.WriteLine("Kill streak reset due to timeout");
     }
   }
 
-  public void Cleanup()
-  {
-    lock (_lock)
-    {
-      _killStreakTimer.Stop();
-      _killStreakTimer.Dispose();
-      _waveOut?.Dispose();
-      _waveOut = null;
-    }
-  }
-
   private void PlayNextSound()
   {
-    if (_soundQueue.Count > 0)
+    if (_soundQueue.Count == 0 || _disposed) return;
+
+    string soundPath = _soundQueue.Dequeue();
+    Console.WriteLine($"Attempting to play sound: {soundPath}");
+
+    try
     {
-      string soundPath = _soundQueue.Dequeue();
-      Console.WriteLine($"Attempting to play sound: {soundPath}");
-      try
+      if (!File.Exists(soundPath))
       {
-        if (File.Exists(soundPath))
+        Console.WriteLine($"Sound file not found: {soundPath}");
+        _isPlaying = false;
+        if (_soundQueue.Count > 0)
         {
-          // Stop any currently playing sound
-          _waveOut?.Stop();
-          _waveOut?.Dispose();
-
-          // Create a new WaveOutEvent
-          _waveOut = new WaveOutEvent();
-
-          // Create a new AudioFileReader for the MP3 file
-          using var audioFile = new AudioFileReader(soundPath);
-          _waveOut.Init(audioFile);
-
-          // Set up event handler for when playback finishes
-          _waveOut.PlaybackStopped += (sender, e) =>
-          {
-            _isPlaying = false;
-            if (_soundQueue.Count > 0)
-            {
-              PlayNextSound();
-            }
-          };
-
-          _isPlaying = true;
-          _waveOut.Play();
-
-          Console.WriteLine($"Successfully played sound: {soundPath}");
+          PlayNextSound();
         }
-        else
+        return;
+      }
+
+      // Stop any currently playing sound
+      _waveOut?.Stop();
+      _waveOut?.Dispose();
+      _waveOut = null;
+
+      // Create a new WaveOutEvent
+      _waveOut = new WaveOutEvent();
+
+      // Create a new AudioFileReader for the MP3 file
+      using var audioFile = new AudioFileReader(soundPath);
+      _waveOut.Init(audioFile);
+
+      // Set up event handler for when playback finishes
+      _waveOut.PlaybackStopped += (sender, e) =>
+      {
+        lock (_lock)
         {
-          Console.WriteLine($"Sound file not found: {soundPath}");
+          if (_disposed) return;
+
           _isPlaying = false;
           if (_soundQueue.Count > 0)
           {
             PlayNextSound();
           }
         }
-      }
-      catch (Exception ex)
+      };
+
+      _isPlaying = true;
+      _waveOut.Play();
+
+      Console.WriteLine($"Successfully played sound: {soundPath}");
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"Error playing sound {soundPath}: {ex.Message}");
+      _isPlaying = false;
+      if (_soundQueue.Count > 0)
       {
-        Console.WriteLine($"Error playing sound {soundPath}: {ex.Message}");
-        _isPlaying = false;
-        if (_soundQueue.Count > 0)
-        {
-          PlayNextSound();
-        }
+        PlayNextSound();
+      }
+    }
+  }
+
+  public void Dispose()
+  {
+    Dispose(true);
+    GC.SuppressFinalize(this);
+  }
+
+  protected virtual void Dispose(bool disposing)
+  {
+    if (_disposed) return;
+
+    if (disposing)
+    {
+      lock (_lock)
+      {
+        _disposed = true;
+        _killStreakTimer.Stop();
+        _killStreakTimer.Dispose();
+        _waveOut?.Stop();
+        _waveOut?.Dispose();
+        _waveOut = null;
       }
     }
   }

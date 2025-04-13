@@ -144,7 +144,7 @@ public static class WebHandler
             apiKillData.rsi = "-1";
         }
 
-        if (!apiKillData.enlisted.Contains(","))
+        if (!string.IsNullOrEmpty(apiKillData.enlisted) && !apiKillData.enlisted.Contains(","))
         {
             //Get second whitespace in string
             var index = apiKillData.enlisted.IndexOf(" ", apiKillData.enlisted.IndexOf(" ", StringComparison.Ordinal) + 1, StringComparison.Ordinal);

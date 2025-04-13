@@ -198,6 +198,7 @@ namespace AutoTrackR2
         public static int Theme { get; set; }
         public static int StreamlinkEnabled { get; set; }
         public static int StreamlinkDuration { get; set; } = 30;
+        public static int KillStreakEnabled { get; set; } = 1; // Default to enabled
 
         static ConfigManager()
         {
@@ -253,6 +254,8 @@ namespace AutoTrackR2
                         StreamlinkEnabled = int.Parse(line.Substring("StreamlinkEnabled=".Length).Trim());
                     else if (line.StartsWith("StreamlinkDuration="))
                         StreamlinkDuration = int.Parse(line.Substring("StreamlinkDuration=".Length).Trim());
+                    else if (line.StartsWith("KillStreakEnabled="))
+                        KillStreakEnabled = int.Parse(line.Substring("KillStreakEnabled=".Length).Trim());
                 }
             }
         }
@@ -286,6 +289,7 @@ namespace AutoTrackR2
                 writer.WriteLine($"Theme={Theme}");
                 writer.WriteLine($"StreamlinkEnabled={StreamlinkEnabled}");
                 writer.WriteLine($"StreamlinkDuration={StreamlinkDuration}");
+                writer.WriteLine($"KillStreakEnabled={KillStreakEnabled}");
             }
         }
     }

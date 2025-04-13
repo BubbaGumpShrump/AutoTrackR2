@@ -3,11 +3,31 @@ using System.IO;
 
 namespace AutoTrackR2;
 
-public class StreamlinkHandler
+public class StreamlinkHandler : IDisposable
 {
+  private bool _disposed = false;
+
   public StreamlinkHandler()
   {
     TrackREventDispatcher.StreamlinkRecordEvent += HandleStreamlinkRecord;
+  }
+
+  public void Dispose()
+  {
+    Dispose(true);
+    GC.SuppressFinalize(this);
+  }
+
+  protected virtual void Dispose(bool disposing)
+  {
+    if (_disposed) return;
+
+    if (disposing)
+    {
+      TrackREventDispatcher.StreamlinkRecordEvent -= HandleStreamlinkRecord;
+    }
+
+    _disposed = true;
   }
 
   public static bool IsStreamlinkInstalled()

@@ -58,6 +58,7 @@ public class KillHistoryManager
         catch (Exception ex)
         {
             // If there's any error reading the file, consider it malformed
+            Console.WriteLine($"Error reading CSV file: {ex.Message}");
             string backupPath = Path.Combine(
                 Path.GetDirectoryName(_killHistoryPath)!,
                 "Kill-log.old"
@@ -100,8 +101,11 @@ public class KillHistoryManager
             using var writer = new StreamWriter(fileStream);
             writer.Write(csv.ToString());
 
-            // Trigger kill streak sound
-            _killStreakManager.OnKill();
+            // Trigger kill streak sound only if enabled
+            if (ConfigManager.KillStreakEnabled == 1)
+            {
+                _killStreakManager.OnKill();
+            }
         }
         catch (IOException ex)
         {

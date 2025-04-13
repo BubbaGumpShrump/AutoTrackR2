@@ -26,8 +26,6 @@ public partial class ConfigPage : UserControl
     Dictionary<string, Theme>? _themes = null;
 
     private KillStreakManager? _testKillStreakManager;
-    private bool _isTestRunning = false;
-    private int _currentTestStep = 0;
 
     public ConfigPage(MainWindow mainWindow)
     {
@@ -44,6 +42,7 @@ public partial class ConfigPage : UserControl
         ThemeSlider.Value = ConfigManager.Theme;
         StreamlinkSlider.Value = ConfigManager.StreamlinkEnabled;
         StreamlinkDurationSlider.Value = ConfigManager.StreamlinkDuration;
+        KillStreakSlider.Value = ConfigManager.KillStreakEnabled;
 
         // Initialize Streamlink slider style
         if (StreamlinkSlider.Value == 0)
@@ -333,6 +332,18 @@ public partial class ConfigPage : UserControl
         }
     }
 
+    private void KillStreakSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (KillStreakSlider.Value == 0)
+        {
+            KillStreakSlider.Style = (Style)Application.Current.FindResource("FalseToggleStyle");
+        }
+        else
+        {
+            KillStreakSlider.Style = (Style)Application.Current.FindResource("ToggleSliderStyle");
+        }
+    }
+
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         ConfigManager.ApiKey = ApiKey.Password;
@@ -343,6 +354,9 @@ public partial class ConfigPage : UserControl
         ConfigManager.VideoRecord = (int)VideoRecordSlider.Value;
         ConfigManager.OfflineMode = (int)OfflineModeSlider.Value;
         ConfigManager.Theme = (int)ThemeSlider.Value;
+        ConfigManager.StreamlinkEnabled = (int)StreamlinkSlider.Value;
+        ConfigManager.StreamlinkDuration = (int)StreamlinkDurationSlider.Value;
+        ConfigManager.KillStreakEnabled = (int)KillStreakSlider.Value;
 
         // Save the current config values
         ConfigManager.SaveConfig();

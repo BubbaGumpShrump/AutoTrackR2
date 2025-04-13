@@ -12,7 +12,7 @@ namespace AutoTrackR2
     /// </summary>
     public partial class App : System.Windows.Application
     {
-        private static Mutex _mutex = null;
+        private static Mutex? _mutex = null;
         private static bool _mutexOwned = false;
         private static readonly string CrashLogPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -33,7 +33,11 @@ namespace AutoTrackR2
             try
             {
                 // Ensure crash log directory exists
-                Directory.CreateDirectory(Path.GetDirectoryName(CrashLogPath));
+                string? crashLogDir = Path.GetDirectoryName(CrashLogPath);
+                if (!string.IsNullOrEmpty(crashLogDir))
+                {
+                    Directory.CreateDirectory(crashLogDir);
+                }
 
                 // Set up unhandled exception handlers
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -94,36 +98,34 @@ namespace AutoTrackR2
                                $"Target Site: {ex?.TargetSite}\n" +
                                "----------------------------------------\n";
 
-                File.AppendAllText(CrashLogPath, logMessage);
+                // Ensure directory exists
+                string? crashLogDir = Path.GetDirectoryName(CrashLogPath);
+                if (!string.IsNullOrEmpty(crashLogDir))
+                {
+                    Directory.CreateDirectory(crashLogDir);
+                }
 
-                // Show error message to user
-                MessageBox.Show(
-                    "AutoTrackR2 has encountered an error. A crash log has been created.\n" +
-                    $"Location: {CrashLogPath}",
-                    "AutoTrackR2 Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                // Write to log file
+                File.AppendAllText(CrashLogPath, logMessage);
             }
             catch (Exception logEx)
             {
-                // If logging fails, at least show a basic error message
-                MessageBox.Show(
-                    "AutoTrackR2 has encountered an error and failed to create a crash log.\n" +
-                    $"Error: {ex?.Message}",
-                    "AutoTrackR2 Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                // If we can't log to file, at least try to show a message box
+                Console.WriteLine($"Failed to write crash log: {logEx.Message}");
+                MessageBox.Show($"Failed to write crash log: {logEx.Message}", "AutoTrackR2 Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            // Clean up resources
-            _killStreakManager?.Cleanup();
-            _mutex?.Dispose();
-            base.OnExit(e);
+            if (_mutexOwned)
+            {
+                // Clean up resources
+                _streamlinkHandler?.Dispose();
+                _killStreakManager?.Dispose();
+                _mutex?.Dispose();
+                base.OnExit(e);
+            }
         }
     }
 }
