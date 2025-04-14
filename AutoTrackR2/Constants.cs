@@ -2,5 +2,5 @@ namespace AutoTrackR2.Constants;
 
 public static class AppConstants
 {
-  public const string Version = "2.11";
+  public static string Version => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "2.0";
 }

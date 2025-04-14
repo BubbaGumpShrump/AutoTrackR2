@@ -10,6 +10,10 @@
     <Configurations>Debug;Release;Test</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>AutoTrackR2.ico</ApplicationIcon>
+    <Version>2.0</Version>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
