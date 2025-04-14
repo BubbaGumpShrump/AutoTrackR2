@@ -37,30 +37,37 @@ jobs:
           mkdir release
           $releaseDir = Get-ChildItem -Recurse -Directory -Filter "Release" | Select-Object -First 1
           if ($releaseDir) {
+            Write-Host "Release directory found at: $($releaseDir.FullName)"
+            
             # Copy main application files (excluding .pdb)
-            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.exe" "release\"
-            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.dll" "release\"
-            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.runtimeconfig.json" "release\"
-            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.deps.json" "release\"
+            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.exe" "release\" -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.dll" "release\" -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.runtimeconfig.json" "release\" -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.deps.json" "release\" -ErrorAction SilentlyContinue
             
             # Copy resources
-            Copy-Item "$($releaseDir.FullName)\config.ini" "release\"
-            Copy-Item "$($releaseDir.FullName)\themes.json" "release\"
-            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.ico" "release\"
+            Copy-Item "$($releaseDir.FullName)\config.ini" "release\" -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\themes.json" "release\" -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\AutoTrackR2.ico" "release\" -ErrorAction SilentlyContinue
             
-            # Copy fonts
-            Copy-Item "$($releaseDir.FullName)\Fonts\*" "release\Fonts\" -Recurse
+            # Create directories
+            mkdir "release\Fonts" -ErrorAction SilentlyContinue
+            mkdir "release\Assets" -ErrorAction SilentlyContinue
+            mkdir "release\sounds" -ErrorAction SilentlyContinue
+            mkdir "release\scripts" -ErrorAction SilentlyContinue
             
-            # Copy assets
-            Copy-Item "$($releaseDir.FullName)\Assets\*" "release\Assets\" -Recurse
+            # Copy directories
+            Copy-Item "$($releaseDir.FullName)\Fonts\*" "release\Fonts\" -Recurse -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\Assets\*" "release\Assets\" -Recurse -ErrorAction SilentlyContinue
+            Copy-Item "$($releaseDir.FullName)\sounds\*" "release\sounds\" -Recurse -ErrorAction SilentlyContinue
+            Copy-Item "AutoTrackR2\scripts\*" "release\scripts\" -Recurse -ErrorAction SilentlyContinue
             
-            # Copy sounds
-            Copy-Item "$($releaseDir.FullName)\sounds\*" "release\sounds\" -Recurse
-            
-            # Copy scripts
-            Copy-Item "AutoTrackR2\scripts\*" "release\scripts\" -Recurse
+            # List contents of release directory for verification
+            Write-Host "Contents of release directory:"
+            Get-ChildItem -Path "release" -Recurse | ForEach-Object { Write-Host $_.FullName }
           } else {
             Write-Host "No Release directory found"
+            Get-ChildItem -Recurse -Directory | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
 
