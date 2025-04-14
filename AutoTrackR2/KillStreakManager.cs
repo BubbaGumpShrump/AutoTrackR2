@@ -16,6 +16,7 @@ public class KillStreakManager : IDisposable
   private WaveOutEvent? _waveOut;
   private bool _isPlaying = false;
   private bool _disposed = false;
+  private Task? _currentPlaybackTask;
 
   public KillStreakManager(string soundsPath)
   {
@@ -82,7 +83,7 @@ public class KillStreakManager : IDisposable
       // Only start playing if not already playing
       if (!_isPlaying && _soundQueue.Count > 0)
       {
-        PlayNextSound();
+        _currentPlaybackTask = Task.Run(() => PlayNextSound());
       }
     }
   }
@@ -116,7 +117,14 @@ public class KillStreakManager : IDisposable
   {
     if (_soundQueue.Count == 0 || _disposed) return;
 
-    string soundPath = _soundQueue.Dequeue();
+    string soundPath;
+    lock (_lock)
+    {
+      if (_soundQueue.Count == 0 || _disposed) return;
+      soundPath = _soundQueue.Dequeue();
+      _isPlaying = true;
+    }
+
     Console.WriteLine($"Attempting to play sound: {soundPath}");
 
     try
@@ -124,28 +132,34 @@ public class KillStreakManager : IDisposable
       if (!File.Exists(soundPath))
       {
         Console.WriteLine($"Sound file not found: {soundPath}");
-        _isPlaying = false;
-        if (_soundQueue.Count > 0)
+        lock (_lock)
         {
-          PlayNextSound();
+          _isPlaying = false;
+          if (_soundQueue.Count > 0)
+          {
+            _currentPlaybackTask = Task.Run(() => PlayNextSound());
+          }
         }
         return;
       }
 
       // Stop any currently playing sound
-      _waveOut?.Stop();
-      _waveOut?.Dispose();
-      _waveOut = null;
+      lock (_lock)
+      {
+        _waveOut?.Stop();
+        _waveOut?.Dispose();
+        _waveOut = null;
+      }
 
       // Create a new WaveOutEvent
-      _waveOut = new WaveOutEvent();
+      var waveOut = new WaveOutEvent();
 
       // Create a new AudioFileReader for the MP3 file
       using var audioFile = new AudioFileReader(soundPath);
-      _waveOut.Init(audioFile);
+      waveOut.Init(audioFile);
 
       // Set up event handler for when playback finishes
-      _waveOut.PlaybackStopped += (sender, e) =>
+      waveOut.PlaybackStopped += (sender, e) =>
       {
         lock (_lock)
         {
@@ -154,23 +168,35 @@ public class KillStreakManager : IDisposable
           _isPlaying = false;
           if (_soundQueue.Count > 0)
           {
-            PlayNextSound();
+            _currentPlaybackTask = Task.Run(() => PlayNextSound());
           }
         }
       };
 
-      _isPlaying = true;
-      _waveOut.Play();
+      lock (_lock)
+      {
+        if (_disposed)
+        {
+          waveOut.Dispose();
+          return;
+        }
+        _waveOut = waveOut;
+      }
+
+      waveOut.Play();
 
       Console.WriteLine($"Successfully played sound: {soundPath}");
     }
     catch (Exception ex)
     {
       Console.WriteLine($"Error playing sound {soundPath}: {ex.Message}");
-      _isPlaying = false;
-      if (_soundQueue.Count > 0)
+      lock (_lock)
       {
-        PlayNextSound();
+        _isPlaying = false;
+        if (_soundQueue.Count > 0)
+        {
+          _currentPlaybackTask = Task.Run(() => PlayNextSound());
+        }
       }
     }
   }
@@ -195,6 +221,7 @@ public class KillStreakManager : IDisposable
         _waveOut?.Stop();
         _waveOut?.Dispose();
         _waveOut = null;
+        _currentPlaybackTask?.Wait();
       }
     }
   }

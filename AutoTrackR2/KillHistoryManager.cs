@@ -97,7 +97,7 @@ public class KillHistoryManager
         // Check file can be written to
         try
         {
-            using var fileStream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.None);
+            using var fileStream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.Read);
             using var writer = new StreamWriter(fileStream);
             writer.Write(csv.ToString());
 
@@ -123,7 +123,7 @@ public class KillHistoryManager
     {
         var kills = new List<KillData>();
 
-        using var reader = new StreamReader(_killHistoryPath);
+        using var reader = new StreamReader(new FileStream(_killHistoryPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         reader.ReadLine(); // Skip headers
             
         while (reader.Peek() >= 0)
