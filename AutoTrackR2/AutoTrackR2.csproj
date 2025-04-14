@@ -43,13 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="sounds\*.mp3">
+    <None Include="sounds\*.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
 
 </Project>

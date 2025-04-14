@@ -1,7 +1,6 @@
 using System.Media;
 using System.Timers;
 using System.IO;
-using NAudio.Wave;
 
 namespace AutoTrackR2;
 
@@ -13,7 +12,7 @@ public class KillStreakManager : IDisposable
   private int _totalKills = 0;
   private readonly string _soundsPath;
   private readonly object _lock = new();
-  private WaveOutEvent? _waveOut;
+  private SoundPlayer? _currentPlayer;
   private bool _isPlaying = false;
   private bool _disposed = false;
   private Task? _currentPlaybackTask;
@@ -39,30 +38,30 @@ public class KillStreakManager : IDisposable
       // Handle multi-kill announcements
       string? multiKillSound = _currentKills switch
       {
-        2 => "double_kill.mp3",
-        3 => "triple_kill.mp3",
-        4 => "overkill.mp3",
-        5 => "killtacular.mp3",
-        6 => "killtrocity.mp3",
-        7 => "killimanjaro.mp3",
-        8 => "killtastrophe.mp3",
-        9 => "killpocalypse.mp3",
-        10 => "killionaire.mp3",
+        2 => "double_kill.wav",
+        3 => "triple_kill.wav",
+        4 => "overkill.wav",
+        5 => "killtacular.wav",
+        6 => "killtrocity.wav",
+        7 => "killimanjaro.wav",
+        8 => "killtastrophe.wav",
+        9 => "killpocalypse.wav",
+        10 => "killionaire.wav",
         _ => null
       };
 
       // Handle spree announcements
       string? spreeSound = _totalKills switch
       {
-        5 => "killing_spree.mp3",
-        10 => "killing_frenzy.mp3",
-        15 => "running_riot.mp3",
-        20 => "rampage.mp3",
-        25 => "untouchable.mp3",
-        30 => "invincible.mp3",
-        35 => "unstoppable.mp3",
-        40 => "hells_janitor.mp3",
-        45 => "perfection.mp3",
+        5 => "killing_spree.wav",
+        10 => "killing_frenzy.wav",
+        15 => "running_riot.wav",
+        20 => "rampage.wav",
+        25 => "untouchable.wav",
+        30 => "invincible.wav",
+        35 => "unstoppable.wav",
+        40 => "hells_janitor.wav",
+        45 => "perfection.wav",
         _ => null
       };
 
@@ -146,44 +145,50 @@ public class KillStreakManager : IDisposable
       // Stop any currently playing sound
       lock (_lock)
       {
-        _waveOut?.Stop();
-        _waveOut?.Dispose();
-        _waveOut = null;
+        _currentPlayer?.Stop();
+        _currentPlayer?.Dispose();
+        _currentPlayer = null;
       }
 
-      // Create a new WaveOutEvent
-      var waveOut = new WaveOutEvent();
-
-      // Create a new AudioFileReader for the MP3 file
-      using var audioFile = new AudioFileReader(soundPath);
-      waveOut.Init(audioFile);
-
-      // Set up event handler for when playback finishes
-      waveOut.PlaybackStopped += (sender, e) =>
+      // Create a new SoundPlayer
+      var player = new SoundPlayer(soundPath);
+      player.LoadCompleted += (sender, e) =>
       {
-        lock (_lock)
+        if (e.Error != null)
         {
-          if (_disposed) return;
-
-          _isPlaying = false;
-          if (_soundQueue.Count > 0)
+          Console.WriteLine($"Error loading sound {soundPath}: {e.Error.Message}");
+          lock (_lock)
           {
-            _currentPlaybackTask = Task.Run(() => PlayNextSound());
+            _isPlaying = false;
+            if (_soundQueue.Count > 0)
+            {
+              _currentPlaybackTask = Task.Run(() => PlayNextSound());
+            }
           }
         }
       };
+
+      player.SoundLocationChanged += (sender, e) =>
+      {
+        Console.WriteLine($"Sound location changed: {soundPath}");
+      };
+
+      player.PlaySync();
 
       lock (_lock)
       {
         if (_disposed)
         {
-          waveOut.Dispose();
+          player.Dispose();
           return;
         }
-        _waveOut = waveOut;
+        _currentPlayer = player;
+        _isPlaying = false;
+        if (_soundQueue.Count > 0)
+        {
+          _currentPlaybackTask = Task.Run(() => PlayNextSound());
+        }
       }
-
-      waveOut.Play();
 
       Console.WriteLine($"Successfully played sound: {soundPath}");
     }
@@ -218,9 +223,9 @@ public class KillStreakManager : IDisposable
         _disposed = true;
         _killStreakTimer.Stop();
         _killStreakTimer.Dispose();
-        _waveOut?.Stop();
-        _waveOut?.Dispose();
-        _waveOut = null;
+        _currentPlayer?.Stop();
+        _currentPlayer?.Dispose();
+        _currentPlayer = null;
         _currentPlaybackTask?.Wait();
       }
     }
