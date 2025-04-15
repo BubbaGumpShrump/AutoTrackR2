@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http.Headers;
 using System.Net.Http;
@@ -13,6 +14,8 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using System.Threading.Tasks;
 using AutoTrackR2.Constants;
+using AutoTrackR2.Services;
+using System.Linq;
 
 namespace AutoTrackR2;
 
@@ -362,6 +365,41 @@ public partial class ConfigPage : UserControl
         ConfigManager.SaveConfig();
         // Start the flashing effect
         FlashSaveButton();
+    }
+
+    private async void ImportCsvFromApiButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(ConfigManager.ApiUrl) || string.IsNullOrEmpty(ConfigManager.ApiKey))
+        {
+            MessageBox.Show("Please configure API URL and API Key first.", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var importService = new KillImportService();
+        await importService.ImportKillsFromApi(ConfigManager.ApiUrl, ConfigManager.ApiKey);
+    }
+
+    private string GetRsiValue(JsonElement rsiElement)
+    {
+        try
+        {
+            if (rsiElement.ValueKind == JsonValueKind.Number)
+            {
+                return rsiElement.GetInt64().ToString();
+            }
+            else if (rsiElement.ValueKind == JsonValueKind.String)
+            {
+                if (long.TryParse(rsiElement.GetString(), out long result))
+                {
+                    return result.ToString();
+                }
+            }
+        }
+        catch
+        {
+            // If any error occurs, return -1
+        }
+        return "-1";
     }
 
     private void FlashSaveButton()

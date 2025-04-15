@@ -40,6 +40,13 @@
                                                 Margin="0,0"
                                                 Style="{StaticResource ButtonStyle}"
                                                 Click="LogFileOpenButton_Click"/>
+                                        <Button Content="Import CSV from API"
+                                                Width="120"
+                                                Height="30"
+                                                FontFamily="{StaticResource Orbitron}"
+                                                Margin="5,0"
+                                                Style="{StaticResource ButtonStyle}"
+                                                Click="ImportCsvFromApiButton_Click"/>
                                 </StackPanel>
                         </StackPanel>
 
