@@ -38,6 +38,7 @@ public class KillStreakManager : IDisposable
       // Handle multi-kill announcements
       string? multiKillSound = _currentKills switch
       {
+        1 => "dog_bowl.wav",
         2 => "double_kill.wav",
         3 => "triple_kill.wav",
         4 => "overkill.wav",
