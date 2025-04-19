@@ -59,7 +59,7 @@ public class ActorDeathEvent : ILogEventHandler
         }
 
         // Check if the weapon is in our list of weapons
-        if (Weapons.List.Contains(data.Weapon))
+        if (Weapons.IsKnownWeapon(data.Weapon))
         {
             LocalPlayerData.PlayerShip = "Player";
         }
