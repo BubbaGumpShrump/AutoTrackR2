@@ -12,6 +12,7 @@ using AutoTrackR2.LogEventHandlers;
 using System.Timers;
 using System.Linq;
 using AutoTrackR2.Constants;
+using System.Threading;
 
 namespace AutoTrackR2;
 
@@ -269,7 +270,7 @@ public partial class HomePage : UserControl
 
                     _killHistoryManager.AddKill(killData);
                     VisorWipe();
-                    VideoRecord();
+                    VideoRecord(actorDeathData.VictimPilot, actorDeathData.VictimShip);
 
                     // Update kill tally
                     Dispatcher.Invoke(() =>
@@ -460,7 +461,7 @@ public partial class HomePage : UserControl
         textBlock.FontSize = fontSize;
     }
 
-    public static void RunAHKScript(string? path)
+    public static void RunAHKScript(string? path, string? victimName = null, string? shipName = null)
     {
         if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(ConfigManager.AHKScriptFolder))
         {
@@ -474,14 +475,50 @@ public partial class HomePage : UserControl
             return;
         }
 
-        // Run the script using powershell
-        using var ahkProcess = new Process();
+        // Only do file handling for video recording
+        if (victimName != null && shipName != null)
+        {
+            // Start the recording
+            using var ahkProcess = new Process();
+            ahkProcess.StartInfo.FileName = "explorer";
+            ahkProcess.StartInfo.Arguments = "\"" + scriptPath + "\"";
+            ahkProcess.Start();
 
-        // Runs the script via Explorer, ensuring it uses whatever the
-        // default binary for AHK is. Skips having to find a specific path to AHK
-        ahkProcess.StartInfo.FileName = "explorer";
-        ahkProcess.StartInfo.Arguments = "\"" + scriptPath + "\"";
-        ahkProcess.Start();
+            // Wait 7 seconds for the recording to complete
+            System.Threading.Thread.Sleep(7000);
+
+            // Rename the most recent file
+            if (!string.IsNullOrEmpty(ConfigManager.VideoPath))
+            {
+                var videoDir = new DirectoryInfo(ConfigManager.VideoPath);
+                var newestFile = videoDir.GetFiles()
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .FirstOrDefault();
+
+                if (newestFile != null)
+                {
+                    string newFileName = $"{victimName}.{shipName}.{DateTime.Now:yyyyMMdd_HHmmss}{newestFile.Extension}";
+                    string newPath = Path.Combine(videoDir.FullName, newFileName);
+
+                    try
+                    {
+                        File.Move(newestFile.FullName, newPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("File rename failed: " + ex.Message);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // For visor wipe, just run the script
+            using var ahkProcess = new Process();
+            ahkProcess.StartInfo.FileName = "explorer";
+            ahkProcess.StartInfo.Arguments = "\"" + scriptPath + "\"";
+            ahkProcess.Start();
+        }
     }
 
     private void VisorWipe()
@@ -492,11 +529,11 @@ public partial class HomePage : UserControl
         }
     }
 
-    private void VideoRecord()
+    private void VideoRecord(string victimName, string shipName)
     {
-        if (ConfigManager.VideoRecord == 1)
+        if (ConfigManager.VideoRecord == 1 && !string.IsNullOrEmpty(victimName) && !string.IsNullOrEmpty(shipName))
         {
-            RunAHKScript(ConfigManager.VideoRecordScript);
+            RunAHKScript(ConfigManager.VideoRecordScript, victimName, shipName);
         }
     }
 
