@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace AutoTrackR2;
 
@@ -157,28 +158,70 @@ public class KillHistoryManager
             });
         }
 
+        // Apply KillFeedLimit if specified
+        if (ConfigManager.KillFeedLimit.HasValue && ConfigManager.KillFeedLimit.Value > 0)
+        {
+            kills = kills.TakeLast(ConfigManager.KillFeedLimit.Value).ToList();
+        }
+
         return kills;
     }
 
     public List<KillData> GetKillsInCurrentMonth()
     {
         string currentMonth = DateTime.Now.ToString("MMM", CultureInfo.InvariantCulture);
-        var kills = GetKills();
+        var kills = new List<KillData>();
 
-        // Because we are not using UTCNOW anymore and users already have kills saved, we need to make sure both formats are compatable. Otherwise people gonna delete their csv.
-        return kills.Where(kill =>
+        // Read all kills directly from file, ignoring KillFeedLimit
+        using var reader = new StreamReader(new FileStream(_killHistoryPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+        reader.ReadLine(); // Skip headers
+
+        while (reader.Peek() >= 0)
         {
-            if (string.IsNullOrEmpty(kill.KillTime)) return false;
+            var line = reader.ReadLine();
+
+            // Remove extra quotes from CSV data
+            line = line?.Replace("\"", string.Empty);
+
+            var data = line?.Split(',');
+
+            // Check if the kill is from the current month before adding it
+            var killTime = data?[0];
+            if (string.IsNullOrEmpty(killTime)) continue;
 
             // Try to parse as Unix timestamp first
-            if (long.TryParse(kill.KillTime, out long unixTime))
+            if (long.TryParse(killTime, out long unixTime))
             {
                 var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
-                return date.ToString("MMM", CultureInfo.InvariantCulture) == currentMonth;
+                if (date.ToString("MMM", CultureInfo.InvariantCulture) != currentMonth) continue;
+            }
+            else if (!killTime.Contains(currentMonth))
+            {
+                // Fall back to checking if it contains the month name (old format)
+                continue;
             }
 
-            // Fall back to checking if it contains the month name (old format)
-            return kill.KillTime.Contains(currentMonth);
-        }).ToList();
+            kills.Add(new KillData
+            {
+                KillTime = killTime,
+                EnemyPilot = data?[1],
+                EnemyShip = data?[2],
+                Enlisted = data?[3],
+                RecordNumber = data?[4],
+                OrgAffiliation = data?[5],
+                Player = data?[6],
+                Weapon = data?[7],
+                Ship = data?[8],
+                Method = data?[9],
+                Mode = data?[10],
+                GameVersion = data?[11],
+                TrackRver = data?[12],
+                Logged = data?[13],
+                PFP = data?[14],
+                Hash = data?[15]
+            });
+        }
+
+        return kills;
     }
 }

@@ -199,6 +199,7 @@ namespace AutoTrackR2
         public static int StreamlinkEnabled { get; set; }
         public static int StreamlinkDuration { get; set; } = 30;
         public static int KillStreakEnabled { get; set; } = 1; // Default to enabled
+        public static int? KillFeedLimit { get; set; } = null; // Default to null (load all)
 
         static ConfigManager()
         {
@@ -256,6 +257,11 @@ namespace AutoTrackR2
                         StreamlinkDuration = int.Parse(line.Substring("StreamlinkDuration=".Length).Trim());
                     else if (line.StartsWith("KillStreakEnabled="))
                         KillStreakEnabled = int.Parse(line.Substring("KillStreakEnabled=".Length).Trim());
+                    else if (line.StartsWith("KillFeedLimit="))
+                    {
+                        var value = line.Substring("KillFeedLimit=".Length).Trim();
+                        KillFeedLimit = string.IsNullOrEmpty(value) ? null : int.Parse(value);
+                    }
                 }
             }
         }
@@ -290,6 +296,7 @@ namespace AutoTrackR2
                 writer.WriteLine($"StreamlinkEnabled={StreamlinkEnabled}");
                 writer.WriteLine($"StreamlinkDuration={StreamlinkDuration}");
                 writer.WriteLine($"KillStreakEnabled={KillStreakEnabled}");
+                writer.WriteLine($"KillFeedLimit={KillFeedLimit}");
             }
         }
     }
