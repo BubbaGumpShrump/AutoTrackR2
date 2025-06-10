@@ -21,14 +21,14 @@ public partial class HomePage : UserControl
 
     private LogHandler? _logHandler;
     private KillHistoryManager _killHistoryManager;
+    private LogBackupProcessor? _logBackupProcessor;
     private bool _UIEventsRegistered = false;
     private System.Timers.Timer _statusCheckTimer;
     private bool _isLogHandlerRunning = false;
-    private int _counter = 1;
-    private System.Timers.Timer _counterTimer;
     private bool _isInitializing = false;
     private System.Timers.Timer? _initializationTimer;
     private bool _wasStarCitizenRunningOnStart = false;
+    private bool _isProcessingLogBackups = false;
 
     public HomePage()
     {
@@ -62,15 +62,16 @@ public partial class HomePage : UserControl
         _statusCheckTimer = new System.Timers.Timer(1000); // Check every second
         _statusCheckTimer.Elapsed += CheckStarCitizenStatus;
         _statusCheckTimer.Start();
-
-        // Initialize and start the counter timer
-        _counterTimer = new System.Timers.Timer(1000); // Update every second
-        _counterTimer.Elapsed += UpdateCounter;
-        _counterTimer.Start();
     }
 
     private void CheckStarCitizenStatus(object? sender, ElapsedEventArgs e)
     {
+        if (_isProcessingLogBackups)
+        {
+            // Simulate TrackR as running during log backup processing
+            Dispatcher.Invoke(() => UpdateStatusIndicator(true));
+            return;
+        }
         bool isRunning = IsStarCitizenRunning();
         Dispatcher.Invoke(() =>
         {
@@ -569,12 +570,40 @@ public partial class HomePage : UserControl
         return Process.GetProcessesByName("StarCitizen").Length > 0;
     }
 
-    private void UpdateCounter(object? sender, ElapsedEventArgs e)
+    public async void ProcessLogBackups_Click(object sender, RoutedEventArgs e)
     {
-        Dispatcher.Invoke(() =>
+        if (_isProcessingLogBackups)
         {
-            DebugPanel.Text = _counter.ToString();
-            _counter = (_counter % 10) + 1; // Count from 1 to 10 and loop
-        });
+            MessageBox.Show("Already processing log backups. Please wait.", "Processing", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            _isProcessingLogBackups = true;
+            UpdateStatusIndicator(true, true); // Set to yellow for processing
+
+            if (_logBackupProcessor == null)
+            {
+                var logBackupsPath = Path.Combine(Path.GetDirectoryName(ConfigManager.LogFile)!, "logbackups");
+                _logBackupProcessor = new LogBackupProcessor(logBackupsPath, _killHistoryManager, _logHandler?.GetEventHandlers() ?? new List<ILogEventHandler>());
+            }
+
+            await _logBackupProcessor.ProcessLogBackupsAsync((logFile) =>
+            {
+                DebugPanel.Text = $"Processing: {Path.GetFileName(logFile)}";
+            });
+            MessageBox.Show("Log backups processed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            DebugPanel.Text = ""; // Clear the debug panel after successful processing
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error processing log backups: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            _isProcessingLogBackups = false;
+            UpdateStatusIndicator(IsStarCitizenRunning());
+        }
     }
 }

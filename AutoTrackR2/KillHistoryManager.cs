@@ -2,122 +2,144 @@
 using System.IO;
 using System.Text;
 using System.Linq;
+using System.Diagnostics;
+using System.Threading;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace AutoTrackR2;
 
 public class KillHistoryManager
 {
-    private string _killHistoryPath;
+    private readonly string _killHistoryPath;
     private readonly string _headers = "KillTime,EnemyPilot,EnemyShip,Enlisted,RecordNumber,OrgAffiliation,Player,Weapon,Ship,Method,Mode,GameVersion,TrackRver,Logged,PFP,Hash\n";
     private readonly KillStreakManager _killStreakManager;
+    private readonly ConcurrentQueue<KillData> _killQueue;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly Task _processingTask;
+    private bool _killStreakSoundEnabled = true;
 
     public KillHistoryManager(string logPath, string soundsPath)
     {
-        _killHistoryPath = logPath;
-        _killStreakManager = new KillStreakManager(soundsPath);
+        var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AutoTrackR2");
+        Directory.CreateDirectory(appDataPath); // Ensure the directory exists
+        _killHistoryPath = Path.Combine(appDataPath, "Kill-log.csv");
 
+        // Create the CSV file with headers if it doesn't exist
         if (!File.Exists(_killHistoryPath))
         {
             File.WriteAllText(_killHistoryPath, _headers);
         }
-        else
+
+        _killStreakManager = new KillStreakManager(soundsPath);
+        _killQueue = new ConcurrentQueue<KillData>();
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        // Start the background processing task
+        _processingTask = Task.Run(ProcessKillQueue);
+    }
+
+    private async Task ProcessKillQueue()
+    {
+        while (!_cancellationTokenSource.Token.IsCancellationRequested)
         {
-            CheckAndFixMalformedCsv();
+            try
+            {
+                if (_killQueue.TryDequeue(out var kill))
+                {
+                    await ProcessKillAsync(kill);
+                }
+                else
+                {
+                    await Task.Delay(100, _cancellationTokenSource.Token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error processing kill: {ex.Message}");
+                await Task.Delay(1000, _cancellationTokenSource.Token);
+            }
         }
     }
 
-    private void CheckAndFixMalformedCsv()
+    private async Task ProcessKillAsync(KillData kill)
     {
         try
         {
-            // Try to read the file to check if it's malformed
-            using var reader = new StreamReader(_killHistoryPath);
-            var firstLine = reader.ReadLine();
-
-            // If the file is empty or doesn't start with the correct headers, it's malformed
-            if (string.IsNullOrEmpty(firstLine) || firstLine != _headers.TrimEnd('\n'))
+            // Ensure all fields are properly escaped for CSV
+            var fields = new[]
             {
-                // Create a backup of the malformed file
-                string backupPath = Path.Combine(
-                    Path.GetDirectoryName(_killHistoryPath)!,
-                    "Kill-log.old"
-                );
+                kill.KillTime.ToString(),
+                EscapeCsvField(kill.EnemyPilot),
+                EscapeCsvField(kill.EnemyShip),
+                EscapeCsvField(kill.Enlisted),
+                EscapeCsvField(kill.RecordNumber),
+                EscapeCsvField(kill.OrgAffiliation),
+                EscapeCsvField(kill.Player),
+                EscapeCsvField(kill.Weapon),
+                EscapeCsvField(kill.Ship),
+                EscapeCsvField(kill.Method),
+                EscapeCsvField(kill.Mode),
+                EscapeCsvField(kill.GameVersion),
+                EscapeCsvField(kill.TrackRver),
+                EscapeCsvField(kill.Logged),
+                EscapeCsvField(kill.PFP),
+                EscapeCsvField(kill.Hash)
+            };
 
-                // If Kill-log.old already exists, delete it
-                if (File.Exists(backupPath))
-                {
-                    File.Delete(backupPath);
-                }
+            var csvLine = string.Join(",", fields);
 
-                // Rename the malformed file
-                File.Move(_killHistoryPath, backupPath);
-
-                // Create a new file with correct headers
-                File.WriteAllText(_killHistoryPath, _headers);
-            }
+            // Use FileShare.Read to allow other processes to read while we write
+            using var stream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.Read);
+            using var writer = new StreamWriter(stream);
+            await writer.WriteLineAsync(csvLine);
         }
         catch (Exception ex)
         {
-            // If there's any error reading the file, consider it malformed
-            Console.WriteLine($"Error reading CSV file: {ex.Message}");
-            string backupPath = Path.Combine(
-                Path.GetDirectoryName(_killHistoryPath)!,
-                "Kill-log.old"
-            );
-
-            // If Kill-log.old already exists, delete it
-            if (File.Exists(backupPath))
-            {
-                File.Delete(backupPath);
-            }
-
-            // Rename the malformed file
-            File.Move(_killHistoryPath, backupPath);
-
-            // Create a new file with correct headers
-            File.WriteAllText(_killHistoryPath, _headers);
+            Debug.WriteLine($"Error writing kill to CSV: {ex.Message}");
+            throw;
         }
     }
 
-    public void AddKill(KillData killData)
+    private string EscapeCsvField(string field)
     {
-        // Ensure the CSV file exists
-        // This should only happen if the file was deleted or corrupted
-        if (!File.Exists(_killHistoryPath))
-        {
-            File.WriteAllText(_killHistoryPath, _headers);
-        }
-        
-        // Remove comma from Enlisted
-        killData.Enlisted = killData.Enlisted?.Replace(",", string.Empty);
-        
-        // Append the new kill data to the CSV file
-        var csv = new StringBuilder();
-        csv.AppendLine($"\"{killData.KillTime}\",\"{killData.EnemyPilot}\",\"{killData.EnemyShip}\",\"{killData.Enlisted}\",\"{killData.RecordNumber}\",\"{killData.OrgAffiliation}\",\"{killData.Player}\",\"{killData.Weapon}\",\"{killData.Ship}\",\"{killData.Method}\",\"{killData.Mode}\",\"{killData.GameVersion}\",\"{killData.TrackRver}\",\"{killData.Logged}\",\"{killData.PFP}\",\"{killData.Hash}\"");
+        if (string.IsNullOrEmpty(field)) return "";
 
-        // Check file can be written to
-        try
+        // If the field contains any special characters, wrap it in quotes
+        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
         {
-            using var fileStream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.Read);
-            using var writer = new StreamWriter(fileStream);
-            writer.Write(csv.ToString());
+            // Double up any quotes
+            field = field.Replace("\"", "\"\"");
+            return $"\"{field}\"";
+        }
 
-            // Trigger kill streak sound only if enabled
-            if (ConfigManager.KillStreakEnabled == 1)
-            {
-                _killStreakManager.OnKill();
-            }
-        }
-        catch (IOException ex)
-        {
-            // Handle the exception (e.g., log it)
-            Console.WriteLine($"Error writing to file: {ex.Message}");
-        }
+        return field;
+    }
+
+    public void AddKill(KillData kill)
+    {
+        _killQueue.Enqueue(kill);
+    }
+
+    public void PlayKillStreakSound()
+    {
+        _killStreakManager.OnKill();
     }
 
     public void ResetKillStreak()
     {
         _killStreakManager.OnDeath();
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource.Cancel();
+        _processingTask.Wait();
+        _cancellationTokenSource.Dispose();
     }
 
     public List<KillData> GetKills()
@@ -126,17 +148,17 @@ public class KillHistoryManager
 
         using var reader = new StreamReader(new FileStream(_killHistoryPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
         reader.ReadLine(); // Skip headers
-            
+
         while (reader.Peek() >= 0)
         {
             var line = reader.ReadLine();
-            
+
             // Remove extra quotes from CSV data
             // Todo: These quotes are for handling commas in the data, but not sure if they're necessary
             line = line?.Replace("\"", string.Empty);
-            
+
             var data = line?.Split(',');
-                
+
             kills.Add(new KillData
             {
                 KillTime = data?[0],

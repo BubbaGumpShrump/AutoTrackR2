@@ -120,6 +120,11 @@ namespace AutoTrackR2
             UpdateTabVisuals();
         }
 
+        private void ProcessLogBackups_Click(object sender, RoutedEventArgs e)
+        {
+            homePage.ProcessLogBackups_Click(sender, e);
+        }
+
         private void UpdateTabStates(string activeTab)
         {
             foreach (var key in tabStates.Keys)

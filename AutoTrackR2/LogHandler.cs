@@ -46,9 +46,10 @@ public class LogHandler
         new GameVersionEvent(),
         new JumpDriveStateChangedEvent(),
         new RequestJumpFailedEvent(),
-        new VehicleDestructionEvent()
+        new VehicleDestructionEvent(),
+        new ActorDeathEvent()
     ];
-  
+
     public LogHandler(string? logPath)
     {
         if (string.IsNullOrEmpty(logPath))
@@ -104,8 +105,6 @@ public class LogHandler
             HandleLogEntry(line);
         }
 
-        // Ensures that any deaths already in log aren't sent to the APIs until the monitor thread is running
-        _eventHandlers.Add(new ActorDeathEvent());
         StartMonitoring();
     }
 
@@ -217,5 +216,10 @@ public class LogHandler
             _initializationTimer.Start();
         }
         _gameProcessState = newGameProcessState;
+    }
+
+    public List<ILogEventHandler> GetEventHandlers()
+    {
+        return new List<ILogEventHandler>(_eventHandlers);
     }
 }
