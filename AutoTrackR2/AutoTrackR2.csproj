@@ -10,10 +10,14 @@
     <Configurations>Debug;Release;Test</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>AutoTrackR2.ico</ApplicationIcon>
-    <Version>2.12</Version>
+    <Version>2.13</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Deterministic>true</Deterministic>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>false</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,6 +50,10 @@
     <None Include="sounds\*.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
   </ItemGroup>
 
 </Project>

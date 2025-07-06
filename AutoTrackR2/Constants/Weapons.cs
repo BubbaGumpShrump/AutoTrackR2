@@ -14,7 +14,15 @@ public static class Weapons
         "*repair*",
         "*cutter*",
         "*tractor*",
-        "*carryable*"
+        "*carryable*",
+        "*shotgun*",
+        "*sniper*",
+        "*rifle*",
+        "*smg*",
+        "*pistol*",
+        "*sniper*",
+        "*lmg*",
+        "*volt*",
     };
 
   public static bool IsKnownWeapon(string weaponName)

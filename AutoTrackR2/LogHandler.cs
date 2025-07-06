@@ -47,7 +47,9 @@ public class LogHandler
         new JumpDriveStateChangedEvent(),
         new RequestJumpFailedEvent(),
         new VehicleDestructionEvent(),
-        new ActorDeathEvent()
+        new ActorDeathEvent(),
+        new VehicleControlEvent(),
+        new VehicleControlClearEvent()
     ];
 
     public LogHandler(string? logPath)

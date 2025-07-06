@@ -34,6 +34,9 @@ public partial class HomePage : UserControl
     {
         InitializeComponent();
 
+        // Initialize default values
+        LocalPlayerData.PlayerShip = "Player";
+
         if (string.IsNullOrEmpty(ConfigManager.KillHistoryFile))
         {
             throw new InvalidOperationException("KillHistoryFile path is not configured.");
@@ -119,11 +122,11 @@ public partial class HomePage : UserControl
             {
                 // Game is not running, set everything to Unknown
                 GameModeTextBox.Text = "Unknown";
-                PlayerShipTextBox.Text = "Unknown";
+                PlayerShipTextBox.Text = "Player";
                 PilotNameTextBox.Text = "Unknown";
                 LocationTextBox.Text = "Unknown";
                 LocalPlayerData.CurrentGameMode = GameMode.Unknown;
-                LocalPlayerData.PlayerShip = string.Empty;
+                LocalPlayerData.PlayerShip = "Player";
                 LocalPlayerData.Username = string.Empty;
                 LocalPlayerData.LastSeenVehicleLocation = "Unknown";
 
@@ -191,6 +194,28 @@ public partial class HomePage : UserControl
                 PlayerShipTextBox.Text = data.ShipName;
                 AdjustFontSize(PlayerShipTextBox);
                 LocalPlayerData.PlayerShip = data.ShipName;
+                LocalPlayerData.LastSeenVehicleLocation = data.Location;
+                LocationTextBox.Text = data.Location;
+                AdjustFontSize(LocationTextBox);
+            });
+        };
+
+        // Vehicle Control
+        TrackREventDispatcher.VehicleControlEvent += (data) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                PlayerShipTextBox.Text = data.Ship ?? "Player";
+                AdjustFontSize(PlayerShipTextBox);
+                LocalPlayerData.PlayerShip = data.Ship ?? "Player";
+            });
+        };
+
+        // Jump Drive State Changed (Location Only)
+        TrackREventDispatcher.JumpDriveStateChangedEvent += (data) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
                 LocalPlayerData.LastSeenVehicleLocation = data.Location;
                 LocationTextBox.Text = data.Location;
                 AdjustFontSize(LocationTextBox);

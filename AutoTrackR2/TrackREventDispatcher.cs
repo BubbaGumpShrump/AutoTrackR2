@@ -18,37 +18,36 @@ public static class TrackREventDispatcher
     {
         InstancedInteriorEvent?.Invoke(data);
     }
-    
+
     // Player changed GameMode (AC or PU)
     public static event Action<GameMode>? PlayerChangedGameModeEvent;
     public static void OnPlayerChangedGameModeEvent(GameMode mode)
     {
         PlayerChangedGameModeEvent?.Invoke(mode);
     }
-    
+
     // Game version has been detected
     public static event Action<string>? GameVersionEvent;
     public static void OnGameVersionEvent(string value)
     {
         GameVersionEvent?.Invoke(value);
     }
-    
+
     // Actor has died
     public static event Action<ActorDeathData>? ActorDeathEvent;
     public static void OnActorDeathEvent(ActorDeathData data)
     {
         ActorDeathEvent?.Invoke(data);
     }
-    
+
     // Vehicle has been destroyed
     public static event Action<VehicleDestructionData>? VehicleDestructionEvent;
     public static void OnVehicleDestructionEvent(VehicleDestructionData data)
     {
         VehicleDestructionEvent?.Invoke(data);
     }
-    
+
     // Jump Drive state has changed
-    // Todo: Add proper data for this event. Right now only ship name is used.
     public static event Action<JumpDriveStateChangedData>? JumpDriveStateChangedEvent;
     public static void OnJumpDriveStateChangedEvent(JumpDriveStateChangedData data)
     {
@@ -60,5 +59,12 @@ public static class TrackREventDispatcher
     public static void OnStreamlinkRecordEvent(string streamerHandle)
     {
         StreamlinkRecordEvent?.Invoke(streamerHandle);
+    }
+
+    // Vehicle control has changed
+    public static event Action<VehicleControlData>? VehicleControlEvent;
+    public static void OnVehicleControlEvent(VehicleControlData data)
+    {
+        VehicleControlEvent?.Invoke(data);
     }
 }

@@ -12,12 +12,12 @@ public class JumpDriveStateChangedEvent : ILogEventHandler
 {
     public Regex Pattern { get; }
     private Regex _cleanUpPattern = new Regex(@"(.+?)_\d+$");
-    
+
     public JumpDriveStateChangedEvent()
     {
         Pattern = new Regex(@"<Jump Drive State Changed>.*.adam: (?<ShipName>.*.) in zone (?<Location>.*.)\)");
     }
-    
+
     public void Handle(LogEntry entry)
     {
         if (entry.Message is null) return;
@@ -34,6 +34,13 @@ public class JumpDriveStateChangedEvent : ILogEventHandler
         {
             data.ShipName = match.Groups[1].Value;
         }
+
+        // Skip applying loadout if ship name matches "Default"
+        if (data.ShipName?.Equals("Default", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return;
+        }
+
         if (!string.IsNullOrEmpty(data.ShipName) && !string.IsNullOrEmpty(data.Location))
         {
             TrackREventDispatcher.OnJumpDriveStateChangedEvent(data);

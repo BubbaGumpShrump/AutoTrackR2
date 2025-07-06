@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Microsoft.Data.Sqlite;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Linq;
@@ -11,8 +12,7 @@ namespace AutoTrackR2;
 
 public class KillHistoryManager
 {
-    private readonly string _killHistoryPath;
-    private readonly string _headers = "KillTime,EnemyPilot,EnemyShip,Enlisted,RecordNumber,OrgAffiliation,Player,Weapon,Ship,Method,Mode,GameVersion,TrackRver,Logged,PFP,Hash\n";
+    private readonly string _dbPath;
     private readonly KillStreakManager _killStreakManager;
     private readonly ConcurrentQueue<KillData> _killQueue;
     private readonly CancellationTokenSource _cancellationTokenSource;
@@ -23,13 +23,9 @@ public class KillHistoryManager
     {
         var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AutoTrackR2");
         Directory.CreateDirectory(appDataPath); // Ensure the directory exists
-        _killHistoryPath = Path.Combine(appDataPath, "Kill-log.csv");
+        _dbPath = Path.Combine(appDataPath, "kills.db");
 
-        // Create the CSV file with headers if it doesn't exist
-        if (!File.Exists(_killHistoryPath))
-        {
-            File.WriteAllText(_killHistoryPath, _headers);
-        }
+        InitializeDatabase();
 
         _killStreakManager = new KillStreakManager(soundsPath);
         _killQueue = new ConcurrentQueue<KillData>();
@@ -37,6 +33,34 @@ public class KillHistoryManager
 
         // Start the background processing task
         _processingTask = Task.Run(ProcessKillQueue);
+    }
+
+    private void InitializeDatabase()
+    {
+        using var connection = new SqliteConnection($"Data Source={_dbPath}");
+        connection.Open();
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            CREATE TABLE IF NOT EXISTS kills (
+                Hash TEXT PRIMARY KEY,
+                KillTime TEXT,
+                EnemyPilot TEXT,
+                EnemyShip TEXT,
+                Enlisted TEXT,
+                RecordNumber TEXT,
+                OrgAffiliation TEXT,
+                Weapon TEXT,
+                Ship TEXT,
+                Method TEXT,
+                Location TEXT,
+                Mode TEXT,
+                GameVersion TEXT,
+                TrackRver TEXT,
+                Logged TEXT,
+                PFP TEXT
+            );
+        ";
+        command.ExecuteNonQuery();
     }
 
     private async Task ProcessKillQueue()
@@ -70,54 +94,39 @@ public class KillHistoryManager
     {
         try
         {
-            // Ensure all fields are properly escaped for CSV
-            var fields = new[]
-            {
-                kill.KillTime.ToString(),
-                EscapeCsvField(kill.EnemyPilot),
-                EscapeCsvField(kill.EnemyShip),
-                EscapeCsvField(kill.Enlisted),
-                EscapeCsvField(kill.RecordNumber),
-                EscapeCsvField(kill.OrgAffiliation),
-                EscapeCsvField(kill.Player),
-                EscapeCsvField(kill.Weapon),
-                EscapeCsvField(kill.Ship),
-                EscapeCsvField(kill.Method),
-                EscapeCsvField(kill.Mode),
-                EscapeCsvField(kill.GameVersion),
-                EscapeCsvField(kill.TrackRver),
-                EscapeCsvField(kill.Logged),
-                EscapeCsvField(kill.PFP),
-                EscapeCsvField(kill.Hash)
-            };
-
-            var csvLine = string.Join(",", fields);
-
-            // Use FileShare.Read to allow other processes to read while we write
-            using var stream = new FileStream(_killHistoryPath, FileMode.Append, FileAccess.Write, FileShare.Read);
-            using var writer = new StreamWriter(stream);
-            await writer.WriteLineAsync(csvLine);
+            using var connection = new SqliteConnection($"Data Source={_dbPath}");
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT OR IGNORE INTO kills (
+                    Hash, KillTime, EnemyPilot, EnemyShip, Enlisted, RecordNumber, OrgAffiliation, Weapon, Ship, Method, Location, Mode, GameVersion, TrackRver, Logged, PFP
+                ) VALUES (
+                    $Hash, $KillTime, $EnemyPilot, $EnemyShip, $Enlisted, $RecordNumber, $OrgAffiliation, $Weapon, $Ship, $Method, $Location, $Mode, $GameVersion, $TrackRver, $Logged, $PFP
+                );
+            ";
+            command.Parameters.AddWithValue("$Hash", kill.Hash ?? "");
+            command.Parameters.AddWithValue("$KillTime", kill.KillTime ?? "");
+            command.Parameters.AddWithValue("$EnemyPilot", kill.EnemyPilot ?? "");
+            command.Parameters.AddWithValue("$EnemyShip", kill.EnemyShip ?? "");
+            command.Parameters.AddWithValue("$Enlisted", kill.Enlisted ?? "");
+            command.Parameters.AddWithValue("$RecordNumber", kill.RecordNumber ?? "");
+            command.Parameters.AddWithValue("$OrgAffiliation", kill.OrgAffiliation ?? "");
+            command.Parameters.AddWithValue("$Weapon", kill.Weapon ?? "");
+            command.Parameters.AddWithValue("$Ship", kill.Ship ?? "");
+            command.Parameters.AddWithValue("$Method", kill.Method ?? "");
+            command.Parameters.AddWithValue("$Location", kill.Location ?? "");
+            command.Parameters.AddWithValue("$Mode", kill.Mode ?? "");
+            command.Parameters.AddWithValue("$GameVersion", kill.GameVersion ?? "");
+            command.Parameters.AddWithValue("$TrackRver", kill.TrackRver ?? "");
+            command.Parameters.AddWithValue("$Logged", kill.Logged ?? "");
+            command.Parameters.AddWithValue("$PFP", kill.PFP ?? "");
+            await command.ExecuteNonQueryAsync();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error writing kill to CSV: {ex.Message}");
+            Debug.WriteLine($"Error writing kill to SQLite: {ex.Message}");
             throw;
         }
-    }
-
-    private string EscapeCsvField(string field)
-    {
-        if (string.IsNullOrEmpty(field)) return "";
-
-        // If the field contains any special characters, wrap it in quotes
-        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
-        {
-            // Double up any quotes
-            field = field.Replace("\"", "\"\"");
-            return $"\"{field}\"";
-        }
-
-        return field;
     }
 
     public void AddKill(KillData kill)
@@ -145,47 +154,38 @@ public class KillHistoryManager
     public List<KillData> GetKills()
     {
         var kills = new List<KillData>();
-
-        using var reader = new StreamReader(new FileStream(_killHistoryPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
-        reader.ReadLine(); // Skip headers
-
-        while (reader.Peek() >= 0)
+        using var connection = new SqliteConnection($"Data Source={_dbPath}");
+        connection.Open();
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT Hash, KillTime, EnemyPilot, EnemyShip, Enlisted, RecordNumber, OrgAffiliation, Weapon, Ship, Method, Location, Mode, GameVersion, TrackRver, Logged, PFP FROM kills";
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            var line = reader.ReadLine();
-
-            // Remove extra quotes from CSV data
-            // Todo: These quotes are for handling commas in the data, but not sure if they're necessary
-            line = line?.Replace("\"", string.Empty);
-
-            var data = line?.Split(',');
-
             kills.Add(new KillData
             {
-                KillTime = data?[0],
-                EnemyPilot = data?[1],
-                EnemyShip = data?[2],
-                Enlisted = data?[3],
-                RecordNumber = data?[4],
-                OrgAffiliation = data?[5],
-                Player = data?[6],
-                Weapon = data?[7],
-                Ship = data?[8],
-                Method = data?[9],
-                Mode = data?[10],
-                GameVersion = data?[11],
-                TrackRver = data?[12],
-                Logged = data?[13],
-                PFP = data?[14],
-                Hash = data?[15]
+                Hash = reader.GetString(0),
+                KillTime = reader.GetString(1),
+                EnemyPilot = reader.GetString(2),
+                EnemyShip = reader.GetString(3),
+                Enlisted = reader.GetString(4),
+                RecordNumber = reader.GetString(5),
+                OrgAffiliation = reader.GetString(6),
+                Weapon = reader.GetString(7),
+                Ship = reader.GetString(8),
+                Method = reader.GetString(9),
+                Location = reader.GetString(10),
+                Mode = reader.GetString(11),
+                GameVersion = reader.GetString(12),
+                TrackRver = reader.GetString(13),
+                Logged = reader.GetString(14),
+                PFP = reader.GetString(15)
             });
         }
-
         // Apply KillFeedLimit if specified
         if (ConfigManager.KillFeedLimit.HasValue && ConfigManager.KillFeedLimit.Value > 0)
         {
             kills = kills.TakeLast(ConfigManager.KillFeedLimit.Value).ToList();
         }
-
         return kills;
     }
 
@@ -193,57 +193,45 @@ public class KillHistoryManager
     {
         string currentMonth = DateTime.Now.ToString("MMM", CultureInfo.InvariantCulture);
         var kills = new List<KillData>();
-
-        // Read all kills directly from file, ignoring KillFeedLimit
-        using var reader = new StreamReader(new FileStream(_killHistoryPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
-        reader.ReadLine(); // Skip headers
-
-        while (reader.Peek() >= 0)
+        using var connection = new SqliteConnection($"Data Source={_dbPath}");
+        connection.Open();
+        var command = connection.CreateCommand();
+        command.CommandText = "SELECT Hash, KillTime, EnemyPilot, EnemyShip, Enlisted, RecordNumber, OrgAffiliation, Weapon, Ship, Method, Location, Mode, GameVersion, TrackRver, Logged, PFP FROM kills";
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
         {
-            var line = reader.ReadLine();
-
-            // Remove extra quotes from CSV data
-            line = line?.Replace("\"", string.Empty);
-
-            var data = line?.Split(',');
-
+            var kill = new KillData
+            {
+                Hash = reader.GetString(0),
+                KillTime = reader.GetString(1),
+                EnemyPilot = reader.GetString(2),
+                EnemyShip = reader.GetString(3),
+                Enlisted = reader.GetString(4),
+                RecordNumber = reader.GetString(5),
+                OrgAffiliation = reader.GetString(6),
+                Weapon = reader.GetString(7),
+                Ship = reader.GetString(8),
+                Method = reader.GetString(9),
+                Location = reader.GetString(10),
+                Mode = reader.GetString(11),
+                GameVersion = reader.GetString(12),
+                TrackRver = reader.GetString(13),
+                Logged = reader.GetString(14),
+                PFP = reader.GetString(15)
+            };
             // Check if the kill is from the current month before adding it
-            var killTime = data?[0];
-            if (string.IsNullOrEmpty(killTime)) continue;
-
-            // Try to parse as Unix timestamp first
-            if (long.TryParse(killTime, out long unixTime))
+            if (!string.IsNullOrEmpty(kill.KillTime))
             {
-                var date = DateTimeOffset.FromUnixTimeSeconds(unixTime);
-                if (date.ToString("MMM", CultureInfo.InvariantCulture) != currentMonth) continue;
+                if (long.TryParse(kill.KillTime, out long unixTime))
+                {
+                    var date = DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
+                    if (date.ToString("MMM", CultureInfo.InvariantCulture) == currentMonth)
+                    {
+                        kills.Add(kill);
+                    }
+                }
             }
-            else if (!killTime.Contains(currentMonth))
-            {
-                // Fall back to checking if it contains the month name (old format)
-                continue;
-            }
-
-            kills.Add(new KillData
-            {
-                KillTime = killTime,
-                EnemyPilot = data?[1],
-                EnemyShip = data?[2],
-                Enlisted = data?[3],
-                RecordNumber = data?[4],
-                OrgAffiliation = data?[5],
-                Player = data?[6],
-                Weapon = data?[7],
-                Ship = data?[8],
-                Method = data?[9],
-                Mode = data?[10],
-                GameVersion = data?[11],
-                TrackRver = data?[12],
-                Logged = data?[13],
-                PFP = data?[14],
-                Hash = data?[15]
-            });
         }
-
         return kills;
     }
 }
