@@ -636,6 +636,36 @@ public partial class HomePage : UserControl
         return Process.GetProcessesByName("StarCitizen").Length > 0;
     }
 
+    private void PauseLogHandlerMonitoring()
+    {
+        if (_logHandler != null && _isLogHandlerRunning)
+        {
+            Console.WriteLine("Pausing LogHandler monitoring for log backup import process");
+            _logHandler.StopMonitoring();
+            _isLogHandlerRunning = false;
+        }
+    }
+
+    private void ResumeLogHandlerMonitoring()
+    {
+        if (_logHandler != null && !_isLogHandlerRunning)
+        {
+            Console.WriteLine("Resuming LogHandler monitoring after log backup import completion");
+
+            // Use InitializeForImport if Star Citizen isn't running, otherwise use normal Initialize
+            if (IsStarCitizenRunning())
+            {
+                _logHandler.Initialize();
+            }
+            else
+            {
+                _logHandler.InitializeForImport();
+            }
+
+            _isLogHandlerRunning = true;
+        }
+    }
+
     public async void ProcessLogBackups_Click(object sender, RoutedEventArgs e)
     {
         if (_isProcessingLogBackups)
@@ -651,22 +681,42 @@ public partial class HomePage : UserControl
             return;
         }
 
+        // Store the current log handler state
+        bool wasLogHandlerRunning = _isLogHandlerRunning;
+
         try
         {
             _isProcessingLogBackups = true;
             UpdateStatusIndicator(true, true); // Set to yellow for processing
 
+            // Stop the log handler monitoring to prevent interference with import process
+            PauseLogHandlerMonitoring();
+
             if (_logBackupProcessor == null)
             {
                 var logBackupsPath = Path.Combine(Path.GetDirectoryName(ConfigManager.LogFile)!, "logbackups");
-                _logBackupProcessor = new LogBackupProcessor(logBackupsPath, _killHistoryManager, _logHandler?.GetEventHandlers() ?? new List<ILogEventHandler>());
+                var eventHandlers = _logHandler?.GetEventHandlers() ?? new List<ILogEventHandler>();
+                Console.WriteLine($"Creating LogBackupProcessor with {eventHandlers.Count} event handlers");
+                foreach (var handler in eventHandlers)
+                {
+                    Console.WriteLine($"  Handler: {handler.GetType().Name}");
+                }
+                _logBackupProcessor = new LogBackupProcessor(logBackupsPath, _killHistoryManager, eventHandlers);
             }
 
-            await _logBackupProcessor.ProcessLogBackupsAsync((logFile) =>
+            var importStats = await _logBackupProcessor.ProcessLogBackupsAsync((logFile) =>
             {
                 DebugPanel.Text = $"Processing: {Path.GetFileName(logFile)}";
             });
-            MessageBox.Show("Log backups processed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            var message = $"Log backups processed successfully!\n\n" +
+                         $"=== IMPORT SUMMARY ===\n" +
+                         $"Total kills found: {importStats.TotalKillsFound}\n" +
+                         $"Total kills imported: {importStats.TotalKillsImported}\n" +
+                         $"Kills not imported: {importStats.TotalKillsNotImported}\n" +
+                         $"Import success rate: {importStats.ImportSuccessRate:F1}%";
+
+            MessageBox.Show(message, "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             DebugPanel.Text = ""; // Clear the debug panel after successful processing
         }
         catch (Exception ex)
@@ -676,6 +726,14 @@ public partial class HomePage : UserControl
         finally
         {
             _isProcessingLogBackups = false;
+
+            // Resume log handler monitoring if it was running before
+            if (wasLogHandlerRunning)
+            {
+                ResumeLogHandlerMonitoring();
+            }
+
+            // Update status based on current Star Citizen state
             UpdateStatusIndicator(IsStarCitizenRunning());
         }
     }

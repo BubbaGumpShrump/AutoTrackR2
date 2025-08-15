@@ -109,6 +109,37 @@ public class LogHandler
         InitializeLogHandler();
     }
 
+    public void InitializeForImport()
+    {
+        // Force initialize for import purposes without requiring Star Citizen to be running
+        Console.WriteLine("Initializing LogHandler for import process");
+
+        // Ensure the directory exists
+        var directory = Path.GetDirectoryName(_logPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // If the log file doesn't exist, create a placeholder file
+        if (!File.Exists(_logPath))
+        {
+            try
+            {
+                File.WriteAllText(_logPath, "# AutoTrackR2 placeholder log file\n# Please configure the correct Star Citizen log file path in settings\n");
+                _isUsingPlaceholderFile = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Could not create placeholder log file: {ex.Message}");
+                return;
+            }
+        }
+
+        // Force initialize without Star Citizen check
+        InitializeLogHandler();
+    }
+
     private void StartInitializationDelay()
     {
         _isInitializing = true;

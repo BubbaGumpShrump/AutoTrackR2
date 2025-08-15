@@ -15,20 +15,37 @@ public class LogBackupProcessor
   private readonly string _logBackupsPath;
   private readonly KillHistoryManager _killHistoryManager;
   private readonly List<ILogEventHandler> _logEventHandlers;
+  private readonly Regex _combinedPattern;
 
   public LogBackupProcessor(string logBackupsPath, KillHistoryManager killHistoryManager, List<ILogEventHandler> logEventHandlers)
   {
     _logBackupsPath = logBackupsPath;
     _killHistoryManager = killHistoryManager;
     _logEventHandlers = logEventHandlers;
+
+    Console.WriteLine($"LogBackupProcessor initialized with {logEventHandlers.Count} event handlers");
+
+    // Create a combined regex pattern for all handlers to quickly filter lines
+    var patterns = logEventHandlers.Select(h => h.Pattern.ToString()).ToArray();
+    _combinedPattern = new Regex(string.Join("|", patterns), RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    Console.WriteLine($"Combined pattern created: {_combinedPattern}");
+
+    // Verify we have ActorDeathEvent handlers
+    var actorDeathHandlers = logEventHandlers.OfType<ActorDeathEvent>().ToList();
+    Console.WriteLine($"ActorDeathEvent handlers found: {actorDeathHandlers.Count}");
+    foreach (var handler in actorDeathHandlers)
+    {
+      Console.WriteLine($"  ActorDeathEvent pattern: {handler.Pattern}");
+    }
   }
 
-  public async Task ProcessLogBackupsAsync(Action<string>? onLogFileProcessed = null)
+  public async Task<(int TotalKillsFound, int TotalKillsImported, int TotalKillsNotImported, double ImportSuccessRate)> ProcessLogBackupsAsync(Action<string>? onLogFileProcessed = null)
   {
     if (!Directory.Exists(_logBackupsPath))
     {
       Console.WriteLine($"Log backups directory not found: {_logBackupsPath}");
-      return;
+      return (0, 0, 0, 0.0);
     }
 
     var logFiles = Directory.GetFiles(_logBackupsPath, "*.log", SearchOption.AllDirectories)
@@ -36,48 +53,160 @@ public class LogBackupProcessor
       .ToArray();
     Array.Sort(logFiles); // Process files in chronological order
 
+    Console.WriteLine($"Found {logFiles.Length} log files to process");
+    Console.WriteLine($"Event handlers available: {_logEventHandlers.Count}");
+    foreach (var handler in _logEventHandlers)
+    {
+      Console.WriteLine($"  - {handler.GetType().Name}: {handler.Pattern}");
+    }
+
+    // Process files sequentially to ensure proper completion
+    var totalKillsFound = 0;
+    var totalKillsImported = 0;
+
     for (int i = 0; i < logFiles.Length; i++)
     {
       var logFile = logFiles[i];
       onLogFileProcessed?.Invoke(logFile);
-      await ProcessLogFileAsync(logFile);
+
+      var fileResult = await ProcessLogFileAsync(logFile, i);
+      totalKillsFound += fileResult.KillsFound;
+      totalKillsImported += fileResult.KillsImported;
     }
+
+    var totalKillsNotImported = totalKillsFound - totalKillsImported;
+    var importSuccessRate = totalKillsFound > 0 ? (totalKillsImported * 100.0 / totalKillsFound) : 0.0;
+
+    Console.WriteLine($"=== IMPORT SUMMARY ===");
+    Console.WriteLine($"Total kills found: {totalKillsFound}");
+    Console.WriteLine($"Total kills imported: {totalKillsImported}");
+    Console.WriteLine($"Kills not imported: {totalKillsNotImported}");
+    Console.WriteLine($"Import success rate: {importSuccessRate:F1}%");
+
+    return (totalKillsFound, totalKillsImported, totalKillsNotImported, importSuccessRate);
   }
 
-  private async Task ProcessLogFileAsync(string logFilePath)
+  private async Task<(int KillsFound, int KillsImported)> ProcessLogFileAsync(string logFilePath, int fileIndex)
   {
     try
     {
-      using var reader = new StreamReader(logFilePath);
-      string? line;
-      var lines = new List<string>();
-      while ((line = await reader.ReadLineAsync()) != null)
+      Console.WriteLine($"Processing file {fileIndex + 1}: {Path.GetFileName(logFilePath)}");
+
+      var killsFound = 0;
+      var killsImported = 0;
+      var relevantLines = new List<string>();
+
+      // First pass: Quick filter using combined pattern to find relevant lines only
+      using (var reader = new StreamReader(logFilePath))
       {
-        lines.Add(line);
-      }
-      int actorDeathCount = 0;
-      await Task.Run(() => Parallel.ForEach(lines, line =>
-      {
-        var entry = new LogEntry { Message = line };
-        foreach (var handler in _logEventHandlers)
+        string? line;
+        var lineCount = 0;
+        while ((line = await reader.ReadLineAsync()) != null)
         {
-          if (handler.Pattern.IsMatch(line))
+          lineCount++;
+          // Only process lines that match any of our patterns
+          if (_combinedPattern.IsMatch(line))
           {
-            handler.Handle(entry);
-            if (handler is ActorDeathEvent)
+            relevantLines.Add(line);
+            if (relevantLines.Count <= 3) // Show first 3 matches for debugging
             {
-              Interlocked.Increment(ref actorDeathCount);
+              Console.WriteLine($"Line {lineCount} matched combined pattern: {line.Substring(0, Math.Min(100, line.Length))}...");
             }
           }
         }
-      }));
-      Console.WriteLine($"Processed {actorDeathCount} actor deaths in {logFilePath}");
-      // Wait 5 seconds after processing the file before moving to the next file
-      await Task.Delay(TimeSpan.FromSeconds(5));
+        Console.WriteLine($"Total lines read: {lineCount}");
+      }
+
+      Console.WriteLine($"Found {relevantLines.Count} relevant lines out of total lines in {Path.GetFileName(logFilePath)}");
+
+      if (relevantLines.Count == 0)
+      {
+        return (0, 0);
+      }
+
+      // Show first few relevant lines for debugging
+      Console.WriteLine("First few relevant lines found:");
+      for (int i = 0; i < Math.Min(3, relevantLines.Count); i++)
+      {
+        Console.WriteLine($"  Line {i + 1}: {relevantLines[i].Substring(0, Math.Min(100, relevantLines[i].Length))}...");
+      }
+
+      // Second pass: Process only the relevant lines
+      var batches = relevantLines
+        .Select((line, index) => new { Line = line, Index = index })
+        .GroupBy(x => x.Index / 1000) // Process in batches of 1000
+        .Select(g => g.Select(x => x.Line).ToList())
+        .ToList();
+
+      foreach (var batch in batches)
+      {
+        var batchResult = await ProcessBatch(batch);
+        killsFound += batchResult.KillsFound;
+        killsImported += batchResult.KillsImported;
+      }
+
+      Console.WriteLine($"File {Path.GetFileName(logFilePath)}: {killsFound} kills found, {killsImported} kills imported");
+
+      return (killsFound, killsImported);
     }
     catch (Exception ex)
     {
       Console.WriteLine($"Error processing log file {logFilePath}: {ex.Message}");
+      return (0, 0);
     }
+  }
+
+  private async Task<(int KillsFound, int KillsImported)> ProcessBatch(List<string> lines)
+  {
+    var killsFound = 0;
+    var killsImported = 0;
+
+    Console.WriteLine($"Processing batch of {lines.Count} lines...");
+
+    foreach (var line in lines)
+    {
+      var entry = new LogEntry { Message = line };
+
+      // Find the matching handler and process
+      foreach (var handler in _logEventHandlers)
+      {
+        if (handler.Pattern.IsMatch(line))
+        {
+          Console.WriteLine($"Line matched handler: {handler.GetType().Name}");
+
+          // Count kills found
+          if (handler is ActorDeathEvent)
+          {
+            killsFound++;
+            Console.WriteLine($"Found kill #{killsFound}: {line.Substring(0, Math.Min(100, line.Length))}...");
+          }
+
+          try
+          {
+            // Attempt to import the kill - ensure we wait for completion
+            await Task.Run(() => handler.Handle(entry));
+
+            // Give a moment for the handler to complete its internal processing
+            await Task.Delay(50);
+
+            // If successful, count as imported
+            if (handler is ActorDeathEvent)
+            {
+              killsImported++;
+              Console.WriteLine($"Successfully imported kill #{killsImported}");
+            }
+          }
+          catch (Exception ex)
+          {
+            Console.WriteLine($"Failed to import kill from line: {line.Substring(0, Math.Min(100, line.Length))}... Error: {ex.Message}");
+          }
+
+          break; // Found a match, no need to check other handlers
+        }
+      }
+    }
+
+    Console.WriteLine($"Batch complete: {killsFound} kills found, {killsImported} kills imported");
+    return (killsFound, killsImported);
   }
 }
