@@ -136,11 +136,23 @@ public class KillHistoryManager
 
     public void PlayKillStreakSound()
     {
+        // Check if TrackR is ready before enabling kill streak features
+        if (!RealTimeFeatureManager.ShouldEnableKillStreak())
+        {
+            return;
+        }
+
         _killStreakManager.OnKill();
     }
 
     public void ResetKillStreak()
     {
+        // Check if TrackR is ready before enabling kill streak features
+        if (!RealTimeFeatureManager.ShouldEnableKillStreak())
+        {
+            return;
+        }
+
         _killStreakManager.OnDeath();
     }
 

@@ -195,8 +195,8 @@ public static class WebHandler
             // Add the hash to our recorded hashes
             _recordedKillHashes.Add(hash);
 
-            // Only process streamer data if streamlink is enabled
-            if (ConfigManager.StreamlinkEnabled == 1)
+            // Only process streamer data if streamlink is enabled and TrackR is ready
+            if (ConfigManager.StreamlinkEnabled == 1 && RealTimeFeatureManager.ShouldEnableStreamlink())
             {
                 ProcessStreamerResponse(responseContent);
             }

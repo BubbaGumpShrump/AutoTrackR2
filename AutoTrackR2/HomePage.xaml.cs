@@ -315,8 +315,17 @@ public partial class HomePage : UserControl
                     }
 
                     _killHistoryManager.AddKill(killData);
-                    VisorWipe();
-                    VideoRecord(actorDeathData.VictimPilot, actorDeathData.VictimShip);
+
+                    // Only enable real-time features if TrackR is fully initialized
+                    if (RealTimeFeatureManager.ShouldEnableVisorWipe())
+                    {
+                        VisorWipe();
+                    }
+
+                    if (RealTimeFeatureManager.ShouldEnableVideoRecord())
+                    {
+                        VideoRecord(actorDeathData.VictimPilot, actorDeathData.VictimShip);
+                    }
 
                     // Update kill tally
                     Dispatcher.Invoke(() =>
@@ -569,6 +578,12 @@ public partial class HomePage : UserControl
 
     private void VisorWipe()
     {
+        // Check if TrackR is ready before enabling visor wipe
+        if (!RealTimeFeatureManager.ShouldEnableVisorWipe())
+        {
+            return;
+        }
+
         if (ConfigManager.VisorWipe == 1)
         {
             RunAHKScript(ConfigManager.VisorWipeScript);
@@ -577,6 +592,12 @@ public partial class HomePage : UserControl
 
     private void VideoRecord(string victimName, string shipName)
     {
+        // Check if TrackR is ready before enabling video recording
+        if (!RealTimeFeatureManager.ShouldEnableVideoRecord())
+        {
+            return;
+        }
+
         if (ConfigManager.VideoRecord == 1 && !string.IsNullOrEmpty(victimName) && !string.IsNullOrEmpty(shipName))
         {
             RunAHKScript(ConfigManager.VideoRecordScript, victimName, shipName);

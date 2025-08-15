@@ -34,6 +34,9 @@ public class LogHandler
     private System.Timers.Timer? _initializationTimer;
     private bool _isUsingPlaceholderFile = false;
 
+    // Static property to track if TrackR is fully initialized and ready for real-time features
+    public static bool IsTrackRReady { get; private set; } = false;
+
     public bool IsMonitoring => _isMonitoring;
     public bool IsInitializing => _isInitializing;
     public bool IsUsingPlaceholderFile => _isUsingPlaceholderFile;
@@ -194,6 +197,11 @@ public class LogHandler
         _monitorThread = new Thread(() => MonitorLog(_cancellationTokenSource.Token));
         _monitorThread.Start();
         _isMonitoring = true;
+
+        // TrackR is now ready to process real-time features
+        IsTrackRReady = true;
+        Console.WriteLine("🎯 TrackR is now ready - real-time features enabled");
+        Console.WriteLine("✅ Startup protection lifted - visor wipe, video record, kill streaks, and streamlink are now active");
     }
 
     public void StopMonitoring()

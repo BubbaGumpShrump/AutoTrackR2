@@ -48,6 +48,10 @@ public class LogBackupProcessor
       return (0, 0, 0, 0.0);
     }
 
+    // Create a context to suppress real-time features during import
+    using var importContext = new ImportContext();
+    Console.WriteLine("Real-time features temporarily disabled for log backup import (visor wipe, video record, kill streaks, streamlink)");
+
     var logFiles = Directory.GetFiles(_logBackupsPath, "*.log", SearchOption.AllDirectories)
       .Where(file => File.GetLastWriteTime(file) >= new DateTime(2025, 3, 27))
       .ToArray();
@@ -83,6 +87,7 @@ public class LogBackupProcessor
     Console.WriteLine($"Kills not imported: {totalKillsNotImported}");
     Console.WriteLine($"Import success rate: {importSuccessRate:F1}%");
 
+    Console.WriteLine("Real-time features restored after log backup import");
     return (totalKillsFound, totalKillsImported, totalKillsNotImported, importSuccessRate);
   }
 
@@ -208,5 +213,38 @@ public class LogBackupProcessor
 
     Console.WriteLine($"Batch complete: {killsFound} kills found, {killsImported} kills imported");
     return (killsFound, killsImported);
+  }
+}
+
+// Context class to suppress real-time features during import
+public class ImportContext : IDisposable
+{
+  private readonly int _originalVisorWipe;
+  private readonly int _originalVideoRecord;
+  private readonly int _originalKillStreakEnabled;
+  private readonly int _originalStreamlinkEnabled;
+
+  public ImportContext()
+  {
+    // Store original settings
+    _originalVisorWipe = ConfigManager.VisorWipe;
+    _originalVideoRecord = ConfigManager.VideoRecord;
+    _originalKillStreakEnabled = ConfigManager.KillStreakEnabled;
+    _originalStreamlinkEnabled = ConfigManager.StreamlinkEnabled;
+
+    // Disable features during import
+    ConfigManager.VisorWipe = 0;
+    ConfigManager.VideoRecord = 0;
+    ConfigManager.KillStreakEnabled = 0;
+    ConfigManager.StreamlinkEnabled = 0;
+  }
+
+  public void Dispose()
+  {
+    // Restore original settings
+    ConfigManager.VisorWipe = _originalVisorWipe;
+    ConfigManager.VideoRecord = _originalVideoRecord;
+    ConfigManager.KillStreakEnabled = _originalKillStreakEnabled;
+    ConfigManager.StreamlinkEnabled = _originalStreamlinkEnabled;
   }
 }

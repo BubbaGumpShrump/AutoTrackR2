@@ -629,15 +629,39 @@ public partial class ConfigPage : UserControl
             _testKillStreakManager = new KillStreakManager(soundsPath);
         }
 
-        // Simulate 5 quick kills
-        for (int i = 0; i < 5; i++)
-        {
-            _testKillStreakManager.OnKill();
-        }
+        // Simulate kills one at a time with delays to hear the progression
+        Console.WriteLine("🎯 Starting kill streak test...");
 
-        // Reset the streak after all sounds have played
-        await Task.Delay(1000);
+        // Kill 1: Silent (no sound)
+        Console.WriteLine("Kill 1: Silent (no dog_bowl.wav)");
+        _testKillStreakManager.OnKill();
+        await Task.Delay(1000); // Wait 1 second
+
+        // Kill 2: Double Kill
+        Console.WriteLine("Kill 2: Double Kill sound");
+        _testKillStreakManager.OnKill();
+        await Task.Delay(1000); // Wait 1 second
+
+        // Kill 3: Triple Kill
+        Console.WriteLine("Kill 3: Triple Kill sound");
+        _testKillStreakManager.OnKill();
+        await Task.Delay(1000); // Wait 1 second
+
+        // Kill 4: Overkill
+        Console.WriteLine("Kill 4: Overkill sound");
+        _testKillStreakManager.OnKill();
+        await Task.Delay(1000); // Wait 1 second
+
+        // Kill 5: Killtacular
+        Console.WriteLine("Kill 5: Killtacular sound");
+        _testKillStreakManager.OnKill();
+        await Task.Delay(2000); // Wait 2 seconds for final sound
+
+        // Reset the streak
+        Console.WriteLine("Resetting kill streak...");
         _testKillStreakManager.OnDeath();
+
+        Console.WriteLine("✅ Kill streak test complete!");
     }
 }
 

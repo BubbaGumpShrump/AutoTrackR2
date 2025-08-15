@@ -9,7 +9,7 @@
                 <StackPanel Margin="20,5,20,0">
                         <!-- Log File -->
                         <StackPanel Margin="0,0,0,5"
-                                        Orientation="Horizontal">
+                                    Orientation="Horizontal">
                                 <TextBlock Text="ⓘ"
                                            ToolTip="Set this to the Game.log file in your StarCitizen\LIVE directory."
                                            Foreground="{DynamicResource TextBrush}"
@@ -52,7 +52,7 @@
 
                         <!-- API URL -->
                         <StackPanel Margin="0,0,0,5"
-                                        Orientation="Horizontal">
+                                    Orientation="Horizontal">
                                 <TextBlock Text="ⓘ"
                                            ToolTip="Need a URL? No idea what to do? Contact heavy_bob on Discord!"
                                            Foreground="{DynamicResource TextBrush}"
@@ -80,7 +80,7 @@
 
                         <!-- API Key -->
                         <StackPanel Margin="0,0,0,5"
-                                        Orientation="Horizontal">
+                                    Orientation="Horizontal">
                                 <TextBlock Text="ⓘ"
                                            ToolTip="Need a key? No idea what to do? Contact heavy_bob on Discord!"
                                            Foreground="{DynamicResource TextBrush}"
@@ -99,7 +99,7 @@
 
                         <!-- Video Path -->
                         <StackPanel Margin="0,0,0,5"
-                                        Orientation="Horizontal">
+                                    Orientation="Horizontal">
                                 <TextBlock Text="ⓘ"
                                            ToolTip="The directory where your clipping software saves kills. Check the README."
                                            Foreground="{DynamicResource TextBrush}"
@@ -141,10 +141,10 @@
 
                                 <!-- Left Column -->
                                 <StackPanel Grid.Column="0"
-                                                Margin="0,0,5,0">
+                                            Margin="0,0,5,0">
                                         <!-- Kill Streak -->
                                         <StackPanel Orientation="Horizontal"
-                                                        Margin="0,0,0,3">
+                                                    Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Enable or disable kill streak sound effects."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -164,7 +164,7 @@
 
                                         <!-- Visor Wipe -->
                                         <StackPanel Orientation="Horizontal"
-                                                        Margin="0,0,0,3">
+                                                    Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Perform a Visor Wipe animation on player kill. Requires AHKv2."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -184,7 +184,7 @@
 
                                         <!-- Video Record -->
                                         <StackPanel Orientation="Horizontal"
-                                                        Margin="0,0,0,3">
+                                                    Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Record video on player kill. Requires AHKv2."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -204,7 +204,7 @@
 
                                         <!-- Offline Mode -->
                                         <StackPanel Orientation="Horizontal"
-                                                        Margin="0,0,0,3">
+                                                    Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="With Offline Mode enabled, kills will not be submitted to the configured API."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -225,10 +225,10 @@
 
                                 <!-- Right Column -->
                                 <StackPanel Grid.Column="1"
-                                                Margin="5,0,0,0">
+                                            Margin="5,0,0,0">
                                         <!-- Streamlink -->
                                         <StackPanel Orientation="Horizontal"
-                                                        Margin="0,0,0,3">
+                                                    Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Use Streamlink for video recording."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -248,7 +248,7 @@
 
                                         <!-- Duration -->
                                         <StackPanel Orientation="Horizontal"
-                                                        Margin="0,0,0,3">
+                                                    Margin="0,0,0,3">
                                                 <TextBlock Text="ⓘ"
                                                            ToolTip="Duration of Streamlink recordings in seconds."
                                                            Foreground="{DynamicResource TextBrush}"
@@ -279,12 +279,21 @@
                                                 Margin="0,0,0,3"
                                                 Style="{StaticResource ButtonStyle}"
                                                 Click="TestStreamlinkButton_Click"/>
+
+                                        <!-- Test Killstreak Button -->
+                                        <Button Content="Test Killstreak"
+                                                Width="120"
+                                                Height="30"
+                                                FontFamily="{StaticResource Orbitron}"
+                                                Margin="0,0,0,3"
+                                                Style="{StaticResource ButtonStyle}"
+                                                Click="TestKillStreakButton_Click"/>
                                 </StackPanel>
                         </Grid>
 
                         <!-- Theme Slider -->
                         <StackPanel Orientation="Horizontal"
-                                        Margin="0,5,0,0">
+                                    Margin="0,5,0,0">
                                 <TextBlock Text="ⓘ"
                                            ToolTip="Select theme for the application."
                                            Foreground="{DynamicResource TextBrush}"
