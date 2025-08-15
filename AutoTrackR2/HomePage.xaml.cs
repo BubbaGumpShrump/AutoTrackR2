@@ -67,6 +67,13 @@ public partial class HomePage : UserControl
         _statusCheckTimer.Start();
     }
 
+    private bool IsLogHandlerProperlyConfigured()
+    {
+        return !string.IsNullOrEmpty(ConfigManager.LogFile) &&
+               _logHandler != null &&
+               !_logHandler.IsUsingPlaceholderFile;
+    }
+
     private void CheckStarCitizenStatus(object? sender, ElapsedEventArgs e)
     {
         if (_isProcessingLogBackups)
@@ -117,6 +124,11 @@ public partial class HomePage : UserControl
                         _initializationTimer.Start();
                     }
                 }
+                else
+                {
+                    // Log handler is running, update status based on configuration
+                    UpdateStatusIndicator(true);
+                }
             }
             else
             {
@@ -144,15 +156,23 @@ public partial class HomePage : UserControl
 
     private void UpdateStatusIndicator(bool isRunning, bool isInitializing = false)
     {
+        // Check if log handler is using a placeholder file
+        bool isUsingPlaceholder = _logHandler?.IsUsingPlaceholderFile == true;
+
         if (isInitializing)
         {
             StatusLight.Fill = new SolidColorBrush(Colors.Yellow);
             StatusText.Text = "TrackR\nInitializing";
         }
-        else if (isRunning)
+        else if (isRunning && !isUsingPlaceholder)
         {
             StatusLight.Fill = new SolidColorBrush(Colors.Green);
             StatusText.Text = "TrackR\nRunning";
+        }
+        else if (isRunning && isUsingPlaceholder)
+        {
+            StatusLight.Fill = new SolidColorBrush(Colors.Orange);
+            StatusText.Text = "TrackR\nConfig\nRequired";
         }
         else
         {
@@ -563,8 +583,29 @@ public partial class HomePage : UserControl
         }
     }
 
+    private void ShowLogFileNotConfiguredNotification()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            MessageBox.Show(
+                "Log file path is not configured. Please go to the Config tab and set the correct Star Citizen log file path to enable tracking.",
+                "Configuration Required",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        });
+    }
+
     public void InitializeLogHandler()
     {
+        // Check if LogFile is configured before proceeding
+        if (string.IsNullOrEmpty(ConfigManager.LogFile))
+        {
+            // LogFile is not configured, show notification
+            ShowLogFileNotConfiguredNotification();
+            return;
+        }
+
         if (_logHandler == null)
         {
             RegisterUIEventHandlers();
@@ -600,6 +641,13 @@ public partial class HomePage : UserControl
         if (_isProcessingLogBackups)
         {
             MessageBox.Show("Already processing log backups. Please wait.", "Processing", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        // Check if LogFile is configured before proceeding
+        if (string.IsNullOrEmpty(ConfigManager.LogFile))
+        {
+            MessageBox.Show("Log file path is not configured. Please configure the log file path in settings first.", "Configuration Required", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 

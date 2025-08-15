@@ -47,6 +47,9 @@ namespace AutoTrackR2
         {
             InitializeComponent();
 
+            // Set the version number
+            VersionText.Text = GetVersion();
+
             homePage = new HomePage(); // Create a single instance of HomePage
             ContentControl.Content = homePage; // Default to HomePage
 
@@ -89,6 +92,68 @@ namespace AutoTrackR2
         }
 
         private void MinimizeWindow(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
+
+        private string GetVersion()
+        {
+            try
+            {
+                // Try to get version from assembly
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                var version = assembly.GetName().Version;
+
+                if (version != null)
+                {
+                    // Format: v2.13 (Major.Minor)
+                    var versionString = $"v{version.Major}.{version.Minor}";
+
+                    // Add build date if available on the same line
+                    var buildDate = GetBuildDate(assembly);
+                    if (!string.IsNullOrEmpty(buildDate))
+                    {
+                        return $"{versionString} ({buildDate})";
+                    }
+
+                    return versionString;
+                }
+
+                // Fallback to project version from csproj
+                return "v2.13";
+            }
+            catch
+            {
+                return "v2.13";
+            }
+        }
+
+        private string GetBuildDate(System.Reflection.Assembly assembly)
+        {
+            try
+            {
+                // Try to get build date from assembly
+                var buildDate = assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
+                    .OfType<System.Reflection.AssemblyMetadataAttribute>()
+                    .FirstOrDefault(a => a.Key == "BuildDate")?.Value;
+
+                if (!string.IsNullOrEmpty(buildDate))
+                {
+                    return buildDate;
+                }
+
+                // Fallback to file creation date - use AppContext.BaseDirectory for single-file apps
+                var baseDirectory = AppContext.BaseDirectory;
+                if (!string.IsNullOrEmpty(baseDirectory))
+                {
+                    var fileInfo = new FileInfo(baseDirectory);
+                    return fileInfo.CreationTime.ToString("yyyy-MM-dd");
+                }
+
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {

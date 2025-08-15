@@ -32,9 +32,12 @@ public class LogHandler
     private bool _isMonitoring = false;
     private bool _isInitializing = false;
     private System.Timers.Timer? _initializationTimer;
+    private bool _isUsingPlaceholderFile = false;
 
     public bool IsMonitoring => _isMonitoring;
     public bool IsInitializing => _isInitializing;
+    public bool IsUsingPlaceholderFile => _isUsingPlaceholderFile;
+    public bool IsProperlyConfigured => !_isUsingPlaceholderFile && !string.IsNullOrEmpty(_logPath);
 
     // Handlers that should be run on every log entry
     // Overlap with _startupEventHandlers is fine
@@ -56,16 +59,44 @@ public class LogHandler
     {
         if (string.IsNullOrEmpty(logPath))
         {
-            throw new ArgumentNullException(nameof(logPath), "Log path cannot be null or empty");
+            // Set a default path instead of throwing an exception
+            _logPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AutoTrackR2",
+                "default.log"
+            );
+            _isUsingPlaceholderFile = true;
         }
-        _logPath = logPath;
+        else
+        {
+            _logPath = logPath;
+            _isUsingPlaceholderFile = false;
+        }
     }
 
     public void Initialize()
     {
+        // Ensure the directory exists
+        var directory = Path.GetDirectoryName(_logPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // If the log file doesn't exist, create a placeholder file
         if (!File.Exists(_logPath))
         {
-            throw new FileNotFoundException("Log file not found", _logPath);
+            try
+            {
+                File.WriteAllText(_logPath, "# AutoTrackR2 placeholder log file\n# Please configure the correct Star Citizen log file path in settings\n");
+                _isUsingPlaceholderFile = true;
+            }
+            catch (Exception ex)
+            {
+                // If we can't create the file, just return without initializing
+                Console.WriteLine($"Could not create placeholder log file: {ex.Message}");
+                return;
+            }
         }
 
         // Check if Star Citizen is running
@@ -99,15 +130,24 @@ public class LogHandler
 
     private void InitializeLogHandler()
     {
-        _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        _reader = new StreamReader(_fileStream);
-
-        while (_reader.ReadLine() is { } line)
+        try
         {
-            HandleLogEntry(line);
-        }
+            _fileStream = new FileStream(_logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            _reader = new StreamReader(_fileStream);
 
-        StartMonitoring();
+            while (_reader.ReadLine() is { } line)
+            {
+                HandleLogEntry(line);
+            }
+
+            StartMonitoring();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to initialize log handler: {ex.Message}");
+            // Don't start monitoring if we can't access the file
+            _isUsingPlaceholderFile = true;
+        }
     }
 
     private bool IsStarCitizenRunning()
